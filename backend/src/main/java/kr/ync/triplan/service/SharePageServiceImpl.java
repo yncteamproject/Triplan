@@ -6,7 +6,8 @@ import kr.ync.triplan.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.dto.response.SharePageListResponse;
 import kr.ync.triplan.dto.response.SharePageResponse;
-import kr.ync.triplan.exception.EntityNotFoundException;
+import kr.ync.triplan.exception.SharePageNotFoundException;
+import kr.ync.triplan.exception.TripNotFoundException;
 import kr.ync.triplan.repository.SharePageRepository;
 import kr.ync.triplan.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class SharePageServiceImpl implements SharePageService {
 	@Transactional
 	public SharePageResponse create(SharePageCreateRequest request) {
 		Trip trip = tripRepository.findById(request.tripId())
-				.orElseThrow(() -> new EntityNotFoundException("여행 계획을 찾을 수 없습니다. id=" + request.tripId()));
+				.orElseThrow(TripNotFoundException::new);
 
 		SharePage sharePage = SharePage.builder()
 				.title(request.title())
@@ -83,6 +84,6 @@ public class SharePageServiceImpl implements SharePageService {
 	// 게시글
 	private SharePage findById(Long id) {
 		return sharePageRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("공유 게시글을 찾을 수 없습니다. id=" + id));
+				.orElseThrow(SharePageNotFoundException::new);
 	}
 }

@@ -3,6 +3,7 @@ package kr.ync.triplan.controller;
 import kr.ync.triplan.dto.request.CommentCreateRequest;
 import kr.ync.triplan.dto.response.CommentResponse;
 import kr.ync.triplan.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class CommentController {
 
 	@PostMapping("/api/share-pages/{sharePageId}/comments")
 	public ResponseEntity<CommentResponse> create(
-			@PathVariable Long sharePageId, @RequestBody CommentCreateRequest request) {
+			@PathVariable Long sharePageId, @Valid @RequestBody CommentCreateRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(commentService.create(sharePageId, request));
 	}
 
