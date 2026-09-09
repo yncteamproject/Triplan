@@ -4,7 +4,8 @@ import kr.ync.triplan.domain.Comment;
 import kr.ync.triplan.domain.SharePage;
 import kr.ync.triplan.dto.request.CommentCreateRequest;
 import kr.ync.triplan.dto.response.CommentResponse;
-import kr.ync.triplan.exception.EntityNotFoundException;
+import kr.ync.triplan.exception.CommentNotFoundException;
+import kr.ync.triplan.exception.SharePageNotFoundException;
 import kr.ync.triplan.repository.CommentRepository;
 import kr.ync.triplan.repository.SharePageRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class CommentServiceImpl implements CommentService {
 	@Transactional
 	public CommentResponse create(Long sharePageId, CommentCreateRequest request) {
 		SharePage sharePage = sharePageRepository.findById(sharePageId)
-				.orElseThrow(() -> new EntityNotFoundException("공유 게시글을 찾을 수 없습니다. id=" + sharePageId));
+				.orElseThrow(SharePageNotFoundException::new);
 
 		Comment comment = Comment.builder()
 				.content(request.content())
@@ -49,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
 	@Transactional
 	public void delete(Long commentId) {
 		Comment comment = commentRepository.findById(commentId)
-				.orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다. id=" + commentId));
+				.orElseThrow(CommentNotFoundException::new);
 		commentRepository.delete(comment);
 	}
 }

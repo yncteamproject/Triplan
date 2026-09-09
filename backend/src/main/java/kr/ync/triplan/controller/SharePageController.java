@@ -5,6 +5,7 @@ import kr.ync.triplan.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.dto.response.SharePageListResponse;
 import kr.ync.triplan.dto.response.SharePageResponse;
 import kr.ync.triplan.service.SharePageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class SharePageController {
 
 	@PostMapping
 	public ResponseEntity<SharePageResponse> create(
-			@RequestBody SharePageCreateRequest request) {
+			@Valid @RequestBody SharePageCreateRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(sharePageService.create(request));
 	}
 
@@ -44,7 +45,7 @@ public class SharePageController {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<SharePageResponse> update(
-			@PathVariable Long id, @RequestBody SharePageUpdateRequest request) {
+			@PathVariable Long id, @Valid @RequestBody SharePageUpdateRequest request) {
 		return ResponseEntity.ok(sharePageService.update(id, request));
 	}
 
