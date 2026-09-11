@@ -10,5 +10,4 @@ public class TriplanApplication {
 		SpringApplication.run(TriplanApplication.class, args);
 	}
 
-	int a;
 }
