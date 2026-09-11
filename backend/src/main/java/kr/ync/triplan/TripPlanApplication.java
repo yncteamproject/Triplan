@@ -4,11 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TriplanApplication {
+public class TripPlanApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TriplanApplication.class, args);
+		SpringApplication.run(TripPlanApplication.class, args);
 	}
 
-	int a = 0;
 }
