@@ -1,4 +1,4 @@
-package kr.ync.tripplan.global.exception;
+package kr.ync.tripplan.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

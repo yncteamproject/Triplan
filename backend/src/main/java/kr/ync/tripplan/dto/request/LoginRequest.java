@@ -1,4 +1,4 @@
-package kr.ync.tripplan.member.dto;
+package kr.ync.tripplan.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

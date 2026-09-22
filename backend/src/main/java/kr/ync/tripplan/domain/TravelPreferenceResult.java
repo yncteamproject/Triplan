@@ -1,7 +1,6 @@
-package kr.ync.tripplan.traveltest;
+package kr.ync.tripplan.domain;
 
 import jakarta.persistence.*;
-import kr.ync.tripplan.member.Member;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

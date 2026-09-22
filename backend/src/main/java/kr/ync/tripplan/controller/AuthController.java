@@ -1,9 +1,10 @@
-package kr.ync.tripplan.member;
+package kr.ync.tripplan.controller;
 
 import jakarta.validation.Valid;
-import kr.ync.tripplan.member.dto.LoginRequest;
-import kr.ync.tripplan.member.dto.LoginResponse;
-import kr.ync.tripplan.member.dto.SignupRequest;
+import kr.ync.tripplan.dto.request.LoginRequest;
+import kr.ync.tripplan.dto.response.LoginResponse;
+import kr.ync.tripplan.dto.request.SignupRequest;
+import kr.ync.tripplan.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

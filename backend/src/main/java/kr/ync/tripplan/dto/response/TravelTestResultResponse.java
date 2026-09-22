@@ -1,6 +1,6 @@
-package kr.ync.tripplan.traveltest.dto;
+package kr.ync.tripplan.dto.response;
 
-import kr.ync.tripplan.traveltest.TravelType;
+import kr.ync.tripplan.domain.TravelType;
 
 public record TravelTestResultResponse(
         TravelType travelType,

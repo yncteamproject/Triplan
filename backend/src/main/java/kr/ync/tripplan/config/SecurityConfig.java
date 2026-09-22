@@ -1,7 +1,7 @@
-package kr.ync.tripplan.global.config;
+package kr.ync.tripplan.config;
 
-import kr.ync.tripplan.global.jwt.JwtAuthenticationFilter;
-import kr.ync.tripplan.global.jwt.JwtTokenProvider;
+import kr.ync.tripplan.jwt.JwtAuthenticationFilter;
+import kr.ync.tripplan.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

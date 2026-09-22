@@ -1,3 +1,3 @@
-package kr.ync.tripplan.member.dto;
+package kr.ync.tripplan.dto.response;
 
 public record LoginResponse(String accessToken, String nickname) {}

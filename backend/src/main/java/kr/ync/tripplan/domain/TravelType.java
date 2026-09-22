@@ -1,4 +1,4 @@
-package kr.ync.tripplan.traveltest;
+package kr.ync.tripplan.domain;
 
 public enum TravelType {
     FREE_EXPLORER("자유로운 탐험가", "즉흥적인 여행과 낯선 골목 탐방을 즐기는 유형"),

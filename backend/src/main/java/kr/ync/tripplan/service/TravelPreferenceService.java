@@ -1,9 +1,12 @@
-package kr.ync.tripplan.traveltest;
+package kr.ync.tripplan.service;
 
-import kr.ync.tripplan.member.Member;
-import kr.ync.tripplan.member.MemberRepository;
-import kr.ync.tripplan.traveltest.dto.TravelTestResultResponse;
-import kr.ync.tripplan.traveltest.dto.TravelTestSubmitRequest;
+import kr.ync.tripplan.domain.Member;
+import kr.ync.tripplan.repository.MemberRepository;
+import kr.ync.tripplan.dto.response.TravelTestResultResponse;
+import kr.ync.tripplan.dto.request.TravelTestSubmitRequest;
+import kr.ync.tripplan.repository.TravelPreferenceResultRepository;
+import kr.ync.tripplan.domain.TravelPreferenceResult;
+import kr.ync.tripplan.domain.TravelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

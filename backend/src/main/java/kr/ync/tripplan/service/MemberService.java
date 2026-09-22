@@ -1,9 +1,11 @@
-package kr.ync.tripplan.member;
+package kr.ync.tripplan.service;
 
-import kr.ync.tripplan.global.jwt.JwtTokenProvider;
-import kr.ync.tripplan.member.dto.LoginRequest;
-import kr.ync.tripplan.member.dto.LoginResponse;
-import kr.ync.tripplan.member.dto.SignupRequest;
+import kr.ync.tripplan.domain.Member;
+import kr.ync.tripplan.jwt.JwtTokenProvider;
+import kr.ync.tripplan.dto.request.LoginRequest;
+import kr.ync.tripplan.dto.response.LoginResponse;
+import kr.ync.tripplan.dto.request.SignupRequest;
+import kr.ync.tripplan.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

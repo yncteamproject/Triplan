@@ -1,4 +1,4 @@
-package kr.ync.tripplan.global.jwt;
+package kr.ync.tripplan.jwt;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

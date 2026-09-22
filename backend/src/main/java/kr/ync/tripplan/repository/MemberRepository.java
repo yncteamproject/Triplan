@@ -1,5 +1,6 @@
-package kr.ync.tripplan.member;
+package kr.ync.tripplan.repository;
 
+import kr.ync.tripplan.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,8 +1,9 @@
-package kr.ync.tripplan.traveltest;
+package kr.ync.tripplan.controller;
 
 import jakarta.validation.Valid;
-import kr.ync.tripplan.traveltest.dto.TravelTestResultResponse;
-import kr.ync.tripplan.traveltest.dto.TravelTestSubmitRequest;
+import kr.ync.tripplan.dto.response.TravelTestResultResponse;
+import kr.ync.tripplan.dto.request.TravelTestSubmitRequest;
+import kr.ync.tripplan.service.TravelPreferenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
