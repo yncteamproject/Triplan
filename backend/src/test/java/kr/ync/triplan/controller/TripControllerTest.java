@@ -31,8 +31,8 @@ class TripControllerTest extends BaseController {
 	}
 
 	@Test
-	@DisplayName("POST /api/trips")
-	void create_endpoint() throws Exception {
+	@DisplayName("POST /api/trips - 1.정상 데이터")
+	void create_endpoint_정상데이터() throws Exception {
 		TripCreateRequest request = new TripCreateRequest(
 				"제주도 여행", LocalDate.now(), LocalDate.now().plusDays(3), "user1");
 
@@ -47,17 +47,48 @@ class TripControllerTest extends BaseController {
 	}
 
 	@Test
-	@DisplayName("POST /api/trips - 제목 누락시 400")
-	void create_endpoint_validationFail() throws Exception {
+	@DisplayName("POST /api/trips - 2.필수 데이터 누락 (title 키 자체 없음)")
+	void create_endpoint_필수데이터누락() throws Exception {
+		String json = """
+				{
+				  "startDate": "%s",
+				  "endDate": "%s",
+				  "userId": "user1"
+				}
+				""".formatted(LocalDate.now(), LocalDate.now().plusDays(3));
+
+		mockMvc.perform(
+						post("/api/trips")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(json))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("여행 제목을 입력해주세요"));
+	}
+
+	@Test
+	@DisplayName("POST /api/trips - 3.null 값 (모든 필드 null)")
+	void create_endpoint_null값() throws Exception {
+		TripCreateRequest request = new TripCreateRequest(null, null, null, null);
+
+		mockMvc.perform(
+						post("/api/trips")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("POST /api/trips - 4.비정상 데이터 (종료일이 시작일보다 빠름)")
+	void create_endpoint_비정상데이터() throws Exception {
 		TripCreateRequest request = new TripCreateRequest(
-				"", LocalDate.now(), LocalDate.now().plusDays(3), "user1");
+				"제주도 여행", LocalDate.now(), LocalDate.now().minusDays(1), "user1");
 
 		mockMvc.perform(
 						post("/api/trips")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("여행 제목을 입력해주세요"));
+				.andExpect(jsonPath("$.message").value("종료일은 시작일보다 빠를 수 없습니다"));
 	}
 
 	@Test

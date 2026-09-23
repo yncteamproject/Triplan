@@ -54,8 +54,8 @@ class SharePageControllerTest extends BaseController {
 	}
 
 	@Test
-	@DisplayName("POST /api/share-pages")
-	void create_endpoint() throws Exception {
+	@DisplayName("POST /api/share-pages - 1.정상 데이터")
+	void create_endpoint_정상데이터() throws Exception {
 		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", trip.getId(), "user1");
 
 		mockMvc.perform(
@@ -70,16 +70,48 @@ class SharePageControllerTest extends BaseController {
 	}
 
 	@Test
-	@DisplayName("POST /api/share-pages - 제목 누락시 400")
-	void create_endpoint_validationFail() throws Exception {
-		SharePageCreateRequest request = new SharePageCreateRequest("", "설명", trip.getId(), "user1");
+	@DisplayName("POST /api/share-pages - 2.필수 데이터 누락 (title 키 자체 없음)")
+	void create_endpoint_필수데이터누락() throws Exception {
+		String json = """
+				{
+				  "description": "설명",
+				  "tripId": %d,
+				  "writerId": "user1"
+				}
+				""".formatted(trip.getId());
+
+		mockMvc.perform(
+						post("/api/share-pages")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(json))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("제목을 입력해주세요"));
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages - 3.null 값 (모든 필드 null)")
+	void create_endpoint_null값() throws Exception {
+		SharePageCreateRequest request = new SharePageCreateRequest(null, null, null, null);
+
+		mockMvc.perform(
+						post("/api/share-pages")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages - 4.비정상 데이터 (제목 100자 초과)")
+	void create_endpoint_비정상데이터() throws Exception {
+		String tooLongTitle = "가".repeat(101);
+		SharePageCreateRequest request = new SharePageCreateRequest(tooLongTitle, "설명", trip.getId(), "user1");
 
 		mockMvc.perform(
 						post("/api/share-pages")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("제목을 입력해주세요"));
+				.andExpect(jsonPath("$.message").value("제목은 100자 이내로 입력해주세요"));
 	}
 
 	@Test

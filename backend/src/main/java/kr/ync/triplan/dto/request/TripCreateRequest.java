@@ -1,5 +1,6 @@
 package kr.ync.triplan.dto.request;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -18,4 +19,11 @@ public record TripCreateRequest(
 		@NotBlank(message = "사용자 정보가 없습니다")
 		String userId
 ) {
+	@AssertTrue(message = "종료일은 시작일보다 빠를 수 없습니다")
+	public boolean isPeriodValid() {
+		if (startDate == null || endDate == null) {
+			return true;
+		}
+		return !endDate.isBefore(startDate);
+	}
 }
