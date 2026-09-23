@@ -32,7 +32,7 @@ class TripControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/trips - 1.정상 데이터")
-	void create_endpoint_정상데이터() throws Exception {
+	void create_endpoint_validData() throws Exception {
 		TripCreateRequest request = new TripCreateRequest(
 				"제주도 여행", LocalDate.now(), LocalDate.now().plusDays(3), "user1");
 
@@ -48,7 +48,7 @@ class TripControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/trips - 2.필수 데이터 누락 (title 키 자체 없음)")
-	void create_endpoint_필수데이터누락() throws Exception {
+	void create_endpoint_missingRequiredField() throws Exception {
 		String json = """
 				{
 				  "startDate": "%s",
@@ -67,7 +67,7 @@ class TripControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/trips - 3.null 값 (모든 필드 null)")
-	void create_endpoint_null값() throws Exception {
+	void create_endpoint_nullValues() throws Exception {
 		TripCreateRequest request = new TripCreateRequest(null, null, null, null);
 
 		mockMvc.perform(
@@ -79,7 +79,7 @@ class TripControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/trips - 4.비정상 데이터 (종료일이 시작일보다 빠름)")
-	void create_endpoint_비정상데이터() throws Exception {
+	void create_endpoint_invalidData() throws Exception {
 		TripCreateRequest request = new TripCreateRequest(
 				"제주도 여행", LocalDate.now(), LocalDate.now().minusDays(1), "user1");
 
