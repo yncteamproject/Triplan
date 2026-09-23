@@ -1,6 +1,8 @@
 package kr.ync.tripplan.service;
 
 import kr.ync.tripplan.domain.Member;
+import kr.ync.tripplan.dto.request.MemberUpdateRequest;
+import kr.ync.tripplan.dto.response.MemberResponse;
 import kr.ync.tripplan.jwt.JwtTokenProvider;
 import kr.ync.tripplan.dto.request.LoginRequest;
 import kr.ync.tripplan.dto.response.LoginResponse;
@@ -40,5 +42,23 @@ public class MemberService {
         }
         String token = jwtTokenProvider.createToken(member.getEmail(), member.getRole().name());
         return new LoginResponse(token, member.getNickname());
+    }
+
+    public MemberResponse getMyInfo(String email){
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        return MemberResponse.from(member);
+    }
+
+    @Transactional
+    public MemberResponse updateMyInfo(String email, MemberUpdateRequest request){
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        if(request.password() != null && !request.password().isBlank()){
+            member.updatePassword(passwordEncoder.encode(request.password()));
+        }
+
+        return MemberResponse.from(member);
     }
 }
