@@ -39,4 +39,16 @@ public class Member {
         this.role = Role.USER;
         this.createdAt = LocalDateTime.now();
     }
+
+    public void updateNickname(String nickname) {
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname;
+        }
+    }
+
+    public void updatePassword(String encodedPassword) {
+        if (encodedPassword != null && !encodedPassword.isBlank()) {
+            this.password = encodedPassword;
+        }
+    }
 }
