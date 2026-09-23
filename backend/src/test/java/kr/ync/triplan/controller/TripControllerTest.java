@@ -1,8 +1,15 @@
 package kr.ync.triplan.controller;
 
+import kr.ync.triplan.domain.Lodging;
+import kr.ync.triplan.domain.Stop;
+import kr.ync.triplan.domain.TransportMode;
+import kr.ync.triplan.domain.TransportSegment;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.TripCreateRequest;
 import kr.ync.triplan.dto.request.TripUpdateRequest;
+import kr.ync.triplan.repository.LodgingRepository;
+import kr.ync.triplan.repository.StopRepository;
+import kr.ync.triplan.repository.TransportSegmentRepository;
 import kr.ync.triplan.repository.TripRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,6 +26,15 @@ class TripControllerTest extends BaseController {
 
 	@Autowired
 	private TripRepository tripRepository;
+
+	@Autowired
+	private StopRepository stopRepository;
+
+	@Autowired
+	private TransportSegmentRepository transportSegmentRepository;
+
+	@Autowired
+	private LodgingRepository lodgingRepository;
 
 	private Trip savedTrip(String title, String userId) {
 		return tripRepository.save(
@@ -106,6 +123,46 @@ class TripControllerTest extends BaseController {
 	@DisplayName("GET /api/trips/{id} - 존재하지 않으면 404")
 	void get_endpoint_notFound() throws Exception {
 		mockMvc.perform(get("/api/trips/{id}", 99999L))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@DisplayName("GET /api/trips/{id}/estimate - 교통비/숙박비 합산")
+	void getEstimate_endpoint() throws Exception {
+		Trip saved = savedTrip("제주도 여행", "user1");
+		Stop fromStop = stopRepository.save(
+				Stop.builder().trip(saved).name("공항").date(LocalDate.now()).build());
+		Stop toStop = stopRepository.save(
+				Stop.builder().trip(saved).name("숙소").date(LocalDate.now()).build());
+		transportSegmentRepository.save(
+				TransportSegment.builder()
+						.trip(saved).fromStop(fromStop).toStop(toStop)
+						.mode(TransportMode.CAR)
+						.departTime(LocalDateTime.now())
+						.arriveTime(LocalDateTime.now().plusHours(1))
+						.cost(20000)
+						.build()
+		);
+		lodgingRepository.save(
+				Lodging.builder()
+						.trip(saved).name("제주 호텔")
+						.checkIn(LocalDateTime.now())
+						.checkOut(LocalDateTime.now().plusDays(1))
+						.cost(100000)
+						.build()
+		);
+
+		mockMvc.perform(get("/api/trips/{id}/estimate", saved.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.transportCost").value(20000))
+				.andExpect(jsonPath("$.lodgingCost").value(100000))
+				.andExpect(jsonPath("$.totalCost").value(120000));
+	}
+
+	@Test
+	@DisplayName("GET /api/trips/{id}/estimate - 존재하지 않으면 404")
+	void getEstimate_endpoint_notFound() throws Exception {
+		mockMvc.perform(get("/api/trips/{id}/estimate", 99999L))
 				.andExpect(status().isNotFound());
 	}
 

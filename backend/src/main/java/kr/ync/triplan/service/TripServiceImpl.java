@@ -3,8 +3,11 @@ package kr.ync.triplan.service;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.TripCreateRequest;
 import kr.ync.triplan.dto.request.TripUpdateRequest;
+import kr.ync.triplan.dto.response.TripEstimateResponse;
 import kr.ync.triplan.dto.response.TripResponse;
 import kr.ync.triplan.exception.TripNotFoundException;
+import kr.ync.triplan.repository.LodgingRepository;
+import kr.ync.triplan.repository.TransportSegmentRepository;
 import kr.ync.triplan.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,8 @@ import java.util.List;
 public class TripServiceImpl implements TripService {
 
 	private final TripRepository tripRepository;
+	private final TransportSegmentRepository transportSegmentRepository;
+	private final LodgingRepository lodgingRepository;
 
 	@Override
 	@Transactional
@@ -58,6 +63,21 @@ public class TripServiceImpl implements TripService {
 	@Transactional
 	public void delete(Long id) {
 		tripRepository.delete(findById(id));
+	}
+
+	@Override
+	public TripEstimateResponse getEstimate(Long id) {
+		findById(id);
+
+		int transportCost = transportSegmentRepository.findByTripId(id).stream()
+				.mapToInt(segment -> segment.getCost() == null ? 0 : segment.getCost())
+				.sum();
+
+		int lodgingCost = lodgingRepository.findByTripId(id).stream()
+				.mapToInt(lodging -> lodging.getCost() == null ? 0 : lodging.getCost())
+				.sum();
+
+		return TripEstimateResponse.of(id, transportCost, lodgingCost);
 	}
 
 	private Trip findById(Long id) {

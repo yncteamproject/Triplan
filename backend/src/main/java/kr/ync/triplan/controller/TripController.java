@@ -3,6 +3,7 @@ package kr.ync.triplan.controller;
 import jakarta.validation.Valid;
 import kr.ync.triplan.dto.request.TripCreateRequest;
 import kr.ync.triplan.dto.request.TripUpdateRequest;
+import kr.ync.triplan.dto.response.TripEstimateResponse;
 import kr.ync.triplan.dto.response.TripResponse;
 import kr.ync.triplan.service.TripService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,11 @@ public class TripController {
 	@GetMapping("/{id}")
 	public ResponseEntity<TripResponse> getDetail(@PathVariable Long id) {
 		return ResponseEntity.ok(tripService.getDetail(id));
+	}
+
+	@GetMapping("/{id}/estimate")
+	public ResponseEntity<TripEstimateResponse> getEstimate(@PathVariable Long id) {
+		return ResponseEntity.ok(tripService.getEstimate(id));
 	}
 
 	@PutMapping("/{id}")
