@@ -1,5 +1,6 @@
 package kr.ync.triplan.service;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.TransportMode;
 import kr.ync.triplan.domain.TransportSegment;
@@ -7,9 +8,11 @@ import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.TransportSegmentCreateRequest;
 import kr.ync.triplan.dto.request.TransportSegmentUpdateRequest;
 import kr.ync.triplan.dto.response.TransportSegmentResponse;
+import kr.ync.triplan.exception.ForbiddenException;
 import kr.ync.triplan.exception.StopNotFoundException;
 import kr.ync.triplan.exception.TransportSegmentNotFoundException;
 import kr.ync.triplan.exception.TripNotFoundException;
+import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.repository.StopRepository;
 import kr.ync.triplan.repository.TransportSegmentRepository;
 import kr.ync.triplan.repository.TripRepository;
@@ -43,26 +46,40 @@ class TransportSegmentServiceImplTest {
 	@Autowired
 	private StopRepository stopRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
 	private static final long NON_EXISTING_ID = 99999L;
 
+	private Member member;
 	private Trip trip;
 	private Stop fromStop;
 	private Stop toStop;
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
-				Trip.builder()
-						.title("제주도 여행")
-						.startDate(LocalDate.now())
-						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
-						.build()
-		);
+		member = savedMember("owner@test.com");
+		trip = savedTrip(member);
 		fromStop = stopRepository.save(
 				Stop.builder().trip(trip).name("공항").date(LocalDate.now()).build());
 		toStop = stopRepository.save(
 				Stop.builder().trip(trip).name("숙소").date(LocalDate.now()).build());
+	}
+
+	private Member savedMember(String email) {
+		return memberRepository.save(
+				Member.builder().email(email).password("encoded").nickname("주인").build());
+	}
+
+	private Trip savedTrip(Member owner) {
+		return tripRepository.save(
+				Trip.builder()
+						.title("제주도 여행")
+						.startDate(LocalDate.now())
+						.endDate(LocalDate.now().plusDays(3))
+						.member(owner)
+						.build()
+		);
 	}
 
 	private TransportSegment savedSegment() {
@@ -86,7 +103,7 @@ class TransportSegmentServiceImplTest {
 				fromStop.getId(), toStop.getId(), TransportMode.CAR,
 				LocalDateTime.now(), LocalDateTime.now().plusHours(1), 5000, "RES123");
 		// when
-		TransportSegmentResponse response = transportSegmentService.create(trip.getId(), request);
+		TransportSegmentResponse response = transportSegmentService.create(member.getEmail(), trip.getId(), request);
 		// then
 		assertThat(response.id()).isNotNull();
 		assertThat(response)
@@ -101,7 +118,7 @@ class TransportSegmentServiceImplTest {
 				fromStop.getId(), toStop.getId(), TransportMode.CAR,
 				LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null);
 
-		assertThatThrownBy(() -> transportSegmentService.create(NON_EXISTING_ID, request))
+		assertThatThrownBy(() -> transportSegmentService.create(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(TripNotFoundException.class);
 	}
 
@@ -112,8 +129,21 @@ class TransportSegmentServiceImplTest {
 				NON_EXISTING_ID, toStop.getId(), TransportMode.CAR,
 				LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null);
 
-		assertThatThrownBy(() -> transportSegmentService.create(trip.getId(), request))
+		assertThatThrownBy(() -> transportSegmentService.create(member.getEmail(), trip.getId(), request))
 				.isInstanceOf(StopNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("create - 남의 여행이면 예외")
+	void create_forbidden() {
+		// given
+		Trip othersTrip = savedTrip(savedMember("other@test.com"));
+		TransportSegmentCreateRequest request = new TransportSegmentCreateRequest(
+				fromStop.getId(), toStop.getId(), TransportMode.CAR,
+				LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null);
+		// when & then
+		assertThatThrownBy(() -> transportSegmentService.create(member.getEmail(), othersTrip.getId(), request))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
@@ -122,7 +152,7 @@ class TransportSegmentServiceImplTest {
 		// given
 		TransportSegment saved = savedSegment();
 		// when
-		TransportSegmentResponse response = transportSegmentService.getDetail(saved.getId());
+		TransportSegmentResponse response = transportSegmentService.getDetail(member.getEmail(), saved.getId());
 		// then
 		assertThat(response.id()).isEqualTo(saved.getId());
 	}
@@ -130,7 +160,7 @@ class TransportSegmentServiceImplTest {
 	@Test
 	@DisplayName("getDetail - 존재하지 않으면 예외")
 	void getDetail_notFound() {
-		assertThatThrownBy(() -> transportSegmentService.getDetail(NON_EXISTING_ID))
+		assertThatThrownBy(() -> transportSegmentService.getDetail(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(TransportSegmentNotFoundException.class);
 	}
 
@@ -141,7 +171,7 @@ class TransportSegmentServiceImplTest {
 		savedSegment();
 		savedSegment();
 		// when
-		List<TransportSegmentResponse> list = transportSegmentService.getList(trip.getId());
+		List<TransportSegmentResponse> list = transportSegmentService.getList(member.getEmail(), trip.getId());
 		// then
 		assertThat(list).hasSize(2);
 	}
@@ -155,7 +185,7 @@ class TransportSegmentServiceImplTest {
 				fromStop.getId(), toStop.getId(), TransportMode.FLIGHT,
 				LocalDateTime.now(), LocalDateTime.now().plusHours(2), 100000, "RES999");
 		// when
-		TransportSegmentResponse response = transportSegmentService.update(saved.getId(), request);
+		TransportSegmentResponse response = transportSegmentService.update(member.getEmail(), saved.getId(), request);
 		// then
 		assertThat(response.mode()).isEqualTo(TransportMode.FLIGHT);
 		assertThat(response.cost()).isEqualTo(100000);
@@ -167,7 +197,7 @@ class TransportSegmentServiceImplTest {
 		TransportSegmentUpdateRequest request = new TransportSegmentUpdateRequest(
 				fromStop.getId(), toStop.getId(), TransportMode.CAR,
 				LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null);
-		assertThatThrownBy(() -> transportSegmentService.update(NON_EXISTING_ID, request))
+		assertThatThrownBy(() -> transportSegmentService.update(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(TransportSegmentNotFoundException.class);
 	}
 
@@ -177,16 +207,16 @@ class TransportSegmentServiceImplTest {
 		// given
 		TransportSegment saved = savedSegment();
 		// when
-		transportSegmentService.delete(saved.getId());
+		transportSegmentService.delete(member.getEmail(), saved.getId());
 		// then
-		assertThatThrownBy(() -> transportSegmentService.getDetail(saved.getId()))
+		assertThatThrownBy(() -> transportSegmentService.getDetail(member.getEmail(), saved.getId()))
 				.isInstanceOf(TransportSegmentNotFoundException.class);
 	}
 
 	@Test
 	@DisplayName("delete - notFound")
 	void delete_notFound() {
-		assertThatThrownBy(() -> transportSegmentService.delete(NON_EXISTING_ID))
+		assertThatThrownBy(() -> transportSegmentService.delete(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(TransportSegmentNotFoundException.class);
 	}
 }

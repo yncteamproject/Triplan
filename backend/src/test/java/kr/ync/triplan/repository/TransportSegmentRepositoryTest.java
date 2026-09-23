@@ -1,5 +1,6 @@
 package kr.ync.triplan.repository;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.TransportMode;
 import kr.ync.triplan.domain.TransportSegment;
@@ -30,38 +31,41 @@ class TransportSegmentRepositoryTest {
 	@Autowired
 	private StopRepository stopRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
+	private Member member;
 	private Trip trip;
 	private Stop fromStop;
 	private Stop toStop;
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
-				Trip.builder()
-						.title("제주도 여행")
-						.startDate(LocalDate.now())
-						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
-						.build()
-		);
+		member = memberRepository.save(
+				Member.builder().email("owner@test.com").password("encoded").nickname("주인").build());
+		trip = savedTrip("제주도 여행");
 		fromStop = stopRepository.save(
 				Stop.builder().trip(trip).name("공항").date(LocalDate.now()).build());
 		toStop = stopRepository.save(
 				Stop.builder().trip(trip).name("숙소").date(LocalDate.now()).build());
 	}
 
+	private Trip savedTrip(String title) {
+		return tripRepository.save(
+				Trip.builder()
+						.title(title)
+						.startDate(LocalDate.now())
+						.endDate(LocalDate.now().plusDays(3))
+						.member(member)
+						.build()
+		);
+	}
+
 	@Test
 	@DisplayName("findByTripId - 해당 여행의 이동 구간만 조회")
 	void findByTripId_success() {
 		// given
-		Trip otherTrip = tripRepository.save(
-				Trip.builder()
-						.title("부산 여행")
-						.startDate(LocalDate.now())
-						.endDate(LocalDate.now().plusDays(2))
-						.userId("user2")
-						.build()
-		);
+		Trip otherTrip = savedTrip("부산 여행");
 		transportSegmentRepository.save(
 				TransportSegment.builder()
 						.trip(trip)

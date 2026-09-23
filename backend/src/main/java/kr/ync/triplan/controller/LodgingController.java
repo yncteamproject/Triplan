@@ -8,6 +8,7 @@ import kr.ync.triplan.service.LodgingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,29 +27,34 @@ public class LodgingController {
 
 	@PostMapping("/api/trips/{tripId}/lodgings")
 	public ResponseEntity<LodgingResponse> create(
-			@PathVariable Long tripId, @Valid @RequestBody LodgingCreateRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(lodgingService.create(tripId, request));
+			@AuthenticationPrincipal String email, @PathVariable Long tripId,
+			@Valid @RequestBody LodgingCreateRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(lodgingService.create(email, tripId, request));
 	}
 
 	@GetMapping("/api/trips/{tripId}/lodgings")
-	public ResponseEntity<List<LodgingResponse>> getList(@PathVariable Long tripId) {
-		return ResponseEntity.ok(lodgingService.getList(tripId));
+	public ResponseEntity<List<LodgingResponse>> getList(
+			@AuthenticationPrincipal String email, @PathVariable Long tripId) {
+		return ResponseEntity.ok(lodgingService.getList(email, tripId));
 	}
 
 	@GetMapping("/api/lodgings/{id}")
-	public ResponseEntity<LodgingResponse> getDetail(@PathVariable Long id) {
-		return ResponseEntity.ok(lodgingService.getDetail(id));
+	public ResponseEntity<LodgingResponse> getDetail(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		return ResponseEntity.ok(lodgingService.getDetail(email, id));
 	}
 
 	@PutMapping("/api/lodgings/{id}")
 	public ResponseEntity<LodgingResponse> update(
-			@PathVariable Long id, @Valid @RequestBody LodgingUpdateRequest request) {
-		return ResponseEntity.ok(lodgingService.update(id, request));
+			@AuthenticationPrincipal String email, @PathVariable Long id,
+			@Valid @RequestBody LodgingUpdateRequest request) {
+		return ResponseEntity.ok(lodgingService.update(email, id, request));
 	}
 
 	@DeleteMapping("/api/lodgings/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		lodgingService.delete(id);
+	public ResponseEntity<Void> delete(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		lodgingService.delete(email, id);
 		return ResponseEntity.noContent().build();
 	}
 }

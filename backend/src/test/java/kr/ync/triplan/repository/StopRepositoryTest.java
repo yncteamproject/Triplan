@@ -1,5 +1,6 @@
 package kr.ync.triplan.repository;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.Trip;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,16 +25,21 @@ class StopRepositoryTest {
 	@Autowired
 	private TripRepository tripRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
 	private Trip trip;
 
 	@BeforeEach
 	void setUpFixture() {
+		Member member = memberRepository.save(
+				Member.builder().email("owner@test.com").password("encoded").nickname("주인").build());
 		trip = tripRepository.save(
 				Trip.builder()
 						.title("제주도 여행")
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(member)
 						.build()
 		);
 	}

@@ -1,13 +1,16 @@
 package kr.ync.triplan.service;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.SharePage;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.dto.response.SharePageListResponse;
 import kr.ync.triplan.dto.response.SharePageResponse;
+import kr.ync.triplan.exception.MemberNotFoundException;
 import kr.ync.triplan.exception.SharePageNotFoundException;
 import kr.ync.triplan.exception.TripNotFoundException;
+import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.repository.SharePageRepository;
 import kr.ync.triplan.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,19 +27,23 @@ public class SharePageServiceImpl implements SharePageService {
 
 	private final SharePageRepository sharePageRepository;
 	private final TripRepository tripRepository;
+	private final MemberRepository memberRepository;
 
-	// 게시글 작성
+	// 게시글 작성 (본인 여행만 공유 가능)
 	@Override
 	@Transactional
-	public SharePageResponse create(SharePageCreateRequest request) {
+	public SharePageResponse create(String email, SharePageCreateRequest request) {
+		Member writer = memberRepository.findByEmail(email)
+				.orElseThrow(MemberNotFoundException::new);
 		Trip trip = tripRepository.findById(request.tripId())
 				.orElseThrow(TripNotFoundException::new);
+		trip.validateOwner(email);
 
 		SharePage sharePage = SharePage.builder()
 				.title(request.title())
 				.description(request.description())
 				.trip(trip)
-				.writerId(request.writerId())
+				.writer(writer)
 				.writeDate(LocalDateTime.now())
 				.build();
 
@@ -60,28 +67,27 @@ public class SharePageServiceImpl implements SharePageService {
 		return SharePageResponse.from(sharePage);
 	}
 
-
-	// 게시글 수정
+	// 게시글 수정 (작성자만)
 	@Override
 	@Transactional
-	public SharePageResponse update(Long id, SharePageUpdateRequest request) {
+	public SharePageResponse update(String email, Long id, SharePageUpdateRequest request) {
 		SharePage sharePage = findById(id);
+		sharePage.validateWriter(email);
 		sharePage.setTitle(request.title());
 		sharePage.setDescription(request.description());
 		sharePage.setUpdateDate(LocalDateTime.now());
 		return SharePageResponse.from(sharePage);
 	}
 
-
-	// 게시글 삭제
+	// 게시글 삭제 (작성자만)
 	@Override
 	@Transactional
-	public void delete(Long id) {
-		sharePageRepository.delete(findById(id));
+	public void delete(String email, Long id) {
+		SharePage sharePage = findById(id);
+		sharePage.validateWriter(email);
+		sharePageRepository.delete(sharePage);
 	}
 
-
-	// 게시글
 	private SharePage findById(Long id) {
 		return sharePageRepository.findById(id)
 				.orElseThrow(SharePageNotFoundException::new);

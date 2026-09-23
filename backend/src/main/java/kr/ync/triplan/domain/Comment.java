@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import kr.ync.triplan.exception.ForbiddenException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,9 +38,16 @@ public class Comment {
 	@JoinColumn(name = "share_page_id", nullable = false)
 	private SharePage sharePage;
 
-	@Column(nullable = false)
-	private String writerId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
+	private Member writer;
 
 	@Column(nullable = false)
 	private LocalDateTime createdAt;
+
+	public void validateWriter(String email) {
+		if (!writer.getEmail().equals(email)) {
+			throw new ForbiddenException();
+		}
+	}
 }

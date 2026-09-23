@@ -8,8 +8,7 @@ public record TripResponse(
 		Long id,
 		String title,
 		LocalDate startDate,
-		LocalDate endDate,
-		String userId
+		LocalDate endDate
 ) {
 
 	public static TripResponse from(Trip trip) {
@@ -17,8 +16,7 @@ public record TripResponse(
 				trip.getId(),
 				trip.getTitle(),
 				trip.getStartDate(),
-				trip.getEndDate(),
-				trip.getUserId()
+				trip.getEndDate()
 		);
 	}
 }

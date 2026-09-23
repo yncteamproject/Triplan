@@ -1,6 +1,7 @@
 package kr.ync.triplan.repository;
 
 import kr.ync.triplan.domain.Comment;
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.SharePage;
 import kr.ync.triplan.domain.Trip;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,36 +30,46 @@ class CommentRepositoryTest {
 	@Autowired
 	private TripRepository tripRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
+	private Member member;
 	private SharePage sharePage;
 
 	@BeforeEach
 	void setUpFixture() {
+		member = memberRepository.save(
+				Member.builder().email("writer@test.com").password("encoded").nickname("홍길동").build());
+		sharePage = savedSharePage("제주도 3박 4일");
+	}
+
+	private SharePage savedSharePage(String title) {
 		Trip trip = tripRepository.save(
 				Trip.builder()
-						.title("제주도 여행")
+						.title("여행")
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(member)
 						.build()
 		);
-		sharePage = sharePageRepository.save(
+		return sharePageRepository.save(
 				SharePage.builder()
-						.title("제주도 3박 4일")
-						.description("여행 후기")
+						.title(title)
+						.description("설명")
 						.trip(trip)
-						.writerId("user1")
+						.writer(member)
 						.writeDate(LocalDateTime.now())
 						.viewCount(0)
 						.build()
 		);
 	}
 
-	private Comment savedComment(String content, LocalDateTime createdAt) {
+	private Comment savedComment(String content, SharePage target, LocalDateTime createdAt) {
 		return commentRepository.save(
 				Comment.builder()
 						.content(content)
-						.sharePage(sharePage)
-						.writerId("user2")
+						.sharePage(target)
+						.writer(member)
 						.createdAt(createdAt)
 						.build()
 		);
@@ -69,9 +80,9 @@ class CommentRepositoryTest {
 	void findBySharePageIdOrderByCreatedAtAsc_success() {
 		// given
 		LocalDateTime now = LocalDateTime.now();
-		savedComment("두번째 댓글", now.plusMinutes(1));
-		savedComment("첫번째 댓글", now);
-		savedComment("세번째 댓글", now.plusMinutes(2));
+		savedComment("두번째 댓글", sharePage, now.plusMinutes(1));
+		savedComment("첫번째 댓글", sharePage, now);
+		savedComment("세번째 댓글", sharePage, now.plusMinutes(2));
 
 		// when
 		List<Comment> result = commentRepository.findBySharePageIdOrderByCreatedAtAsc(sharePage.getId());
@@ -86,33 +97,9 @@ class CommentRepositoryTest {
 	@DisplayName("findBySharePageIdOrderByCreatedAtAsc - 다른 게시글의 댓글은 제외")
 	void findBySharePageIdOrderByCreatedAtAsc_excludesOtherSharePage() {
 		// given
-		Trip otherTrip = tripRepository.save(
-				Trip.builder()
-						.title("부산 여행")
-						.startDate(LocalDate.now())
-						.endDate(LocalDate.now().plusDays(2))
-						.userId("user2")
-						.build()
-		);
-		SharePage otherSharePage = sharePageRepository.save(
-				SharePage.builder()
-						.title("부산 여행기")
-						.description("설명")
-						.trip(otherTrip)
-						.writerId("user2")
-						.writeDate(LocalDateTime.now())
-						.viewCount(0)
-						.build()
-		);
-		commentRepository.save(
-				Comment.builder()
-						.content("다른 글 댓글")
-						.sharePage(otherSharePage)
-						.writerId("user3")
-						.createdAt(LocalDateTime.now())
-						.build()
-		);
-		savedComment("이 글 댓글", LocalDateTime.now());
+		SharePage otherSharePage = savedSharePage("부산 여행기");
+		savedComment("다른 글 댓글", otherSharePage, LocalDateTime.now());
+		savedComment("이 글 댓글", sharePage, LocalDateTime.now());
 
 		// when
 		List<Comment> result = commentRepository.findBySharePageIdOrderByCreatedAtAsc(sharePage.getId());

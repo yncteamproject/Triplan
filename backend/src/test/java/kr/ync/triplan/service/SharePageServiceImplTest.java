@@ -1,13 +1,16 @@
 package kr.ync.triplan.service;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.SharePage;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.dto.response.SharePageListResponse;
 import kr.ync.triplan.dto.response.SharePageResponse;
+import kr.ync.triplan.exception.ForbiddenException;
 import kr.ync.triplan.exception.SharePageNotFoundException;
 import kr.ync.triplan.exception.TripNotFoundException;
+import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.repository.SharePageRepository;
 import kr.ync.triplan.repository.TripRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,29 +40,43 @@ class SharePageServiceImplTest {
 	@Autowired
 	private TripRepository tripRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
 	private static final long NON_EXISTING_ID = 99999L;
 
+	private Member member;
 	private Trip trip;
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
+		member = savedMember("writer@test.com");
+		trip = savedTrip(member);
+	}
+
+	private Member savedMember(String email) {
+		return memberRepository.save(
+				Member.builder().email(email).password("encoded").nickname("홍길동").build());
+	}
+
+	private Trip savedTrip(Member owner) {
+		return tripRepository.save(
 				Trip.builder()
 						.title("제주도 여행")
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(owner)
 						.build()
 		);
 	}
 
-	private SharePage savedSharePage(String title, String description, String writerId) {
+	private SharePage savedSharePage(String title, String description) {
 		return sharePageRepository.save(
 				SharePage.builder()
 						.title(title)
 						.description(description)
 						.trip(trip)
-						.writerId(writerId)
+						.writer(member)
 						.writeDate(LocalDateTime.now())
 						.viewCount(0)
 						.build()
@@ -71,9 +88,9 @@ class SharePageServiceImplTest {
 	@DisplayName("create")
 	void create_success() {
 		// given 준비
-		SharePageCreateRequest request = new SharePageCreateRequest("제목1", "내용1", trip.getId(), "홍길동");
+		SharePageCreateRequest request = new SharePageCreateRequest("제목1", "내용1", trip.getId());
 		// when 실행
-		SharePageResponse response = sharePageService.create(request);
+		SharePageResponse response = sharePageService.create(member.getEmail(), request);
 		// then 검증
 		assertThat(response.id()).isNotNull();
 		assertThat(response)
@@ -81,26 +98,38 @@ class SharePageServiceImplTest {
 						SharePageResponse::title,
 						SharePageResponse::description,
 						SharePageResponse::tripId,
-						SharePageResponse::writerId
+						SharePageResponse::writerId,
+						SharePageResponse::writerNickname
 				)
-				.containsExactly("제목1", "내용1", trip.getId(), "홍길동");
+				.containsExactly("제목1", "내용1", trip.getId(), member.getId(), "홍길동");
 	}
 
 	@Test
 	@DisplayName("create - 존재하지 않는 여행이면 예외")
 	void create_tripNotFound() {
 		// given
-		SharePageCreateRequest request = new SharePageCreateRequest("제목", "내용", NON_EXISTING_ID, "홍길동");
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", "내용", NON_EXISTING_ID);
 		// when & then
-		assertThatThrownBy(() -> sharePageService.create(request))
+		assertThatThrownBy(() -> sharePageService.create(member.getEmail(), request))
 				.isInstanceOf(TripNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("create - 남의 여행을 공유하면 예외")
+	void create_othersTripForbidden() {
+		// given
+		Trip othersTrip = savedTrip(savedMember("other@test.com"));
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", "내용", othersTrip.getId());
+		// when & then
+		assertThatThrownBy(() -> sharePageService.create(member.getEmail(), request))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
 	@DisplayName("getDetail - 조회수 증가")
 	void getDetail_success() {
 		// given
-		SharePage saved = savedSharePage("제목", "내용", "작성자");
+		SharePage saved = savedSharePage("제목", "내용");
 		// when
 		SharePageResponse response = sharePageService.getDetail(saved.getId());
 		// then
@@ -119,9 +148,9 @@ class SharePageServiceImplTest {
 	@DisplayName("list - 최신순 목록조회")
 	void list_success() {
 		// given
-		savedSharePage("t1", "c1", "a1");
-		savedSharePage("t2", "c2", "a2");
-		savedSharePage("t3", "c3", "a3");
+		savedSharePage("t1", "c1");
+		savedSharePage("t2", "c2");
+		savedSharePage("t3", "c3");
 		// when
 		List<SharePageListResponse> list = sharePageService.getList();
 		// then
@@ -134,36 +163,43 @@ class SharePageServiceImplTest {
 	@DisplayName("update")
 	void update_success() {
 		// given
-		SharePage saved = savedSharePage("제목", "내용", "작성자");
+		SharePage saved = savedSharePage("제목", "내용");
 		// when
 		SharePageResponse response = sharePageService.update(
-				saved.getId(),
-				new SharePageUpdateRequest("제목2", "내용2")
-		);
+				member.getEmail(), saved.getId(), new SharePageUpdateRequest("제목2", "내용2"));
 		// then
 		assertThat(response.id()).isEqualTo(saved.getId());
 		assertThat(response)
-				.extracting(
-						SharePageResponse::title,
-						SharePageResponse::description
-				)
+				.extracting(SharePageResponse::title, SharePageResponse::description)
 				.containsExactly("제목2", "내용2");
 	}
 
 	@Test
 	@DisplayName("update - 존재하지 않으면 예외")
 	void update_notFound() {
-		assertThatThrownBy(() -> sharePageService.update(NON_EXISTING_ID, new SharePageUpdateRequest("제목", "내용")))
+		assertThatThrownBy(() -> sharePageService.update(
+				member.getEmail(), NON_EXISTING_ID, new SharePageUpdateRequest("제목", "내용")))
 				.isInstanceOf(SharePageNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("update - 작성자가 아니면 예외")
+	void update_forbidden() {
+		// given
+		SharePage saved = savedSharePage("제목", "내용");
+		// when & then
+		assertThatThrownBy(() -> sharePageService.update(
+				"other@test.com", saved.getId(), new SharePageUpdateRequest("제목2", "내용2")))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
 	@DisplayName("delete")
 	void delete_success() {
 		// given
-		SharePage saved = savedSharePage("제목", "내용", "작성자");
+		SharePage saved = savedSharePage("제목", "내용");
 		// when
-		sharePageService.delete(saved.getId());
+		sharePageService.delete(member.getEmail(), saved.getId());
 		// then
 		assertThatThrownBy(() -> sharePageService.getDetail(saved.getId()))
 				.isInstanceOf(SharePageNotFoundException.class);
@@ -172,7 +208,17 @@ class SharePageServiceImplTest {
 	@Test
 	@DisplayName("delete - notFound")
 	void delete_notFound() {
-		assertThatThrownBy(() -> sharePageService.delete(NON_EXISTING_ID))
+		assertThatThrownBy(() -> sharePageService.delete(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(SharePageNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("delete - 작성자가 아니면 예외")
+	void delete_forbidden() {
+		// given
+		SharePage saved = savedSharePage("제목", "내용");
+		// when & then
+		assertThatThrownBy(() -> sharePageService.delete("other@test.com", saved.getId()))
+				.isInstanceOf(ForbiddenException.class);
 	}
 }

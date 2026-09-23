@@ -25,9 +25,8 @@ public class LodgingServiceImpl implements LodgingService {
 
 	@Override
 	@Transactional
-	public LodgingResponse create(Long tripId, LodgingCreateRequest request) {
-		Trip trip = tripRepository.findById(tripId)
-				.orElseThrow(TripNotFoundException::new);
+	public LodgingResponse create(String email, Long tripId, LodgingCreateRequest request) {
+		Trip trip = findOwnedTrip(email, tripId);
 
 		Lodging lodging = Lodging.builder()
 				.trip(trip)
@@ -42,21 +41,22 @@ public class LodgingServiceImpl implements LodgingService {
 	}
 
 	@Override
-	public List<LodgingResponse> getList(Long tripId) {
+	public List<LodgingResponse> getList(String email, Long tripId) {
+		findOwnedTrip(email, tripId);
 		return lodgingRepository.findByTripId(tripId).stream()
 				.map(LodgingResponse::from)
 				.toList();
 	}
 
 	@Override
-	public LodgingResponse getDetail(Long id) {
-		return LodgingResponse.from(findById(id));
+	public LodgingResponse getDetail(String email, Long id) {
+		return LodgingResponse.from(findOwnedLodging(email, id));
 	}
 
 	@Override
 	@Transactional
-	public LodgingResponse update(Long id, LodgingUpdateRequest request) {
-		Lodging lodging = findById(id);
+	public LodgingResponse update(String email, Long id, LodgingUpdateRequest request) {
+		Lodging lodging = findOwnedLodging(email, id);
 		lodging.setName(request.name());
 		lodging.setCheckIn(request.checkIn());
 		lodging.setCheckOut(request.checkOut());
@@ -67,12 +67,21 @@ public class LodgingServiceImpl implements LodgingService {
 
 	@Override
 	@Transactional
-	public void delete(Long id) {
-		lodgingRepository.delete(findById(id));
+	public void delete(String email, Long id) {
+		lodgingRepository.delete(findOwnedLodging(email, id));
 	}
 
-	private Lodging findById(Long id) {
-		return lodgingRepository.findById(id)
+	private Trip findOwnedTrip(String email, Long tripId) {
+		Trip trip = tripRepository.findById(tripId)
+				.orElseThrow(TripNotFoundException::new);
+		trip.validateOwner(email);
+		return trip;
+	}
+
+	private Lodging findOwnedLodging(String email, Long id) {
+		Lodging lodging = lodgingRepository.findById(id)
 				.orElseThrow(LodgingNotFoundException::new);
+		lodging.getTrip().validateOwner(email);
+		return lodging;
 	}
 }

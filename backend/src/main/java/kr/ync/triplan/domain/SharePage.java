@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import kr.ync.triplan.exception.ForbiddenException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,8 +40,9 @@ public class SharePage {
 	@JoinColumn(name = "trip_id", nullable = false)
 	private Trip trip;
 
-	@Column(nullable = false)
-	private String writerId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
+	private Member writer;
 
 	@Column(nullable = false)
 	private LocalDateTime writeDate;
@@ -50,4 +52,10 @@ public class SharePage {
 	@Column(nullable = false)
 	@Builder.Default
 	private int viewCount = 0;
+
+	public void validateWriter(String email) {
+		if (!writer.getEmail().equals(email)) {
+			throw new ForbiddenException();
+		}
+	}
 }

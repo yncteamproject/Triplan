@@ -14,10 +14,7 @@ public record TripCreateRequest(
 		LocalDate startDate,
 
 		@NotNull(message = "종료일을 선택해주세요")
-		LocalDate endDate,
-
-		@NotBlank(message = "사용자 정보가 없습니다")
-		String userId
+		LocalDate endDate
 ) {
 	@AssertTrue(message = "종료일은 시작일보다 빠를 수 없습니다")
 	public boolean isPeriodValid() {

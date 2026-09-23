@@ -9,7 +9,8 @@ public record SharePageResponse(
 		String title,
 		String description,
 		Long tripId,
-		String writerId,
+		Long writerId,
+		String writerNickname,
 		LocalDateTime writeDate,
 		LocalDateTime updateDate,
 		int viewCount
@@ -21,7 +22,8 @@ public record SharePageResponse(
 				sharePage.getTitle(),
 				sharePage.getDescription(),
 				sharePage.getTrip().getId(),
-				sharePage.getWriterId(),
+				sharePage.getWriter().getId(),
+				sharePage.getWriter().getNickname(),
 				sharePage.getWriteDate(),
 				sharePage.getUpdateDate(),
 				sharePage.getViewCount()

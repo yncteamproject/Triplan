@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface TransportSegmentService {
 
-	TransportSegmentResponse create(Long tripId, TransportSegmentCreateRequest request);
+	TransportSegmentResponse create(String email, Long tripId, TransportSegmentCreateRequest request);
 
-	List<TransportSegmentResponse> getList(Long tripId);
+	List<TransportSegmentResponse> getList(String email, Long tripId);
 
-	TransportSegmentResponse getDetail(Long id);
+	TransportSegmentResponse getDetail(String email, Long id);
 
-	TransportSegmentResponse update(Long id, TransportSegmentUpdateRequest request);
+	TransportSegmentResponse update(String email, Long id, TransportSegmentUpdateRequest request);
 
-	void delete(Long id);
+	void delete(String email, Long id);
 }

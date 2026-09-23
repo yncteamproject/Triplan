@@ -1,12 +1,15 @@
 package kr.ync.triplan.service;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.TripCreateRequest;
 import kr.ync.triplan.dto.request.TripUpdateRequest;
 import kr.ync.triplan.dto.response.TripEstimateResponse;
 import kr.ync.triplan.dto.response.TripResponse;
+import kr.ync.triplan.exception.MemberNotFoundException;
 import kr.ync.triplan.exception.TripNotFoundException;
 import kr.ync.triplan.repository.LodgingRepository;
+import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.repository.TransportSegmentRepository;
 import kr.ync.triplan.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,38 +24,42 @@ import java.util.List;
 public class TripServiceImpl implements TripService {
 
 	private final TripRepository tripRepository;
+	private final MemberRepository memberRepository;
 	private final TransportSegmentRepository transportSegmentRepository;
 	private final LodgingRepository lodgingRepository;
 
 	@Override
 	@Transactional
-	public TripResponse create(TripCreateRequest request) {
+	public TripResponse create(String email, TripCreateRequest request) {
+		Member member = memberRepository.findByEmail(email)
+				.orElseThrow(MemberNotFoundException::new);
+
 		Trip trip = Trip.builder()
 				.title(request.title())
 				.startDate(request.startDate())
 				.endDate(request.endDate())
-				.userId(request.userId())
+				.member(member)
 				.build();
 
 		return TripResponse.from(tripRepository.save(trip));
 	}
 
 	@Override
-	public List<TripResponse> getList(String userId) {
-		return tripRepository.findByUserId(userId).stream()
+	public List<TripResponse> getList(String email) {
+		return tripRepository.findByMemberEmail(email).stream()
 				.map(TripResponse::from)
 				.toList();
 	}
 
 	@Override
-	public TripResponse getDetail(Long id) {
-		return TripResponse.from(findById(id));
+	public TripResponse getDetail(String email, Long id) {
+		return TripResponse.from(findOwnedTrip(email, id));
 	}
 
 	@Override
 	@Transactional
-	public TripResponse update(Long id, TripUpdateRequest request) {
-		Trip trip = findById(id);
+	public TripResponse update(String email, Long id, TripUpdateRequest request) {
+		Trip trip = findOwnedTrip(email, id);
 		trip.setTitle(request.title());
 		trip.setStartDate(request.startDate());
 		trip.setEndDate(request.endDate());
@@ -61,13 +68,13 @@ public class TripServiceImpl implements TripService {
 
 	@Override
 	@Transactional
-	public void delete(Long id) {
-		tripRepository.delete(findById(id));
+	public void delete(String email, Long id) {
+		tripRepository.delete(findOwnedTrip(email, id));
 	}
 
 	@Override
-	public TripEstimateResponse getEstimate(Long id) {
-		findById(id);
+	public TripEstimateResponse getEstimate(String email, Long id) {
+		findOwnedTrip(email, id);
 
 		int transportCost = transportSegmentRepository.findByTripId(id).stream()
 				.mapToInt(segment -> segment.getCost() == null ? 0 : segment.getCost())
@@ -80,8 +87,10 @@ public class TripServiceImpl implements TripService {
 		return TripEstimateResponse.of(id, transportCost, lodgingCost);
 	}
 
-	private Trip findById(Long id) {
-		return tripRepository.findById(id)
+	private Trip findOwnedTrip(String email, Long id) {
+		Trip trip = tripRepository.findById(id)
 				.orElseThrow(TripNotFoundException::new);
+		trip.validateOwner(email);
+		return trip;
 	}
 }

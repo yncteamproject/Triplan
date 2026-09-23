@@ -1,5 +1,6 @@
 package kr.ync.triplan.controller;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.StopCreateRequest;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
@@ -30,12 +32,16 @@ class StopControllerTest extends BaseController {
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
+		trip = savedTrip(member);
+	}
+
+	private Trip savedTrip(Member owner) {
+		return tripRepository.save(
 				Trip.builder()
 						.title("제주도 여행")
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(owner)
 						.build()
 		);
 	}
@@ -59,6 +65,7 @@ class StopControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/stops", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isCreated())
@@ -78,6 +85,7 @@ class StopControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/stops", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(json))
 				.andExpect(status().isBadRequest())
@@ -91,6 +99,7 @@ class StopControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/stops", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest());
@@ -104,6 +113,7 @@ class StopControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/stops", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest())
@@ -118,9 +128,25 @@ class StopControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/stops", 99999L)
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@DisplayName("POST /api/trips/{tripId}/stops - 남의 여행이면 403")
+	void create_endpoint_forbidden() throws Exception {
+		Trip othersTrip = savedTrip(createMember("other@test.com"));
+		StopCreateRequest request = new StopCreateRequest(
+				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
+
+		mockMvc.perform(
+						post("/api/trips/{tripId}/stops", othersTrip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -129,7 +155,8 @@ class StopControllerTest extends BaseController {
 		savedStop("두번째", 2);
 		savedStop("첫번째", 1);
 
-		mockMvc.perform(get("/api/trips/{tripId}/stops", trip.getId()))
+		mockMvc.perform(get("/api/trips/{tripId}/stops", trip.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(2))
 				.andExpect(jsonPath("$[0].name").value("첫번째"))
@@ -141,7 +168,8 @@ class StopControllerTest extends BaseController {
 	void get_endpoint() throws Exception {
 		Stop saved = savedStop("성산일출봉", 1);
 
-		mockMvc.perform(get("/api/stops/{id}", saved.getId()))
+		mockMvc.perform(get("/api/stops/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(saved.getId()))
 				.andExpect(jsonPath("$.name").value("성산일출봉"));
@@ -150,7 +178,8 @@ class StopControllerTest extends BaseController {
 	@Test
 	@DisplayName("GET /api/stops/{id} - 존재하지 않으면 404")
 	void get_endpoint_notFound() throws Exception {
-		mockMvc.perform(get("/api/stops/{id}", 99999L))
+		mockMvc.perform(get("/api/stops/{id}", 99999L)
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 
@@ -162,6 +191,7 @@ class StopControllerTest extends BaseController {
 				"변경된 이름", LocalDate.now(), LocalTime.of(10, 0), "메모", null, 2);
 
 		mockMvc.perform(put("/api/stops/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk())
@@ -173,10 +203,12 @@ class StopControllerTest extends BaseController {
 	void delete_endpoint() throws Exception {
 		Stop saved = savedStop("성산일출봉", 1);
 
-		mockMvc.perform(delete("/api/stops/{id}", saved.getId()))
+		mockMvc.perform(delete("/api/stops/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNoContent());
 
-		mockMvc.perform(get("/api/stops/{id}", saved.getId()))
+		mockMvc.perform(get("/api/stops/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 }

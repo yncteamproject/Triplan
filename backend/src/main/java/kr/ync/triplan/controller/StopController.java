@@ -8,6 +8,7 @@ import kr.ync.triplan.service.StopService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,29 +27,34 @@ public class StopController {
 
 	@PostMapping("/api/trips/{tripId}/stops")
 	public ResponseEntity<StopResponse> create(
-			@PathVariable Long tripId, @Valid @RequestBody StopCreateRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(stopService.create(tripId, request));
+			@AuthenticationPrincipal String email, @PathVariable Long tripId,
+			@Valid @RequestBody StopCreateRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(stopService.create(email, tripId, request));
 	}
 
 	@GetMapping("/api/trips/{tripId}/stops")
-	public ResponseEntity<List<StopResponse>> getList(@PathVariable Long tripId) {
-		return ResponseEntity.ok(stopService.getList(tripId));
+	public ResponseEntity<List<StopResponse>> getList(
+			@AuthenticationPrincipal String email, @PathVariable Long tripId) {
+		return ResponseEntity.ok(stopService.getList(email, tripId));
 	}
 
 	@GetMapping("/api/stops/{id}")
-	public ResponseEntity<StopResponse> getDetail(@PathVariable Long id) {
-		return ResponseEntity.ok(stopService.getDetail(id));
+	public ResponseEntity<StopResponse> getDetail(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		return ResponseEntity.ok(stopService.getDetail(email, id));
 	}
 
 	@PutMapping("/api/stops/{id}")
 	public ResponseEntity<StopResponse> update(
-			@PathVariable Long id, @Valid @RequestBody StopUpdateRequest request) {
-		return ResponseEntity.ok(stopService.update(id, request));
+			@AuthenticationPrincipal String email, @PathVariable Long id,
+			@Valid @RequestBody StopUpdateRequest request) {
+		return ResponseEntity.ok(stopService.update(email, id, request));
 	}
 
 	@DeleteMapping("/api/stops/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		stopService.delete(id);
+	public ResponseEntity<Void> delete(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		stopService.delete(email, id);
 		return ResponseEntity.noContent().build();
 	}
 }

@@ -1,12 +1,15 @@
 package kr.ync.triplan.service;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.StopCreateRequest;
 import kr.ync.triplan.dto.request.StopUpdateRequest;
 import kr.ync.triplan.dto.response.StopResponse;
+import kr.ync.triplan.exception.ForbiddenException;
 import kr.ync.triplan.exception.StopNotFoundException;
 import kr.ync.triplan.exception.TripNotFoundException;
+import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.repository.StopRepository;
 import kr.ync.triplan.repository.TripRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,18 +39,32 @@ class StopServiceImplTest {
 	@Autowired
 	private TripRepository tripRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
 	private static final long NON_EXISTING_ID = 99999L;
 
+	private Member member;
 	private Trip trip;
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
+		member = savedMember("owner@test.com");
+		trip = savedTrip(member);
+	}
+
+	private Member savedMember(String email) {
+		return memberRepository.save(
+				Member.builder().email(email).password("encoded").nickname("주인").build());
+	}
+
+	private Trip savedTrip(Member owner) {
+		return tripRepository.save(
 				Trip.builder()
 						.title("제주도 여행")
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(owner)
 						.build()
 		);
 	}
@@ -70,7 +87,7 @@ class StopServiceImplTest {
 		StopCreateRequest request = new StopCreateRequest(
 				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
 		// when
-		StopResponse response = stopService.create(trip.getId(), request);
+		StopResponse response = stopService.create(member.getEmail(), trip.getId(), request);
 		// then
 		assertThat(response.id()).isNotNull();
 		assertThat(response)
@@ -84,8 +101,20 @@ class StopServiceImplTest {
 		StopCreateRequest request = new StopCreateRequest(
 				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
 
-		assertThatThrownBy(() -> stopService.create(NON_EXISTING_ID, request))
+		assertThatThrownBy(() -> stopService.create(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(TripNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("create - 남의 여행이면 예외")
+	void create_forbidden() {
+		// given
+		Trip othersTrip = savedTrip(savedMember("other@test.com"));
+		StopCreateRequest request = new StopCreateRequest(
+				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
+		// when & then
+		assertThatThrownBy(() -> stopService.create(member.getEmail(), othersTrip.getId(), request))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
@@ -94,7 +123,7 @@ class StopServiceImplTest {
 		// given
 		Stop saved = savedStop("성산일출봉", 1);
 		// when
-		StopResponse response = stopService.getDetail(saved.getId());
+		StopResponse response = stopService.getDetail(member.getEmail(), saved.getId());
 		// then
 		assertThat(response.id()).isEqualTo(saved.getId());
 		assertThat(response.name()).isEqualTo("성산일출봉");
@@ -103,8 +132,18 @@ class StopServiceImplTest {
 	@Test
 	@DisplayName("getDetail - 존재하지 않으면 예외")
 	void getDetail_notFound() {
-		assertThatThrownBy(() -> stopService.getDetail(NON_EXISTING_ID))
+		assertThatThrownBy(() -> stopService.getDetail(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(StopNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("getDetail - 남의 방문지면 예외")
+	void getDetail_forbidden() {
+		// given
+		Stop saved = savedStop("성산일출봉", 1);
+		// when & then
+		assertThatThrownBy(() -> stopService.getDetail("other@test.com", saved.getId()))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
@@ -114,7 +153,7 @@ class StopServiceImplTest {
 		savedStop("두번째", 2);
 		savedStop("첫번째", 1);
 		// when
-		List<StopResponse> list = stopService.getList(trip.getId());
+		List<StopResponse> list = stopService.getList(member.getEmail(), trip.getId());
 		// then
 		assertThat(list)
 				.extracting(StopResponse::name)
@@ -128,7 +167,7 @@ class StopServiceImplTest {
 		Stop saved = savedStop("원래 이름", 1);
 		// when
 		StopResponse response = stopService.update(
-				saved.getId(),
+				member.getEmail(), saved.getId(),
 				new StopUpdateRequest("변경된 이름", LocalDate.now(), LocalTime.of(10, 0), "메모", null, 2));
 		// then
 		assertThat(response)
@@ -141,7 +180,7 @@ class StopServiceImplTest {
 	void update_notFound() {
 		StopUpdateRequest request = new StopUpdateRequest(
 				"이름", LocalDate.now(), null, null, null, 1);
-		assertThatThrownBy(() -> stopService.update(NON_EXISTING_ID, request))
+		assertThatThrownBy(() -> stopService.update(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(StopNotFoundException.class);
 	}
 
@@ -151,16 +190,16 @@ class StopServiceImplTest {
 		// given
 		Stop saved = savedStop("성산일출봉", 1);
 		// when
-		stopService.delete(saved.getId());
+		stopService.delete(member.getEmail(), saved.getId());
 		// then
-		assertThatThrownBy(() -> stopService.getDetail(saved.getId()))
+		assertThatThrownBy(() -> stopService.getDetail(member.getEmail(), saved.getId()))
 				.isInstanceOf(StopNotFoundException.class);
 	}
 
 	@Test
 	@DisplayName("delete - notFound")
 	void delete_notFound() {
-		assertThatThrownBy(() -> stopService.delete(NON_EXISTING_ID))
+		assertThatThrownBy(() -> stopService.delete(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(StopNotFoundException.class);
 	}
 }

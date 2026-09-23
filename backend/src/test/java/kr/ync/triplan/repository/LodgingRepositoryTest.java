@@ -1,6 +1,7 @@
 package kr.ync.triplan.repository;
 
 import kr.ync.triplan.domain.Lodging;
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Trip;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,16 +26,26 @@ class LodgingRepositoryTest {
 	@Autowired
 	private TripRepository tripRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
+	private Member member;
 	private Trip trip;
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
+		member = memberRepository.save(
+				Member.builder().email("owner@test.com").password("encoded").nickname("주인").build());
+		trip = savedTrip("제주도 여행");
+	}
+
+	private Trip savedTrip(String title) {
+		return tripRepository.save(
 				Trip.builder()
-						.title("제주도 여행")
+						.title(title)
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(member)
 						.build()
 		);
 	}
@@ -43,14 +54,7 @@ class LodgingRepositoryTest {
 	@DisplayName("findByTripId - 해당 여행의 숙소만 조회")
 	void findByTripId_success() {
 		// given
-		Trip otherTrip = tripRepository.save(
-				Trip.builder()
-						.title("부산 여행")
-						.startDate(LocalDate.now())
-						.endDate(LocalDate.now().plusDays(2))
-						.userId("user2")
-						.build()
-		);
+		Trip otherTrip = savedTrip("부산 여행");
 		lodgingRepository.save(
 				Lodging.builder()
 						.trip(trip)

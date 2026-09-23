@@ -1,6 +1,7 @@
 package kr.ync.triplan.controller;
 
 import kr.ync.triplan.domain.Lodging;
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.LodgingCreateRequest;
 import kr.ync.triplan.dto.request.LodgingUpdateRequest;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
@@ -30,12 +32,16 @@ class LodgingControllerTest extends BaseController {
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
+		trip = savedTrip(member);
+	}
+
+	private Trip savedTrip(Member owner) {
+		return tripRepository.save(
 				Trip.builder()
 						.title("제주도 여행")
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
+						.member(owner)
 						.build()
 		);
 	}
@@ -59,6 +65,7 @@ class LodgingControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/lodgings", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isCreated())
@@ -79,6 +86,7 @@ class LodgingControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/lodgings", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(json))
 				.andExpect(status().isBadRequest())
@@ -92,6 +100,7 @@ class LodgingControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/lodgings", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest());
@@ -105,6 +114,7 @@ class LodgingControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/lodgings", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest())
@@ -119,9 +129,20 @@ class LodgingControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/lodgings", 99999L)
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@DisplayName("GET /api/lodgings/{id} - 남의 숙소면 403")
+	void get_endpoint_forbidden() throws Exception {
+		Lodging saved = savedLodging("제주 호텔");
+
+		mockMvc.perform(get("/api/lodgings/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(createMember("other@test.com"))))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -130,7 +151,8 @@ class LodgingControllerTest extends BaseController {
 		savedLodging("제주 호텔");
 		savedLodging("서귀포 펜션");
 
-		mockMvc.perform(get("/api/trips/{tripId}/lodgings", trip.getId()))
+		mockMvc.perform(get("/api/trips/{tripId}/lodgings", trip.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(2));
 	}
@@ -140,7 +162,8 @@ class LodgingControllerTest extends BaseController {
 	void get_endpoint() throws Exception {
 		Lodging saved = savedLodging("제주 호텔");
 
-		mockMvc.perform(get("/api/lodgings/{id}", saved.getId()))
+		mockMvc.perform(get("/api/lodgings/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(saved.getId()))
 				.andExpect(jsonPath("$.name").value("제주 호텔"));
@@ -149,7 +172,8 @@ class LodgingControllerTest extends BaseController {
 	@Test
 	@DisplayName("GET /api/lodgings/{id} - 존재하지 않으면 404")
 	void get_endpoint_notFound() throws Exception {
-		mockMvc.perform(get("/api/lodgings/{id}", 99999L))
+		mockMvc.perform(get("/api/lodgings/{id}", 99999L)
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 
@@ -161,6 +185,7 @@ class LodgingControllerTest extends BaseController {
 				"변경된 이름", LocalDateTime.now(), LocalDateTime.now().plusDays(2), 200000, "RES999");
 
 		mockMvc.perform(put("/api/lodgings/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk())
@@ -172,10 +197,12 @@ class LodgingControllerTest extends BaseController {
 	void delete_endpoint() throws Exception {
 		Lodging saved = savedLodging("제주 호텔");
 
-		mockMvc.perform(delete("/api/lodgings/{id}", saved.getId()))
+		mockMvc.perform(delete("/api/lodgings/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNoContent());
 
-		mockMvc.perform(get("/api/lodgings/{id}", saved.getId()))
+		mockMvc.perform(get("/api/lodgings/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 }

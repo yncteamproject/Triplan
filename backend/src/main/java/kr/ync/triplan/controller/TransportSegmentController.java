@@ -8,6 +8,7 @@ import kr.ync.triplan.service.TransportSegmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,29 +27,35 @@ public class TransportSegmentController {
 
 	@PostMapping("/api/trips/{tripId}/transport-segments")
 	public ResponseEntity<TransportSegmentResponse> create(
-			@PathVariable Long tripId, @Valid @RequestBody TransportSegmentCreateRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(transportSegmentService.create(tripId, request));
+			@AuthenticationPrincipal String email, @PathVariable Long tripId,
+			@Valid @RequestBody TransportSegmentCreateRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(transportSegmentService.create(email, tripId, request));
 	}
 
 	@GetMapping("/api/trips/{tripId}/transport-segments")
-	public ResponseEntity<List<TransportSegmentResponse>> getList(@PathVariable Long tripId) {
-		return ResponseEntity.ok(transportSegmentService.getList(tripId));
+	public ResponseEntity<List<TransportSegmentResponse>> getList(
+			@AuthenticationPrincipal String email, @PathVariable Long tripId) {
+		return ResponseEntity.ok(transportSegmentService.getList(email, tripId));
 	}
 
 	@GetMapping("/api/transport-segments/{id}")
-	public ResponseEntity<TransportSegmentResponse> getDetail(@PathVariable Long id) {
-		return ResponseEntity.ok(transportSegmentService.getDetail(id));
+	public ResponseEntity<TransportSegmentResponse> getDetail(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		return ResponseEntity.ok(transportSegmentService.getDetail(email, id));
 	}
 
 	@PutMapping("/api/transport-segments/{id}")
 	public ResponseEntity<TransportSegmentResponse> update(
-			@PathVariable Long id, @Valid @RequestBody TransportSegmentUpdateRequest request) {
-		return ResponseEntity.ok(transportSegmentService.update(id, request));
+			@AuthenticationPrincipal String email, @PathVariable Long id,
+			@Valid @RequestBody TransportSegmentUpdateRequest request) {
+		return ResponseEntity.ok(transportSegmentService.update(email, id, request));
 	}
 
 	@DeleteMapping("/api/transport-segments/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		transportSegmentService.delete(id);
+	public ResponseEntity<Void> delete(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		transportSegmentService.delete(email, id);
 		return ResponseEntity.noContent().build();
 	}
 }

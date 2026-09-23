@@ -1,8 +1,8 @@
 package kr.ync.triplan.service;
 
 import kr.ync.triplan.domain.Stop;
-import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.domain.TransportSegment;
+import kr.ync.triplan.domain.Trip;
 import kr.ync.triplan.dto.request.TransportSegmentCreateRequest;
 import kr.ync.triplan.dto.request.TransportSegmentUpdateRequest;
 import kr.ync.triplan.dto.response.TransportSegmentResponse;
@@ -29,11 +29,10 @@ public class TransportSegmentServiceImpl implements TransportSegmentService {
 
 	@Override
 	@Transactional
-	public TransportSegmentResponse create(Long tripId, TransportSegmentCreateRequest request) {
-		Trip trip = tripRepository.findById(tripId)
-				.orElseThrow(TripNotFoundException::new);
-		Stop fromStop = findStopById(request.fromStopId());
-		Stop toStop = findStopById(request.toStopId());
+	public TransportSegmentResponse create(String email, Long tripId, TransportSegmentCreateRequest request) {
+		Trip trip = findOwnedTrip(email, tripId);
+		Stop fromStop = findOwnedStop(email, request.fromStopId());
+		Stop toStop = findOwnedStop(email, request.toStopId());
 
 		TransportSegment segment = TransportSegment.builder()
 				.trip(trip)
@@ -50,23 +49,24 @@ public class TransportSegmentServiceImpl implements TransportSegmentService {
 	}
 
 	@Override
-	public List<TransportSegmentResponse> getList(Long tripId) {
+	public List<TransportSegmentResponse> getList(String email, Long tripId) {
+		findOwnedTrip(email, tripId);
 		return transportSegmentRepository.findByTripId(tripId).stream()
 				.map(TransportSegmentResponse::from)
 				.toList();
 	}
 
 	@Override
-	public TransportSegmentResponse getDetail(Long id) {
-		return TransportSegmentResponse.from(findById(id));
+	public TransportSegmentResponse getDetail(String email, Long id) {
+		return TransportSegmentResponse.from(findOwnedSegment(email, id));
 	}
 
 	@Override
 	@Transactional
-	public TransportSegmentResponse update(Long id, TransportSegmentUpdateRequest request) {
-		TransportSegment segment = findById(id);
-		Stop fromStop = findStopById(request.fromStopId());
-		Stop toStop = findStopById(request.toStopId());
+	public TransportSegmentResponse update(String email, Long id, TransportSegmentUpdateRequest request) {
+		TransportSegment segment = findOwnedSegment(email, id);
+		Stop fromStop = findOwnedStop(email, request.fromStopId());
+		Stop toStop = findOwnedStop(email, request.toStopId());
 
 		segment.setFromStop(fromStop);
 		segment.setToStop(toStop);
@@ -81,17 +81,28 @@ public class TransportSegmentServiceImpl implements TransportSegmentService {
 
 	@Override
 	@Transactional
-	public void delete(Long id) {
-		transportSegmentRepository.delete(findById(id));
+	public void delete(String email, Long id) {
+		transportSegmentRepository.delete(findOwnedSegment(email, id));
 	}
 
-	private TransportSegment findById(Long id) {
-		return transportSegmentRepository.findById(id)
-				.orElseThrow(TransportSegmentNotFoundException::new);
+	private Trip findOwnedTrip(String email, Long tripId) {
+		Trip trip = tripRepository.findById(tripId)
+				.orElseThrow(TripNotFoundException::new);
+		trip.validateOwner(email);
+		return trip;
 	}
 
-	private Stop findStopById(Long id) {
-		return stopRepository.findById(id)
+	private Stop findOwnedStop(String email, Long id) {
+		Stop stop = stopRepository.findById(id)
 				.orElseThrow(StopNotFoundException::new);
+		stop.getTrip().validateOwner(email);
+		return stop;
+	}
+
+	private TransportSegment findOwnedSegment(String email, Long id) {
+		TransportSegment segment = transportSegmentRepository.findById(id)
+				.orElseThrow(TransportSegmentNotFoundException::new);
+		segment.getTrip().validateOwner(email);
+		return segment;
 	}
 }

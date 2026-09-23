@@ -1,5 +1,6 @@
 package kr.ync.triplan.controller;
 
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.TransportMode;
 import kr.ync.triplan.domain.TransportSegment;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
@@ -38,18 +40,22 @@ class TransportSegmentControllerTest extends BaseController {
 
 	@BeforeEach
 	void setUpFixture() {
-		trip = tripRepository.save(
-				Trip.builder()
-						.title("제주도 여행")
-						.startDate(LocalDate.now())
-						.endDate(LocalDate.now().plusDays(3))
-						.userId("user1")
-						.build()
-		);
+		trip = savedTrip(member);
 		fromStop = stopRepository.save(
 				Stop.builder().trip(trip).name("공항").date(LocalDate.now()).build());
 		toStop = stopRepository.save(
 				Stop.builder().trip(trip).name("숙소").date(LocalDate.now()).build());
+	}
+
+	private Trip savedTrip(Member owner) {
+		return tripRepository.save(
+				Trip.builder()
+						.title("제주도 여행")
+						.startDate(LocalDate.now())
+						.endDate(LocalDate.now().plusDays(3))
+						.member(owner)
+						.build()
+		);
 	}
 
 	private TransportSegment savedSegment() {
@@ -74,6 +80,7 @@ class TransportSegmentControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/transport-segments", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isCreated())
@@ -96,6 +103,7 @@ class TransportSegmentControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/transport-segments", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(json))
 				.andExpect(status().isBadRequest())
@@ -110,6 +118,7 @@ class TransportSegmentControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/transport-segments", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest());
@@ -124,6 +133,7 @@ class TransportSegmentControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/transport-segments", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest())
@@ -139,9 +149,28 @@ class TransportSegmentControllerTest extends BaseController {
 
 		mockMvc.perform(
 						post("/api/trips/{tripId}/transport-segments", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@DisplayName("POST /api/trips/{tripId}/transport-segments - 남의 방문지를 쓰면 403")
+	void create_endpoint_othersStopForbidden() throws Exception {
+		Trip othersTrip = savedTrip(createMember("other@test.com"));
+		Stop othersStop = stopRepository.save(
+				Stop.builder().trip(othersTrip).name("남의 장소").date(LocalDate.now()).build());
+		TransportSegmentCreateRequest request = new TransportSegmentCreateRequest(
+				fromStop.getId(), othersStop.getId(), TransportMode.CAR,
+				LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null);
+
+		mockMvc.perform(
+						post("/api/trips/{tripId}/transport-segments", trip.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -150,7 +179,8 @@ class TransportSegmentControllerTest extends BaseController {
 		savedSegment();
 		savedSegment();
 
-		mockMvc.perform(get("/api/trips/{tripId}/transport-segments", trip.getId()))
+		mockMvc.perform(get("/api/trips/{tripId}/transport-segments", trip.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(2));
 	}
@@ -160,7 +190,8 @@ class TransportSegmentControllerTest extends BaseController {
 	void get_endpoint() throws Exception {
 		TransportSegment saved = savedSegment();
 
-		mockMvc.perform(get("/api/transport-segments/{id}", saved.getId()))
+		mockMvc.perform(get("/api/transport-segments/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(saved.getId()));
 	}
@@ -168,7 +199,8 @@ class TransportSegmentControllerTest extends BaseController {
 	@Test
 	@DisplayName("GET /api/transport-segments/{id} - 존재하지 않으면 404")
 	void get_endpoint_notFound() throws Exception {
-		mockMvc.perform(get("/api/transport-segments/{id}", 99999L))
+		mockMvc.perform(get("/api/transport-segments/{id}", 99999L)
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 
@@ -181,6 +213,7 @@ class TransportSegmentControllerTest extends BaseController {
 				LocalDateTime.now(), LocalDateTime.now().plusHours(2), 100000, "RES999");
 
 		mockMvc.perform(put("/api/transport-segments/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk())
@@ -192,10 +225,12 @@ class TransportSegmentControllerTest extends BaseController {
 	void delete_endpoint() throws Exception {
 		TransportSegment saved = savedSegment();
 
-		mockMvc.perform(delete("/api/transport-segments/{id}", saved.getId()))
+		mockMvc.perform(delete("/api/transport-segments/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNoContent());
 
-		mockMvc.perform(get("/api/transport-segments/{id}", saved.getId()))
+		mockMvc.perform(get("/api/transport-segments/{id}", saved.getId())
+						.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 }

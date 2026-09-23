@@ -9,15 +9,15 @@ import java.util.List;
 
 public interface TripService {
 
-	TripResponse create(TripCreateRequest request);
+	TripResponse create(String email, TripCreateRequest request);
 
-	List<TripResponse> getList(String userId);
+	List<TripResponse> getList(String email);
 
-	TripResponse getDetail(Long id);
+	TripResponse getDetail(String email, Long id);
 
-	TripResponse update(Long id, TripUpdateRequest request);
+	TripResponse update(String email, Long id, TripUpdateRequest request);
 
-	void delete(Long id);
+	void delete(String email, Long id);
 
-	TripEstimateResponse getEstimate(Long id);
+	TripEstimateResponse getEstimate(String email, Long id);
 }

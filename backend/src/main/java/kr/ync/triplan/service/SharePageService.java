@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface SharePageService {
 
-	SharePageResponse create(SharePageCreateRequest request);
+	SharePageResponse create(String email, SharePageCreateRequest request);
 
 	List<SharePageListResponse> getList();
 
 	SharePageResponse getDetail(Long id);
 
-	SharePageResponse update(Long id, SharePageUpdateRequest request);
+	SharePageResponse update(String email, Long id, SharePageUpdateRequest request);
 
-	void delete(Long id);
+	void delete(String email, Long id);
 }

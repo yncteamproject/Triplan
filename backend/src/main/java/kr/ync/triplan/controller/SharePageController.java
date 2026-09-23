@@ -1,14 +1,15 @@
 package kr.ync.triplan.controller;
 
+import jakarta.validation.Valid;
 import kr.ync.triplan.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.dto.response.SharePageListResponse;
 import kr.ync.triplan.dto.response.SharePageResponse;
 import kr.ync.triplan.service.SharePageService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +30,8 @@ public class SharePageController {
 
 	@PostMapping
 	public ResponseEntity<SharePageResponse> create(
-			@Valid @RequestBody SharePageCreateRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(sharePageService.create(request));
+			@AuthenticationPrincipal String email, @Valid @RequestBody SharePageCreateRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(sharePageService.create(email, request));
 	}
 
 	@GetMapping
@@ -45,13 +46,15 @@ public class SharePageController {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<SharePageResponse> update(
-			@PathVariable Long id, @Valid @RequestBody SharePageUpdateRequest request) {
-		return ResponseEntity.ok(sharePageService.update(id, request));
+			@AuthenticationPrincipal String email, @PathVariable Long id,
+			@Valid @RequestBody SharePageUpdateRequest request) {
+		return ResponseEntity.ok(sharePageService.update(email, id, request));
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		sharePageService.delete(id);
+	public ResponseEntity<Void> delete(
+			@AuthenticationPrincipal String email, @PathVariable Long id) {
+		sharePageService.delete(email, id);
 		return ResponseEntity.noContent().build();
 	}
 }

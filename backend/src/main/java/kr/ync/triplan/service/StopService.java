@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface StopService {
 
-	StopResponse create(Long tripId, StopCreateRequest request);
+	StopResponse create(String email, Long tripId, StopCreateRequest request);
 
-	List<StopResponse> getList(Long tripId);
+	List<StopResponse> getList(String email, Long tripId);
 
-	StopResponse getDetail(Long id);
+	StopResponse getDetail(String email, Long id);
 
-	StopResponse update(Long id, StopUpdateRequest request);
+	StopResponse update(String email, Long id, StopUpdateRequest request);
 
-	void delete(Long id);
+	void delete(String email, Long id);
 }

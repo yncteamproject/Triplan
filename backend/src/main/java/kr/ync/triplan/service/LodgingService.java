@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface LodgingService {
 
-	LodgingResponse create(Long tripId, LodgingCreateRequest request);
+	LodgingResponse create(String email, Long tripId, LodgingCreateRequest request);
 
-	List<LodgingResponse> getList(Long tripId);
+	List<LodgingResponse> getList(String email, Long tripId);
 
-	LodgingResponse getDetail(Long id);
+	LodgingResponse getDetail(String email, Long id);
 
-	LodgingResponse update(Long id, LodgingUpdateRequest request);
+	LodgingResponse update(String email, Long id, LodgingUpdateRequest request);
 
-	void delete(Long id);
+	void delete(String email, Long id);
 }

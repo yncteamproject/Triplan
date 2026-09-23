@@ -2,10 +2,14 @@ package kr.ync.triplan.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import kr.ync.triplan.exception.ForbiddenException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +40,13 @@ public class Trip {
 	@Column(nullable = false)
 	private LocalDate endDate;
 
-	@Column(nullable = false)
-	private String userId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
+	private Member member;
+
+	public void validateOwner(String email) {
+		if (!member.getEmail().equals(email)) {
+			throw new ForbiddenException();
+		}
+	}
 }

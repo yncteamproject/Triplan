@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface CommentService {
 
-	CommentResponse create(Long sharePageId, CommentCreateRequest request);
+	CommentResponse create(String email, Long sharePageId, CommentCreateRequest request);
 
 	List<CommentResponse> getList(Long sharePageId);
 
-	void delete(Long commentId);
+	void delete(String email, Long commentId);
 }

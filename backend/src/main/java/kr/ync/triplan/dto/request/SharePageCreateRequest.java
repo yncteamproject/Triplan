@@ -13,9 +13,6 @@ public record SharePageCreateRequest(
 		String description,
 
 		@NotNull(message = "여행 계획을 선택해주세요")
-		Long tripId,
-
-		@NotBlank(message = "작성자 정보가 없습니다")
-		String writerId
+		Long tripId
 ) {
 }

@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 public record SharePageListResponse(
 		Long id,
 		String title,
-		String writerId,
+		Long writerId,
+		String writerNickname,
 		LocalDateTime writeDate,
 		int viewCount
 ) {
@@ -16,7 +17,8 @@ public record SharePageListResponse(
 		return new SharePageListResponse(
 				sharePage.getId(),
 				sharePage.getTitle(),
-				sharePage.getWriterId(),
+				sharePage.getWriter().getId(),
+				sharePage.getWriter().getNickname(),
 				sharePage.getWriteDate(),
 				sharePage.getViewCount()
 		);

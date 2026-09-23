@@ -1,6 +1,7 @@
 package kr.ync.triplan.service;
 
 import kr.ync.triplan.domain.Lodging;
+import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.domain.Stop;
 import kr.ync.triplan.domain.TransportMode;
 import kr.ync.triplan.domain.TransportSegment;
@@ -9,11 +10,14 @@ import kr.ync.triplan.dto.request.TripCreateRequest;
 import kr.ync.triplan.dto.request.TripUpdateRequest;
 import kr.ync.triplan.dto.response.TripEstimateResponse;
 import kr.ync.triplan.dto.response.TripResponse;
+import kr.ync.triplan.exception.ForbiddenException;
 import kr.ync.triplan.exception.TripNotFoundException;
 import kr.ync.triplan.repository.LodgingRepository;
+import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.repository.StopRepository;
 import kr.ync.triplan.repository.TransportSegmentRepository;
 import kr.ync.triplan.repository.TripRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +42,9 @@ class TripServiceImplTest {
 	private TripRepository tripRepository;
 
 	@Autowired
+	private MemberRepository memberRepository;
+
+	@Autowired
 	private StopRepository stopRepository;
 
 	@Autowired
@@ -48,13 +55,25 @@ class TripServiceImplTest {
 
 	private static final long NON_EXISTING_ID = 99999L;
 
-	private Trip savedTrip(String title, String userId) {
+	private Member member;
+
+	@BeforeEach
+	void setUpFixture() {
+		member = savedMember("owner@test.com");
+	}
+
+	private Member savedMember(String email) {
+		return memberRepository.save(
+				Member.builder().email(email).password("encoded").nickname("주인").build());
+	}
+
+	private Trip savedTrip(String title, Member owner) {
 		return tripRepository.save(
 				Trip.builder()
 						.title(title)
 						.startDate(LocalDate.now())
 						.endDate(LocalDate.now().plusDays(3))
-						.userId(userId)
+						.member(owner)
 						.build()
 		);
 	}
@@ -64,23 +83,23 @@ class TripServiceImplTest {
 	void create_success() {
 		// given
 		TripCreateRequest request = new TripCreateRequest(
-				"제주도 여행", LocalDate.now(), LocalDate.now().plusDays(3), "user1");
+				"제주도 여행", LocalDate.now(), LocalDate.now().plusDays(3));
 		// when
-		TripResponse response = tripService.create(request);
+		TripResponse response = tripService.create(member.getEmail(), request);
 		// then
 		assertThat(response.id()).isNotNull();
-		assertThat(response)
-				.extracting(TripResponse::title, TripResponse::userId)
-				.containsExactly("제주도 여행", "user1");
+		assertThat(response.title()).isEqualTo("제주도 여행");
+		assertThat(tripRepository.findById(response.id()).orElseThrow().getMember().getId())
+				.isEqualTo(member.getId());
 	}
 
 	@Test
 	@DisplayName("getDetail")
 	void getDetail_success() {
 		// given
-		Trip saved = savedTrip("제주도 여행", "user1");
+		Trip saved = savedTrip("제주도 여행", member);
 		// when
-		TripResponse response = tripService.getDetail(saved.getId());
+		TripResponse response = tripService.getDetail(member.getEmail(), saved.getId());
 		// then
 		assertThat(response.id()).isEqualTo(saved.getId());
 		assertThat(response.title()).isEqualTo("제주도 여행");
@@ -89,19 +108,29 @@ class TripServiceImplTest {
 	@Test
 	@DisplayName("getDetail - 존재하지 않으면 예외")
 	void getDetail_notFound() {
-		assertThatThrownBy(() -> tripService.getDetail(NON_EXISTING_ID))
+		assertThatThrownBy(() -> tripService.getDetail(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(TripNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("getDetail - 남의 여행이면 예외")
+	void getDetail_forbidden() {
+		// given
+		Trip othersTrip = savedTrip("남의 여행", savedMember("other@test.com"));
+		// when & then
+		assertThatThrownBy(() -> tripService.getDetail(member.getEmail(), othersTrip.getId()))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
 	@DisplayName("list - 본인 여행만 조회")
 	void list_success() {
 		// given
-		savedTrip("제주도 여행", "user1");
-		savedTrip("부산 여행", "user1");
-		savedTrip("서울 여행", "user2");
+		savedTrip("제주도 여행", member);
+		savedTrip("부산 여행", member);
+		savedTrip("남의 여행", savedMember("other@test.com"));
 		// when
-		List<TripResponse> list = tripService.getList("user1");
+		List<TripResponse> list = tripService.getList(member.getEmail());
 		// then
 		assertThat(list).hasSize(2)
 				.extracting(TripResponse::title)
@@ -112,12 +141,12 @@ class TripServiceImplTest {
 	@DisplayName("update")
 	void update_success() {
 		// given
-		Trip saved = savedTrip("원래 제목", "user1");
+		Trip saved = savedTrip("원래 제목", member);
 		LocalDate newStart = LocalDate.now().plusDays(10);
 		LocalDate newEnd = LocalDate.now().plusDays(15);
 		// when
 		TripResponse response = tripService.update(
-				saved.getId(), new TripUpdateRequest("변경된 제목", newStart, newEnd));
+				member.getEmail(), saved.getId(), new TripUpdateRequest("변경된 제목", newStart, newEnd));
 		// then
 		assertThat(response)
 				.extracting(TripResponse::title, TripResponse::startDate, TripResponse::endDate)
@@ -129,26 +158,38 @@ class TripServiceImplTest {
 	void update_notFound() {
 		TripUpdateRequest request = new TripUpdateRequest(
 				"제목", LocalDate.now(), LocalDate.now().plusDays(1));
-		assertThatThrownBy(() -> tripService.update(NON_EXISTING_ID, request))
+		assertThatThrownBy(() -> tripService.update(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(TripNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("update - 남의 여행이면 예외")
+	void update_forbidden() {
+		// given
+		Trip othersTrip = savedTrip("남의 여행", savedMember("other@test.com"));
+		TripUpdateRequest request = new TripUpdateRequest(
+				"제목", LocalDate.now(), LocalDate.now().plusDays(1));
+		// when & then
+		assertThatThrownBy(() -> tripService.update(member.getEmail(), othersTrip.getId(), request))
+				.isInstanceOf(ForbiddenException.class);
 	}
 
 	@Test
 	@DisplayName("delete")
 	void delete_success() {
 		// given
-		Trip saved = savedTrip("제목", "user1");
+		Trip saved = savedTrip("제목", member);
 		// when
-		tripService.delete(saved.getId());
+		tripService.delete(member.getEmail(), saved.getId());
 		// then
-		assertThatThrownBy(() -> tripService.getDetail(saved.getId()))
+		assertThatThrownBy(() -> tripService.getDetail(member.getEmail(), saved.getId()))
 				.isInstanceOf(TripNotFoundException.class);
 	}
 
 	@Test
 	@DisplayName("delete - notFound")
 	void delete_notFound() {
-		assertThatThrownBy(() -> tripService.delete(NON_EXISTING_ID))
+		assertThatThrownBy(() -> tripService.delete(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(TripNotFoundException.class);
 	}
 
@@ -156,7 +197,7 @@ class TripServiceImplTest {
 	@DisplayName("getEstimate - 교통비/숙박비 합산")
 	void getEstimate_success() {
 		// given
-		Trip saved = savedTrip("제주도 여행", "user1");
+		Trip saved = savedTrip("제주도 여행", member);
 		Stop fromStop = stopRepository.save(
 				Stop.builder().trip(saved).name("공항").date(LocalDate.now()).build());
 		Stop toStop = stopRepository.save(
@@ -180,7 +221,7 @@ class TripServiceImplTest {
 		);
 
 		// when
-		TripEstimateResponse response = tripService.getEstimate(saved.getId());
+		TripEstimateResponse response = tripService.getEstimate(member.getEmail(), saved.getId());
 
 		// then
 		assertThat(response)
@@ -192,11 +233,9 @@ class TripServiceImplTest {
 	@DisplayName("getEstimate - 데이터 없으면 0원")
 	void getEstimate_noData() {
 		// given
-		Trip saved = savedTrip("제주도 여행", "user1");
-
+		Trip saved = savedTrip("제주도 여행", member);
 		// when
-		TripEstimateResponse response = tripService.getEstimate(saved.getId());
-
+		TripEstimateResponse response = tripService.getEstimate(member.getEmail(), saved.getId());
 		// then
 		assertThat(response.totalCost()).isZero();
 	}
@@ -204,7 +243,7 @@ class TripServiceImplTest {
 	@Test
 	@DisplayName("getEstimate - 존재하지 않으면 예외")
 	void getEstimate_notFound() {
-		assertThatThrownBy(() -> tripService.getEstimate(NON_EXISTING_ID))
+		assertThatThrownBy(() -> tripService.getEstimate(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(TripNotFoundException.class);
 	}
 }
