@@ -3,6 +3,9 @@ package kr.ync.triplan.service;
 import kr.ync.triplan.domain.Member;
 import kr.ync.triplan.dto.request.MemberUpdateRequest;
 import kr.ync.triplan.dto.response.MemberResponse;
+import kr.ync.triplan.exception.DuplicateEmailException;
+import kr.ync.triplan.exception.LoginFailedException;
+import kr.ync.triplan.exception.MemberNotFoundException;
 import kr.ync.triplan.jwt.JwtTokenProvider;
 import kr.ync.triplan.dto.request.LoginRequest;
 import kr.ync.triplan.dto.response.LoginResponse;
@@ -24,7 +27,7 @@ public class MemberService {
     @Transactional
     public Long signup(SignupRequest request) {
         if (memberRepository.existsByEmail(request.email())) {
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+            throw new DuplicateEmailException();
         }
         Member member = Member.builder()
                 .email(request.email())
@@ -36,9 +39,9 @@ public class MemberService {
 
     public LoginResponse login(LoginRequest request) {
         Member member = memberRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+                .orElseThrow(LoginFailedException::new);
         if (!passwordEncoder.matches(request.password(), member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new LoginFailedException();
         }
         String token = jwtTokenProvider.createToken(member.getEmail(), member.getRole().name());
         return new LoginResponse(token, member.getNickname());
@@ -46,7 +49,7 @@ public class MemberService {
 
     public MemberResponse getMyInfo(String email){
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(MemberNotFoundException::new);
 
         return MemberResponse.from(member);
     }
@@ -54,11 +57,13 @@ public class MemberService {
     @Transactional
     public MemberResponse updateMyInfo(String email, MemberUpdateRequest request){
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(MemberNotFoundException::new);
+        member.updateNickname(request.nickname());
         if(request.password() != null && !request.password().isBlank()){
             member.updatePassword(passwordEncoder.encode(request.password()));
         }
 
         return MemberResponse.from(member);
     }
+
 }

@@ -1,0 +1,10 @@
+package kr.ync.triplan.exception;
+
+import org.springframework.http.HttpStatus;
+
+public class MemberNotFoundException extends CustomException {
+
+    public MemberNotFoundException() {
+        super("존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND);
+    }
+}

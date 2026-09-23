@@ -16,14 +16,14 @@ public class MemberController {
     private final MemberService memberService;
 
     @GetMapping("/me")
-    public ResponseEntity<MemberResponse> getInfo(Authentication authentication){
+    public ResponseEntity<MemberResponse> getMyInfo(Authentication authentication) {
         return ResponseEntity.ok(memberService.getMyInfo(authentication.getName()));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<MemberResponse> updateInfo(Authentication authentication,
-                                                     @Valid
-                                                     @RequestBody MemberUpdateRequest request){
-        return ResponseEntity.ok(memberService.getMyInfo(authentication.getName()));
+    public ResponseEntity<MemberResponse> updateMyInfo(
+            Authentication authentication,
+            @Valid @RequestBody MemberUpdateRequest request) {
+        return ResponseEntity.ok(memberService.updateMyInfo(authentication.getName(), request));
     }
 }

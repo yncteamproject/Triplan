@@ -1,6 +1,7 @@
 package kr.ync.triplan.service;
 
 import kr.ync.triplan.domain.Member;
+import kr.ync.triplan.exception.MemberNotFoundException;
 import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.dto.response.TravelTestResultResponse;
 import kr.ync.triplan.dto.request.TravelTestSubmitRequest;
@@ -25,7 +26,7 @@ public class TravelPreferenceService {
     @Transactional
     public TravelTestResultResponse submit(String email, TravelTestSubmitRequest request) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+                .orElseThrow(MemberNotFoundException::new);
 
         TravelType type = calculateType(request.selectedTypes());
 

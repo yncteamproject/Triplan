@@ -47,7 +47,7 @@ class AuthControllerTest extends BaseController{
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.password").exists());
+                .andExpect(jsonPath("$.message").exists());
     }
     //회원가입 폼의 필수 입력값 검증이 서버단에서도 실제로 동작하는가
 
