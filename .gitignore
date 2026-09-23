@@ -29,4 +29,6 @@ replay_pid*
 # Environment / secrets
 .env
 application-secret.yml
+application-secret.yaml
 application-local.yml
+application-local.yaml
