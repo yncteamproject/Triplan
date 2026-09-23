@@ -55,7 +55,7 @@ class SharePageControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/share-pages - 1.정상 데이터")
-	void create_endpoint_정상데이터() throws Exception {
+	void create_endpoint_validData() throws Exception {
 		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", trip.getId(), "user1");
 
 		mockMvc.perform(
@@ -71,7 +71,7 @@ class SharePageControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/share-pages - 2.필수 데이터 누락 (title 키 자체 없음)")
-	void create_endpoint_필수데이터누락() throws Exception {
+	void create_endpoint_missingRequiredField() throws Exception {
 		String json = """
 				{
 				  "description": "설명",
@@ -90,7 +90,7 @@ class SharePageControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/share-pages - 3.null 값 (모든 필드 null)")
-	void create_endpoint_null값() throws Exception {
+	void create_endpoint_nullValues() throws Exception {
 		SharePageCreateRequest request = new SharePageCreateRequest(null, null, null, null);
 
 		mockMvc.perform(
@@ -102,7 +102,7 @@ class SharePageControllerTest extends BaseController {
 
 	@Test
 	@DisplayName("POST /api/share-pages - 4.비정상 데이터 (제목 100자 초과)")
-	void create_endpoint_비정상데이터() throws Exception {
+	void create_endpoint_invalidData() throws Exception {
 		String tooLongTitle = "가".repeat(101);
 		SharePageCreateRequest request = new SharePageCreateRequest(tooLongTitle, "설명", trip.getId(), "user1");
 
