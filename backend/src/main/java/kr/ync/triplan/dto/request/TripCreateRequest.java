@@ -1,0 +1,21 @@
+package kr.ync.triplan.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+public record TripCreateRequest(
+		@NotBlank(message = "여행 제목을 입력해주세요")
+		String title,
+
+		@NotNull(message = "시작일을 선택해주세요")
+		LocalDate startDate,
+
+		@NotNull(message = "종료일을 선택해주세요")
+		LocalDate endDate,
+
+		@NotBlank(message = "사용자 정보가 없습니다")
+		String userId
+) {
+}
