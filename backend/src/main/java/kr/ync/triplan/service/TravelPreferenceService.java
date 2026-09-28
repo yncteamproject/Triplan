@@ -1,7 +1,9 @@
 package kr.ync.triplan.service;
 
 import kr.ync.triplan.domain.Member;
+import kr.ync.triplan.dto.response.MyTravelResultResponse;
 import kr.ync.triplan.exception.MemberNotFoundException;
+import kr.ync.triplan.exception.TravelResultNotFoundException;
 import kr.ync.triplan.repository.MemberRepository;
 import kr.ync.triplan.dto.response.TravelTestResultResponse;
 import kr.ync.triplan.dto.request.TravelTestSubmitRequest;
@@ -38,6 +40,15 @@ public class TravelPreferenceService {
         return new TravelTestResultResponse(type, type.getDisplayName(), type.getDescription());
     }
 
+    @Transactional(readOnly = true)
+    public MyTravelResultResponse getMyResult(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(MemberNotFoundException::new);
+
+        return resultRepository.findFirstByMemberOrderByIdDesc(member)
+                .map(MyTravelResultResponse::from)
+                .orElseThrow(TravelResultNotFoundException::new);
+    }
     /**
      * 최다 득표 유형을 결과로 반환.
      * 동점일 경우, 마지막으로 선택한 문항 쪽의 유형을 우선시한다("마지막 선택이 결정타").
