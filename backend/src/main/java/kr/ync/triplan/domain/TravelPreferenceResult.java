@@ -1,5 +1,6 @@
 package kr.ync.triplan.domain;
 
+import kr.ync.triplan.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

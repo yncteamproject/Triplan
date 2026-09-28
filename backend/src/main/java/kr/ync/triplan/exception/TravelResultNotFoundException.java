@@ -1,5 +1,6 @@
 package kr.ync.triplan.exception;
 
+import kr.ync.triplan.global.exception.CustomException;
 import org.springframework.http.HttpStatus;
 
 public class TravelResultNotFoundException extends CustomException{

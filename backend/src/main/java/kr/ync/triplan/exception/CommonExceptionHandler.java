@@ -1,5 +1,6 @@
 package kr.ync.triplan.exception;
 
+import kr.ync.triplan.global.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

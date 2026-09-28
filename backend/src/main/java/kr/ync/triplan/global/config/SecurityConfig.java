@@ -1,7 +1,7 @@
-package kr.ync.triplan.config;
+package kr.ync.triplan.global.config;
 
-import kr.ync.triplan.jwt.JwtAuthenticationFilter;
-import kr.ync.triplan.jwt.JwtTokenProvider;
+import kr.ync.triplan.global.jwt.JwtAuthenticationFilter;
+import kr.ync.triplan.global.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

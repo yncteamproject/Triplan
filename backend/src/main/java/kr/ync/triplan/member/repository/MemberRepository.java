@@ -1,6 +1,6 @@
-package kr.ync.triplan.repository;
+package kr.ync.triplan.member.repository;
 
-import kr.ync.triplan.domain.Member;
+import kr.ync.triplan.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

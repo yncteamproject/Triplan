@@ -1,4 +1,4 @@
-package kr.ync.triplan.exception;
+package kr.ync.triplan.global.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

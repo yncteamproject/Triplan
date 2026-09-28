@@ -1,6 +1,6 @@
-package kr.ync.triplan.dto.response;
+package kr.ync.triplan.member.dto.response;
 
-import kr.ync.triplan.domain.Member;
+import kr.ync.triplan.member.domain.Member;
 
 import java.time.LocalDateTime;
 

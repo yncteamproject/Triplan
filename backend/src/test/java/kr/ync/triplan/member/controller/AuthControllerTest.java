@@ -1,6 +1,7 @@
-package kr.ync.triplan.controller;
+package kr.ync.triplan.member.controller;
 
-import kr.ync.triplan.dto.request.SignupRequest;
+import kr.ync.triplan.support.BaseController;
+import kr.ync.triplan.member.dto.request.SignupRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

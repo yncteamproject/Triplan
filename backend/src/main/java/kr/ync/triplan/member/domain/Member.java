@@ -1,4 +1,4 @@
-package kr.ync.triplan.domain;
+package kr.ync.triplan.member.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

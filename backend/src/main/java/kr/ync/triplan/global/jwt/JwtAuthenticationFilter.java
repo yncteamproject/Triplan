@@ -1,4 +1,4 @@
-package kr.ync.triplan.jwt;
+package kr.ync.triplan.global.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

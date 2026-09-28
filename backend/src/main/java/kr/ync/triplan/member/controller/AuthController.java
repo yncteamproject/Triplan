@@ -1,10 +1,10 @@
-package kr.ync.triplan.controller;
+package kr.ync.triplan.member.controller;
 
 import jakarta.validation.Valid;
-import kr.ync.triplan.dto.request.LoginRequest;
-import kr.ync.triplan.dto.response.LoginResponse;
-import kr.ync.triplan.dto.request.SignupRequest;
-import kr.ync.triplan.service.MemberService;
+import kr.ync.triplan.member.dto.request.LoginRequest;
+import kr.ync.triplan.member.dto.response.LoginResponse;
+import kr.ync.triplan.member.dto.request.SignupRequest;
+import kr.ync.triplan.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

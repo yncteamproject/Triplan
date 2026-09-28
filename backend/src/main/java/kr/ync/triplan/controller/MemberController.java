@@ -2,8 +2,8 @@ package kr.ync.triplan.controller;
 
 import jakarta.validation.Valid;
 import kr.ync.triplan.dto.request.MemberUpdateRequest;
-import kr.ync.triplan.dto.response.MemberResponse;
-import kr.ync.triplan.service.MemberService;
+import kr.ync.triplan.member.dto.response.MemberResponse;
+import kr.ync.triplan.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

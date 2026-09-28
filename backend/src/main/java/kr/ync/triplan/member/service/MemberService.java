@@ -1,16 +1,16 @@
-package kr.ync.triplan.service;
+package kr.ync.triplan.member.service;
 
-import kr.ync.triplan.domain.Member;
+import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.dto.request.MemberUpdateRequest;
-import kr.ync.triplan.dto.response.MemberResponse;
-import kr.ync.triplan.exception.DuplicateEmailException;
+import kr.ync.triplan.member.dto.response.MemberResponse;
+import kr.ync.triplan.member.exception.DuplicateEmailException;
 import kr.ync.triplan.exception.LoginFailedException;
-import kr.ync.triplan.exception.MemberNotFoundException;
-import kr.ync.triplan.jwt.JwtTokenProvider;
-import kr.ync.triplan.dto.request.LoginRequest;
-import kr.ync.triplan.dto.response.LoginResponse;
-import kr.ync.triplan.dto.request.SignupRequest;
-import kr.ync.triplan.repository.MemberRepository;
+import kr.ync.triplan.member.exception.MemberNotFoundException;
+import kr.ync.triplan.global.jwt.JwtTokenProvider;
+import kr.ync.triplan.member.dto.request.LoginRequest;
+import kr.ync.triplan.member.dto.response.LoginResponse;
+import kr.ync.triplan.member.dto.request.SignupRequest;
+import kr.ync.triplan.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

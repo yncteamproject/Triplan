@@ -1,10 +1,10 @@
 package kr.ync.triplan.service;
 
-import kr.ync.triplan.domain.Member;
+import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.dto.response.MyTravelResultResponse;
-import kr.ync.triplan.exception.MemberNotFoundException;
+import kr.ync.triplan.member.exception.MemberNotFoundException;
 import kr.ync.triplan.exception.TravelResultNotFoundException;
-import kr.ync.triplan.repository.MemberRepository;
+import kr.ync.triplan.member.repository.MemberRepository;
 import kr.ync.triplan.dto.response.TravelTestResultResponse;
 import kr.ync.triplan.dto.request.TravelTestSubmitRequest;
 import kr.ync.triplan.repository.TravelPreferenceResultRepository;

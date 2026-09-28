@@ -1,4 +1,4 @@
-package kr.ync.triplan.controller;
+package kr.ync.triplan.support;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public abstract class BaseController {
     protected ObjectMapper objectMapper;
 
     @BeforeEach
-    void setUpMockMvc() {
+    protected void setUpMockMvc() {
         this.mockMvc =
                 MockMvcBuilders
                         .webAppContextSetup(webApplicationContext)
