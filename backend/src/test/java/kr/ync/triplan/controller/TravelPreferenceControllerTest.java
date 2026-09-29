@@ -79,4 +79,17 @@ class TravelPreferenceControllerTest extends BaseController {
         mockMvc.perform(get("/api/travel-test/me"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("5. 답변 배열에 null이 섞여 있으면 400")
+    @WithMockUser(username = TEST_EMAIL)
+    void submit_nullElement() throws Exception {
+        mockMvc.perform(post("/api/travel-test")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "selectedTypes": ["FREE_EXPLORER", null] }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("선택하지 않은 답변이 있습니다"));
+    }
 }
