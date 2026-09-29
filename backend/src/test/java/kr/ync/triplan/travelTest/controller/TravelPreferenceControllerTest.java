@@ -1,4 +1,4 @@
-package kr.ync.triplan.controller;
+package kr.ync.triplan.travelTest.controller;
 
 import kr.ync.triplan.support.BaseController;
 import kr.ync.triplan.member.dto.request.SignupRequest;
@@ -74,10 +74,11 @@ class TravelPreferenceControllerTest extends BaseController {
     }
 
     @Test
-    @DisplayName("4. 인증 없이 조회하면 403")
+    @DisplayName("4. 인증 없이 조회하면 401")
     void getMyResult_unauthenticated() throws Exception {
         mockMvc.perform(get("/api/travel-test/me"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("로그인이 필요합니다."));
     }
 
     @Test

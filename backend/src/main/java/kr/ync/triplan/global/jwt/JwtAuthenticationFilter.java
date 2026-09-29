@@ -16,20 +16,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        String bearer = request.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            String token = bearer.substring(7);
-            if (jwtTokenProvider.validate(token)) {
-                String email = jwtTokenProvider.getEmail(token);
-                Authentication auth = new UsernamePasswordAuthenticationToken(email, null, List.of());
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        }
-        chain.doFilter(request, response);
-    }
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+			throws ServletException, IOException {
+		String bearer = request.getHeader("Authorization");
+		if (bearer != null && bearer.startsWith("Bearer ")) {
+			String token = bearer.substring(7);
+			if (jwtTokenProvider.validate(token)) {
+				String email = jwtTokenProvider.getEmail(token);
+				Authentication auth = new UsernamePasswordAuthenticationToken(email, null, List.of());
+				SecurityContextHolder.getContext().setAuthentication(auth);
+			}
+		}
+		chain.doFilter(request, response);
+	}
 }

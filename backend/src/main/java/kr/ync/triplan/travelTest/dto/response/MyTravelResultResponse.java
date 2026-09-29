@@ -1,7 +1,7 @@
-package kr.ync.triplan.dto.response;
+package kr.ync.triplan.travelTest.dto.response;
 
-import kr.ync.triplan.domain.TravelPreferenceResult;
-import kr.ync.triplan.domain.TravelType;
+import kr.ync.triplan.travelTest.domain.TravelPreferenceResult;
+import kr.ync.triplan.travelTest.domain.TravelType;
 
 import java.time.LocalDateTime;
 

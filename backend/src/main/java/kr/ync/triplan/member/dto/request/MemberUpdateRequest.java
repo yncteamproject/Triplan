@@ -1,4 +1,4 @@
-package kr.ync.triplan.dto.request;
+package kr.ync.triplan.member.dto.request;
 
 import jakarta.validation.constraints.Size;
 

@@ -1,4 +1,4 @@
-package kr.ync.triplan.controller;
+package kr.ync.triplan.member.controller;
 
 import kr.ync.triplan.support.BaseController;
 import kr.ync.triplan.member.dto.request.SignupRequest;
@@ -38,10 +38,11 @@ class MemberControllerTest extends BaseController {
     }
 
     @Test
-    @DisplayName("2. 인증 없이 조회하면 403")
+    @DisplayName("2. 인증 없이 조회하면 401")
     void getMyInfo_unauthenticated() throws Exception {
         mockMvc.perform(get("/api/members/me"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("로그인이 필요합니다."));
     }
 
     @Test

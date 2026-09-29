@@ -1,4 +1,4 @@
-package kr.ync.triplan.exception;
+package kr.ync.triplan.travelTest.exception;
 
 import kr.ync.triplan.global.exception.CustomException;
 import org.springframework.http.HttpStatus;

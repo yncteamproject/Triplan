@@ -1,4 +1,4 @@
-package kr.ync.triplan.domain;
+package kr.ync.triplan.travelTest.domain;
 
 import kr.ync.triplan.member.domain.Member;
 import jakarta.persistence.*;

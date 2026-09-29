@@ -1,6 +1,12 @@
 package kr.ync.triplan.member.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,42 +19,30 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+	@Column(unique = true, nullable = false)
+	private String email;
 
-    @Column(nullable = false)
-    private String password;
+	@Column(nullable = false)
+	private String password;
 
-    @Column(nullable = false)
-    private String nickname;
+	@Column(nullable = false)
+	private String nickname;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+	@Enumerated(EnumType.STRING)
+	private Role role;
 
-    private LocalDateTime createdAt;
+	private LocalDateTime createdAt;
 
-    @Builder
-    public Member(String email, String password, String nickname) {
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.role = Role.USER;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public void updateNickname(String nickname) {
-        if (nickname != null && !nickname.isBlank()) {
-            this.nickname = nickname;
-        }
-    }
-
-    public void updatePassword(String encodedPassword) {
-        if (encodedPassword != null && !encodedPassword.isBlank()) {
-            this.password = encodedPassword;
-        }
-    }
+	@Builder
+	public Member(String email, String password, String nickname) {
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.role = Role.USER;
+		this.createdAt = LocalDateTime.now();
+	}
 }

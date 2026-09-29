@@ -1,15 +1,15 @@
-package kr.ync.triplan.service;
+package kr.ync.triplan.travelTest.service;
 
 import kr.ync.triplan.member.domain.Member;
-import kr.ync.triplan.dto.response.MyTravelResultResponse;
+import kr.ync.triplan.travelTest.dto.response.MyTravelResultResponse;
 import kr.ync.triplan.member.exception.MemberNotFoundException;
-import kr.ync.triplan.exception.TravelResultNotFoundException;
+import kr.ync.triplan.travelTest.exception.TravelResultNotFoundException;
 import kr.ync.triplan.member.repository.MemberRepository;
-import kr.ync.triplan.dto.response.TravelTestResultResponse;
-import kr.ync.triplan.dto.request.TravelTestSubmitRequest;
-import kr.ync.triplan.repository.TravelPreferenceResultRepository;
-import kr.ync.triplan.domain.TravelPreferenceResult;
-import kr.ync.triplan.domain.TravelType;
+import kr.ync.triplan.travelTest.dto.response.TravelTestResultResponse;
+import kr.ync.triplan.travelTest.dto.request.TravelTestSubmitRequest;
+import kr.ync.triplan.travelTest.repository.TravelPreferenceResultRepository;
+import kr.ync.triplan.travelTest.domain.TravelPreferenceResult;
+import kr.ync.triplan.travelTest.domain.TravelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
