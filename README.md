@@ -161,19 +161,64 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 
 2명이 진행합니다.
 
-| 이름 | 담당 | 주요 브랜치 |
-|------|------|-------------|
-| [daengsuk2](https://github.com/daengsuk2) | 팀장, 여행 플래너, 공유 게시판, 인증 · 인가 | `feature/mainPage`, `feature/sharePage` |
-| [yoonhyoguen](https://github.com/yoonhyoguen) | 회원, 마이페이지, 회원 정보 수정, 여행 성향 테스트 | `feature/users`, `feature/myPage`, `feature/updateUser` |
+| 이름 | 담당 | 이슈 라벨 |
+|------|------|-----------|
+| [daengsuk2](https://github.com/daengsuk2) | 팀장, 여행 플래너, 공유 게시판, 인증 · 인가 | `영역: 여행 계획`, `영역: 공유 게시판`, `영역: 공통` |
+| [yoonhyoguen](https://github.com/yoonhyoguen) | 회원, 마이페이지, 회원 정보 수정, 여행 성향 테스트 | `영역: 회원`, `영역: 성향 테스트` |
 
 ## 협업 규칙
 
-### 브랜치 · PR
-1. 작업 전에 `main`을 받아 최신 상태에서 시작합니다.
-2. 브랜치 이름: `feature/{기능}`, `fix/{내용}`, `docs/{내용}`
-3. PR을 올리기 전에 `main`을 자기 브랜치에 한 번 더 합쳐서 충돌을 먼저 해결합니다.
-4. `main`에는 직접 push하지 않고 PR → 리뷰 → merge 순서로 합칩니다.
-5. PR 본문에는 주요 변경, 팀원이 확인할 점, 테스트 결과를 적습니다.
+### 작업 흐름
+
+```
+이슈 확인 → main 최신화 → 브랜치 생성 → 작업 + 테스트 → PR (Closes #번호) → 리뷰 → merge → 브랜치 삭제 → 노션 상태 변경
+```
+
+1. **할 일은 이슈로 시작합니다.** 새 작업이나 버그는 GitHub Issues에 먼저 올리고, 담당자와 라벨(종류 · 영역)을 붙입니다.
+2. **이슈 하나당 브랜치 하나.** 작업이 끝나면 브랜치를 지우고, 다음 작업은 최신 `main`에서 새로 만듭니다. 한 브랜치를 오래 쓰지 않습니다.
+3. **`main`에는 직접 push하지 않습니다.** 반드시 PR → 리뷰 → merge 순서로 합칩니다.
+4. **리뷰는 서로 한 번씩.** 상대방 PR은 Files changed를 보고 Approve 또는 코멘트를 남깁니다.
+
+### 브랜치 이름
+
+```
+{종류}/{이슈번호}-{짧은-설명}
+```
+
+| 종류 | 이슈 라벨 | 예시 |
+|------|-----------|------|
+| `feature` | `enhancement` | `feature/12-login-page` |
+| `fix` | `bug` | `fix/7-delete-cascade` |
+| `refactor` | `refactor` | `refactor/11-traveltest-package` |
+| `docs` | `documentation` | `docs/13-api-update` |
+
+- 소문자와 하이픈(`-`)만 씁니다.
+- 이슈가 없는 작은 작업은 번호를 생략해도 됩니다 (예: `docs/branch-rules`).
+
+### 명령어로 보기
+
+```bash
+# 1. 최신 main에서 시작
+git checkout main
+git pull origin main
+git checkout -b fix/7-delete-cascade
+
+# 2. 작업하고 커밋 (여러 번 해도 됨)
+git add {바꾼 파일}
+git commit
+
+# 3. PR 올리기 전에 main 변경을 한 번 더 받아서 충돌 해결
+git fetch origin
+git merge origin/main
+
+# 4. 올리고 GitHub에서 PR 생성
+git push -u origin fix/7-delete-cascade
+```
+
+### PR
+- PR을 열면 템플릿(`.github/pull_request_template.md`)이 자동으로 채워집니다. 항목을 채우고 체크리스트를 확인합니다.
+- 관련 이슈는 `Closes #번호`로 적습니다. merge되면 이슈가 자동으로 닫힙니다.
+- merge한 뒤에는 원격 브랜치를 삭제하고, 노션 기능 목록의 상태를 바꿉니다.
 
 ### 커밋 메시지
 ```
