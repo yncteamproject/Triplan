@@ -5,6 +5,7 @@ import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.share.dto.response.SharePageListResponse;
 import kr.ync.triplan.share.dto.response.SharePageResponse;
+import kr.ync.triplan.share.dto.response.SharedTripResponse;
 import kr.ync.triplan.share.service.SharePageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,11 @@ public class SharePageController {
 	@GetMapping("/{id}")
 	public ResponseEntity<SharePageResponse> getDetail(@PathVariable Long id) {
 		return ResponseEntity.ok(sharePageService.getDetail(id));
+	}
+
+	@GetMapping("/{id}/trip")
+	public ResponseEntity<SharedTripResponse> getSharedTrip(@PathVariable Long id) {
+		return ResponseEntity.ok(sharePageService.getSharedTrip(id));
 	}
 
 	@PutMapping("/{id}")

@@ -8,11 +8,15 @@ import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.share.dto.response.SharePageListResponse;
 import kr.ync.triplan.share.dto.response.SharePageResponse;
+import kr.ync.triplan.share.dto.response.SharedTripResponse;
 import kr.ync.triplan.share.exception.SharePageNotFoundException;
 import kr.ync.triplan.share.repository.CommentRepository;
 import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.trip.domain.Trip;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
+import kr.ync.triplan.trip.repository.LodgingRepository;
+import kr.ync.triplan.trip.repository.StopRepository;
+import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,9 @@ public class SharePageServiceImpl implements SharePageService {
 	private final TripRepository tripRepository;
 	private final MemberRepository memberRepository;
 	private final CommentRepository commentRepository;
+	private final StopRepository stopRepository;
+	private final TransportSegmentRepository transportSegmentRepository;
+	private final LodgingRepository lodgingRepository;
 
 	// 게시글 작성 (본인 여행만 공유 가능)
 	@Override
@@ -67,6 +74,18 @@ public class SharePageServiceImpl implements SharePageService {
 		SharePage sharePage = findById(id);
 		sharePage.setViewCount(sharePage.getViewCount() + 1);
 		return SharePageResponse.from(sharePage);
+	}
+
+	// 공유된 여행 상세 (누구나 조회, 예약번호 제외)
+	@Override
+	public SharedTripResponse getSharedTrip(Long id) {
+		Trip trip = findById(id).getTrip();
+		return SharedTripResponse.of(
+				trip,
+				stopRepository.findByTripIdOrderByStopOrderAsc(trip.getId()),
+				transportSegmentRepository.findByTripId(trip.getId()),
+				lodgingRepository.findByTripId(trip.getId())
+		);
 	}
 
 	// 게시글 수정 (작성자만)

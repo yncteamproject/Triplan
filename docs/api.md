@@ -1,7 +1,7 @@
 # API 명세
 
 백엔드 기본 주소: `http://localhost:8080`
-기능 ID(M/T/S/P)와 규칙 ID(B1~B10)는 [요구사항 명세](requirements.md)와 같습니다.
+기능 ID(M/T/S/P)와 규칙 ID(B1~B12)는 [요구사항 명세](requirements.md)와 같습니다.
 
 ## 공통
 
@@ -84,6 +84,7 @@ Authorization: Bearer {accessToken}
 | S1 | GET | `/api/share-pages/{id}` | 🔓 | 200 |
 | S1 | PUT | `/api/share-pages/{id}` | 🔒 작성자 | 200 |
 | S1 | DELETE | `/api/share-pages/{id}` | 🔒 작성자 | 204 |
+| S4 | GET | `/api/share-pages/{id}/trip` | 🔓 | 200 |
 | S2 | POST | `/api/share-pages/{sharePageId}/comments` | 🔒 | 201 |
 | S2 | GET | `/api/share-pages/{sharePageId}/comments` | 🔓 | 200 |
 | S2 | DELETE | `/api/comments/{commentId}` | 🔒 작성자 | 204 |
@@ -242,7 +243,7 @@ Authorization: Bearer {accessToken}
 
 ## 공유 게시판 (S)
 
-목록 · 상세 · 댓글 목록은 로그인 없이 볼 수 있고, 작성은 로그인, 수정 · 삭제는 작성자만 가능합니다 (B3).
+목록 · 상세 · 댓글 목록 · 공유된 여행 상세는 로그인 없이 볼 수 있고, 작성은 로그인, 수정 · 삭제는 작성자만 가능합니다 (B3).
 
 ### S1 게시글
 
@@ -267,12 +268,12 @@ Authorization: Bearer {accessToken}
 
 **목록 `GET /api/share-pages`** 🔓: 최신 작성순으로 반환합니다.
 
-**삭제 `DELETE /api/share-pages/{id}`**: 게시글에 달린 댓글도 함께 삭제됩니다.
-
 ```json
 [ { "id": 1, "title": "제주도 3박 4일", "writerId": 1, "writerNickname": "홍길동",
     "writeDate": "2026-09-30T14:00:00", "viewCount": 1 } ]
 ```
+
+**삭제 `DELETE /api/share-pages/{id}`**: 게시글에 달린 댓글도 함께 삭제됩니다.
 
 ### S2 댓글
 
@@ -291,6 +292,30 @@ Authorization: Bearer {accessToken}
 **목록 `GET /api/share-pages/{sharePageId}/comments`** 🔓: 등록순으로 반환합니다.
 
 **삭제 `DELETE /api/comments/{commentId}`**: 작성자만 가능합니다.
+
+### S4 공유된 여행 상세 — `GET /api/share-pages/{id}/trip` 🔓
+
+게시글에 연결된 여행의 방문지 · 이동 구간 · 숙소 · 경비를 보여줍니다. 조회수는 오르지 않습니다.
+예약번호(`reservationNo`)는 개인 정보라 응답에 넣지 않습니다 (B12).
+
+- `stops`는 방문 순서(`stopOrder`)대로 정렬됩니다.
+- 이동 구간은 `fromStopId` · `toStopId`로 `stops`의 `id`를 가리킵니다.
+
+```json
+{ "tripId": 1, "title": "제주도 여행", "startDate": "2026-10-01", "endDate": "2026-10-04",
+  "stops": [
+    { "id": 1, "name": "제주공항", "date": "2026-10-01", "time": "10:00:00",
+      "memo": null, "imageUrl": null, "stopOrder": 1 },
+    { "id": 2, "name": "제주 호텔", "date": "2026-10-01", "time": "15:00:00",
+      "memo": null, "imageUrl": null, "stopOrder": 2 } ],
+  "transportSegments": [
+    { "id": 1, "fromStopId": 1, "toStopId": 2, "mode": "CAR",
+      "departTime": "2026-10-01T10:30:00", "arriveTime": "2026-10-01T11:30:00", "cost": 20000 } ],
+  "lodgings": [
+    { "id": 1, "name": "제주 호텔", "checkIn": "2026-10-01T15:00:00",
+      "checkOut": "2026-10-02T11:00:00", "cost": 100000 } ],
+  "transportCost": 20000, "lodgingCost": 100000, "totalCost": 120000 }
+```
 
 ---
 
