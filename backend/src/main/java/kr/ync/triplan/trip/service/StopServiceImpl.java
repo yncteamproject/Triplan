@@ -8,6 +8,7 @@ import kr.ync.triplan.trip.dto.response.StopResponse;
 import kr.ync.triplan.trip.exception.StopNotFoundException;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
 import kr.ync.triplan.trip.repository.StopRepository;
+import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class StopServiceImpl implements StopService {
 
 	private final StopRepository stopRepository;
 	private final TripRepository tripRepository;
+	private final TransportSegmentRepository transportSegmentRepository;
 
 	@Override
 	@Transactional
@@ -70,7 +72,9 @@ public class StopServiceImpl implements StopService {
 	@Override
 	@Transactional
 	public void delete(String email, Long id) {
-		stopRepository.delete(findOwnedStop(email, id));
+		Stop stop = findOwnedStop(email, id);
+		transportSegmentRepository.deleteByFromStopIdOrToStopId(id, id);
+		stopRepository.delete(stop);
 	}
 
 	private Trip findOwnedTrip(String email, Long tripId) {

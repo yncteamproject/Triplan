@@ -3,6 +3,8 @@ package kr.ync.triplan.trip.service;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.exception.MemberNotFoundException;
 import kr.ync.triplan.member.repository.MemberRepository;
+import kr.ync.triplan.share.repository.CommentRepository;
+import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.trip.domain.Trip;
 import kr.ync.triplan.trip.dto.request.TripCreateRequest;
 import kr.ync.triplan.trip.dto.request.TripUpdateRequest;
@@ -10,6 +12,7 @@ import kr.ync.triplan.trip.dto.response.TripEstimateResponse;
 import kr.ync.triplan.trip.dto.response.TripResponse;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
 import kr.ync.triplan.trip.repository.LodgingRepository;
+import kr.ync.triplan.trip.repository.StopRepository;
 import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,9 @@ public class TripServiceImpl implements TripService {
 	private final MemberRepository memberRepository;
 	private final TransportSegmentRepository transportSegmentRepository;
 	private final LodgingRepository lodgingRepository;
+	private final StopRepository stopRepository;
+	private final SharePageRepository sharePageRepository;
+	private final CommentRepository commentRepository;
 
 	@Override
 	@Transactional
@@ -69,7 +75,15 @@ public class TripServiceImpl implements TripService {
 	@Override
 	@Transactional
 	public void delete(String email, Long id) {
-		tripRepository.delete(findOwnedTrip(email, id));
+		Trip trip = findOwnedTrip(email, id);
+
+		// 외래키 때문에 하위 데이터부터 삭제 (이동 구간이 방문지를 참조하므로 방문지보다 먼저)
+		commentRepository.deleteBySharePageTripId(id);
+		sharePageRepository.deleteByTripId(id);
+		transportSegmentRepository.deleteByTripId(id);
+		lodgingRepository.deleteByTripId(id);
+		stopRepository.deleteByTripId(id);
+		tripRepository.delete(trip);
 	}
 
 	@Override

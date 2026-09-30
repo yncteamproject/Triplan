@@ -8,4 +8,6 @@ import java.util.List;
 public interface LodgingRepository extends JpaRepository<Lodging, Long> {
 
 	List<Lodging> findByTripId(Long tripId);
+
+	void deleteByTripId(Long tripId);
 }

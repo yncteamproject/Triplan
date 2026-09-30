@@ -10,4 +10,6 @@ public interface SharePageRepository extends JpaRepository<SharePage, Long> {
 	List<SharePage> findAllByOrderByWriteDateDesc();
 
 	List<SharePage> findByTripId(Long tripId);
+
+	void deleteByTripId(Long tripId);
 }

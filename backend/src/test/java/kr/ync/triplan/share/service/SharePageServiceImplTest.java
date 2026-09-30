@@ -1,14 +1,17 @@
 package kr.ync.triplan.share.service;
 
+import jakarta.persistence.EntityManager;
 import kr.ync.triplan.global.exception.ForbiddenException;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.repository.MemberRepository;
+import kr.ync.triplan.share.domain.Comment;
 import kr.ync.triplan.share.domain.SharePage;
 import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.share.dto.response.SharePageListResponse;
 import kr.ync.triplan.share.dto.response.SharePageResponse;
 import kr.ync.triplan.share.exception.SharePageNotFoundException;
+import kr.ync.triplan.share.repository.CommentRepository;
 import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.trip.domain.Trip;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
@@ -42,6 +45,12 @@ class SharePageServiceImplTest {
 
 	@Autowired
 	private MemberRepository memberRepository;
+
+	@Autowired
+	private CommentRepository commentRepository;
+
+	@Autowired
+	private EntityManager entityManager;
 
 	private static final long NON_EXISTING_ID = 99999L;
 
@@ -220,5 +229,28 @@ class SharePageServiceImplTest {
 		// when & then
 		assertThatThrownBy(() -> sharePageService.delete("other@test.com", saved.getId()))
 				.isInstanceOf(ForbiddenException.class);
+	}
+
+	@Test
+	@DisplayName("delete - 댓글이 달린 게시글도 삭제되고, 댓글도 함께 삭제됨")
+	void delete_withComments() {
+		// given
+		SharePage saved = savedSharePage("제목", "내용");
+		Comment comment = commentRepository.save(
+				Comment.builder()
+						.content("좋아요").sharePage(saved)
+						.writer(savedMember("other@test.com"))
+						.createdAt(LocalDateTime.now())
+						.build()
+		);
+		entityManager.flush();
+
+		// when
+		sharePageService.delete(member.getEmail(), saved.getId());
+		entityManager.flush(); // 삭제 SQL을 실제로 DB에 보내서 외래키 위반 여부 확인
+
+		// then
+		assertThat(sharePageRepository.findById(saved.getId())).isEmpty();
+		assertThat(commentRepository.findById(comment.getId())).isEmpty();
 	}
 }

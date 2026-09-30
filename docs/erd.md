@@ -130,18 +130,22 @@ erDiagram
 | B8 | `member.email` UNIQUE |
 | B10 | `transport_segment.from_stop_id` · `to_stop_id`의 `stop.trip_id`가 본인 여행 |
 
-## 삭제할 때 주의
+## 삭제 규칙
 
-하위 데이터가 있는 행을 삭제하면 외래키 때문에 실패합니다 (현재 500 에러, [알려진 문제](requirements.md#알려진-문제)).
+부모를 삭제하면 하위 데이터도 함께 삭제됩니다. DB의 `ON DELETE CASCADE`가 아니라 서비스 코드에서 하위 데이터부터 순서대로 지웁니다.
 
-| 삭제 대상 | 막는 데이터 |
-|-----------|-------------|
-| trip | stop, transport_segment, lodging, share_page |
-| stop | 이 방문지를 출발지 · 도착지로 쓰는 transport_segment |
-| share_page | comment |
+| 삭제 대상 | 함께 삭제되는 데이터 | 처리 위치 |
+|-----------|----------------------|-----------|
+| trip | comment(공유 게시글의 댓글) → share_page → transport_segment → lodging → stop | `TripServiceImpl.delete` |
+| stop | 이 방문지를 출발지 · 도착지로 쓰는 transport_segment | `StopServiceImpl.delete` |
+| share_page | comment | `SharePageServiceImpl.delete` |
+
+여행을 삭제하면 그 여행을 공유한 게시글과, 게시글에 달린 **다른 사람의 댓글**도 함께 삭제됩니다.
+새 테이블이 부모 테이블을 참조하게 되면 위 서비스의 삭제 순서에도 추가해야 합니다.
 
 ## 변경 이력
 
 | 날짜 | 변경 | 이유 |
 |------|------|------|
 | 2026-09-30 | `trip.user_id`, `share_page.writer_id`, `comment.writer_id`(문자열) 삭제 → `member_id`(FK)로 교체 | 로그인한 회원과 연결해서 본인 확인(B2 · B3)을 하기 위해 |
+| 2026-09-30 | 삭제 시 하위 데이터 함께 삭제 ([#7](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/7)) | 하위 데이터가 있으면 외래키 때문에 500 에러가 나던 문제(K1) 해결 |
