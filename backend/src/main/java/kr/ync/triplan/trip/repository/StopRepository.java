@@ -8,4 +8,6 @@ import java.util.List;
 public interface StopRepository extends JpaRepository<Stop, Long> {
 
 	List<Stop> findByTripIdOrderByStopOrderAsc(Long tripId);
+
+	void deleteByTripId(Long tripId);
 }

@@ -1,9 +1,12 @@
 package kr.ync.triplan.trip.service;
 
+import jakarta.persistence.EntityManager;
 import kr.ync.triplan.global.exception.ForbiddenException;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.repository.MemberRepository;
 import kr.ync.triplan.trip.domain.Stop;
+import kr.ync.triplan.trip.domain.TransportMode;
+import kr.ync.triplan.trip.domain.TransportSegment;
 import kr.ync.triplan.trip.domain.Trip;
 import kr.ync.triplan.trip.dto.request.StopCreateRequest;
 import kr.ync.triplan.trip.dto.request.StopUpdateRequest;
@@ -11,6 +14,7 @@ import kr.ync.triplan.trip.dto.response.StopResponse;
 import kr.ync.triplan.trip.exception.StopNotFoundException;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
 import kr.ync.triplan.trip.repository.StopRepository;
+import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -41,6 +46,12 @@ class StopServiceImplTest {
 
 	@Autowired
 	private MemberRepository memberRepository;
+
+	@Autowired
+	private TransportSegmentRepository transportSegmentRepository;
+
+	@Autowired
+	private EntityManager entityManager;
 
 	private static final long NON_EXISTING_ID = 99999L;
 
@@ -201,5 +212,31 @@ class StopServiceImplTest {
 	void delete_notFound() {
 		assertThatThrownBy(() -> stopService.delete(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(StopNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("delete - 이동 구간의 출발지·도착지로 쓰인 방문지도 삭제되고, 그 이동 구간도 함께 삭제됨")
+	void delete_usedByTransportSegment() {
+		// given
+		Stop fromStop = savedStop("공항", 1);
+		Stop toStop = savedStop("숙소", 2);
+		TransportSegment segment = transportSegmentRepository.save(
+				TransportSegment.builder()
+						.trip(trip).fromStop(fromStop).toStop(toStop)
+						.mode(TransportMode.CAR)
+						.departTime(LocalDateTime.now())
+						.arriveTime(LocalDateTime.now().plusHours(1))
+						.build()
+		);
+		entityManager.flush();
+
+		// when
+		stopService.delete(member.getEmail(), toStop.getId());
+		entityManager.flush(); // 삭제 SQL을 실제로 DB에 보내서 외래키 위반 여부 확인
+
+		// then
+		assertThat(stopRepository.findById(toStop.getId())).isEmpty();
+		assertThat(transportSegmentRepository.findById(segment.getId())).isEmpty();
+		assertThat(stopRepository.findById(fromStop.getId())).isPresent();
 	}
 }

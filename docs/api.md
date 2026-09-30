@@ -165,6 +165,8 @@ Authorization: Bearer {accessToken}
 
 **목록 `GET /api/trips`**: 로그인한 사용자의 여행만 배열로 반환합니다.
 
+**삭제 `DELETE /api/trips/{id}`**: 방문지 · 이동 구간 · 숙소와, 이 여행을 공유한 게시글(댓글 포함)도 함께 삭제됩니다.
+
 ### T5 자동 견적 — `GET /api/trips/{id}/estimate`
 
 이동 구간 비용과 숙소 비용을 합산합니다. 비용이 비어 있는 항목은 0원으로 계산합니다.
@@ -194,6 +196,8 @@ Authorization: Bearer {accessToken}
 ```
 
 **목록 `GET /api/trips/{tripId}/stops`**: `stopOrder` 오름차순으로 반환합니다.
+
+**삭제 `DELETE /api/stops/{id}`**: 이 방문지를 출발지 · 도착지로 쓰는 이동 구간도 함께 삭제됩니다.
 
 ### T3 이동 구간
 
@@ -262,6 +266,8 @@ Authorization: Bearer {accessToken}
 ```
 
 **목록 `GET /api/share-pages`** 🔓: 최신 작성순으로 반환합니다.
+
+**삭제 `DELETE /api/share-pages/{id}`**: 게시글에 달린 댓글도 함께 삭제됩니다.
 
 ```json
 [ { "id": 1, "title": "제주도 3박 4일", "writerId": 1, "writerNickname": "홍길동",

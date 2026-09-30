@@ -8,4 +8,8 @@ import java.util.List;
 public interface TransportSegmentRepository extends JpaRepository<TransportSegment, Long> {
 
 	List<TransportSegment> findByTripId(Long tripId);
+
+	void deleteByTripId(Long tripId);
+
+	void deleteByFromStopIdOrToStopId(Long fromStopId, Long toStopId);
 }

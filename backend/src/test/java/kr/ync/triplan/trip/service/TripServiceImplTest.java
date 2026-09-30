@@ -1,8 +1,13 @@
 package kr.ync.triplan.trip.service;
 
+import jakarta.persistence.EntityManager;
 import kr.ync.triplan.global.exception.ForbiddenException;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.repository.MemberRepository;
+import kr.ync.triplan.share.domain.Comment;
+import kr.ync.triplan.share.domain.SharePage;
+import kr.ync.triplan.share.repository.CommentRepository;
+import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.trip.domain.Lodging;
 import kr.ync.triplan.trip.domain.Stop;
 import kr.ync.triplan.trip.domain.TransportMode;
@@ -52,6 +57,15 @@ class TripServiceImplTest {
 
 	@Autowired
 	private LodgingRepository lodgingRepository;
+
+	@Autowired
+	private SharePageRepository sharePageRepository;
+
+	@Autowired
+	private CommentRepository commentRepository;
+
+	@Autowired
+	private EntityManager entityManager;
 
 	private static final long NON_EXISTING_ID = 99999L;
 
@@ -191,6 +205,58 @@ class TripServiceImplTest {
 	void delete_notFound() {
 		assertThatThrownBy(() -> tripService.delete(member.getEmail(), NON_EXISTING_ID))
 				.isInstanceOf(TripNotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("delete - 방문지·이동 구간·숙소·공유 게시글·댓글이 있어도 함께 삭제됨")
+	void delete_withChildren() {
+		// given
+		Trip saved = savedTrip("제주도 여행", member);
+		Stop fromStop = stopRepository.save(
+				Stop.builder().trip(saved).name("공항").date(LocalDate.now()).build());
+		Stop toStop = stopRepository.save(
+				Stop.builder().trip(saved).name("숙소").date(LocalDate.now()).build());
+		transportSegmentRepository.save(
+				TransportSegment.builder()
+						.trip(saved).fromStop(fromStop).toStop(toStop)
+						.mode(TransportMode.CAR)
+						.departTime(LocalDateTime.now())
+						.arriveTime(LocalDateTime.now().plusHours(1))
+						.build()
+		);
+		lodgingRepository.save(
+				Lodging.builder()
+						.trip(saved).name("제주 호텔")
+						.checkIn(LocalDateTime.now())
+						.checkOut(LocalDateTime.now().plusDays(1))
+						.build()
+		);
+		SharePage sharePage = sharePageRepository.save(
+				SharePage.builder()
+						.title("제주도 후기").trip(saved).writer(member)
+						.writeDate(LocalDateTime.now())
+						.build()
+		);
+		commentRepository.save(
+				Comment.builder()
+						.content("좋아요").sharePage(sharePage)
+						.writer(savedMember("other@test.com"))
+						.createdAt(LocalDateTime.now())
+						.build()
+		);
+		entityManager.flush();
+
+		// when
+		tripService.delete(member.getEmail(), saved.getId());
+		entityManager.flush(); // 삭제 SQL을 실제로 DB에 보내서 외래키 위반 여부 확인
+
+		// then
+		assertThat(tripRepository.findById(saved.getId())).isEmpty();
+		assertThat(stopRepository.findByTripIdOrderByStopOrderAsc(saved.getId())).isEmpty();
+		assertThat(transportSegmentRepository.findByTripId(saved.getId())).isEmpty();
+		assertThat(lodgingRepository.findByTripId(saved.getId())).isEmpty();
+		assertThat(sharePageRepository.findByTripId(saved.getId())).isEmpty();
+		assertThat(commentRepository.findBySharePageIdOrderByCreatedAtAsc(sharePage.getId())).isEmpty();
 	}
 
 	@Test

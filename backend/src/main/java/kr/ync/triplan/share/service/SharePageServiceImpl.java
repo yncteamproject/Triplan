@@ -9,6 +9,7 @@ import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.share.dto.response.SharePageListResponse;
 import kr.ync.triplan.share.dto.response.SharePageResponse;
 import kr.ync.triplan.share.exception.SharePageNotFoundException;
+import kr.ync.triplan.share.repository.CommentRepository;
 import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.trip.domain.Trip;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
@@ -28,6 +29,7 @@ public class SharePageServiceImpl implements SharePageService {
 	private final SharePageRepository sharePageRepository;
 	private final TripRepository tripRepository;
 	private final MemberRepository memberRepository;
+	private final CommentRepository commentRepository;
 
 	// 게시글 작성 (본인 여행만 공유 가능)
 	@Override
@@ -85,6 +87,7 @@ public class SharePageServiceImpl implements SharePageService {
 	public void delete(String email, Long id) {
 		SharePage sharePage = findById(id);
 		sharePage.validateWriter(email);
+		commentRepository.deleteBySharePageId(id);
 		sharePageRepository.delete(sharePage);
 	}
 
