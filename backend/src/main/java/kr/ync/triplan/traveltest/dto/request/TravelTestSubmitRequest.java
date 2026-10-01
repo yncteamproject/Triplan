@@ -1,8 +1,8 @@
-package kr.ync.triplan.travelTest.dto.request;
+package kr.ync.triplan.traveltest.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import kr.ync.triplan.travelTest.domain.TravelType;
+import kr.ync.triplan.traveltest.domain.TravelType;
 
 import java.util.List;
 

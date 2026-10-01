@@ -97,7 +97,7 @@ backend/src/main/java/kr/ync/triplan/
 │  └─ service/     MemberService(Impl), MyPageService
 ├─ trip/                           # 여행 계획 (Trip + Stop + TransportSegment + Lodging)
 ├─ share/                          # 공유 게시판 (SharePage + Comment)
-└─ travelTest/                     # 여행 성향 테스트
+└─ traveltest/                     # 여행 성향 테스트
 
 backend/src/test/java/kr/ync/triplan/   # main과 같은 패키지 구조
 └─ support/BaseController.java          # MockMvc + Security, 로그인 사용자 · 토큰 헬퍼

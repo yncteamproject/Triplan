@@ -1,7 +1,7 @@
-package kr.ync.triplan.travelTest.repository;
+package kr.ync.triplan.traveltest.repository;
 
 import kr.ync.triplan.member.domain.Member;
-import kr.ync.triplan.travelTest.domain.TravelPreferenceResult;
+import kr.ync.triplan.traveltest.domain.TravelPreferenceResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
