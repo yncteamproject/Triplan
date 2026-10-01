@@ -45,7 +45,8 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
 						.requestMatchers(HttpMethod.GET,
-								"/api/share-pages", "/api/share-pages/*", "/api/share-pages/*/comments").permitAll()
+								"/api/share-pages", "/api/share-pages/*", "/api/share-pages/*/comments",
+								"/api/share-pages/*/trip").permitAll()
 						.anyRequest().authenticated())
 				.exceptionHandling(e -> e
 						.authenticationEntryPoint((request, response, ex) ->

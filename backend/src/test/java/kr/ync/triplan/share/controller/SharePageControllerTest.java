@@ -6,7 +6,14 @@ import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.support.BaseController;
+import kr.ync.triplan.trip.domain.Lodging;
+import kr.ync.triplan.trip.domain.Stop;
+import kr.ync.triplan.trip.domain.TransportMode;
+import kr.ync.triplan.trip.domain.TransportSegment;
 import kr.ync.triplan.trip.domain.Trip;
+import kr.ync.triplan.trip.repository.LodgingRepository;
+import kr.ync.triplan.trip.repository.StopRepository;
+import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +35,15 @@ class SharePageControllerTest extends BaseController {
 
 	@Autowired
 	private TripRepository tripRepository;
+
+	@Autowired
+	private StopRepository stopRepository;
+
+	@Autowired
+	private TransportSegmentRepository transportSegmentRepository;
+
+	@Autowired
+	private LodgingRepository lodgingRepository;
 
 	private Trip trip;
 
@@ -246,5 +262,50 @@ class SharePageControllerTest extends BaseController {
 		mockMvc.perform(delete("/api/share-pages/{id}", saved.getId())
 						.header(HttpHeaders.AUTHORIZATION, bearer(createMember("other@test.com"))))
 				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages/{id}/trip - 비로그인도 조회 가능, 예약번호는 공개하지 않음")
+	void getSharedTrip_endpoint() throws Exception {
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+		Stop fromStop = stopRepository.save(
+				Stop.builder().trip(trip).name("공항").date(LocalDate.now()).stopOrder(1).build());
+		Stop toStop = stopRepository.save(
+				Stop.builder().trip(trip).name("숙소").date(LocalDate.now()).stopOrder(2).build());
+		transportSegmentRepository.save(
+				TransportSegment.builder()
+						.trip(trip).fromStop(fromStop).toStop(toStop)
+						.mode(TransportMode.CAR)
+						.departTime(LocalDateTime.now())
+						.arriveTime(LocalDateTime.now().plusHours(1))
+						.cost(20000).reservationNo("RES-SECRET")
+						.build()
+		);
+		lodgingRepository.save(
+				Lodging.builder()
+						.trip(trip).name("제주 호텔")
+						.checkIn(LocalDateTime.now())
+						.checkOut(LocalDateTime.now().plusDays(1))
+						.cost(100000).reservationNo("RES-SECRET")
+						.build()
+		);
+
+		mockMvc.perform(get("/api/share-pages/{id}/trip", saved.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.title").value("제주도 여행"))
+				.andExpect(jsonPath("$.stops[0].name").value("공항"))
+				.andExpect(jsonPath("$.stops[1].name").value("숙소"))
+				.andExpect(jsonPath("$.transportSegments[0].mode").value("CAR"))
+				.andExpect(jsonPath("$.transportSegments[0].reservationNo").doesNotExist())
+				.andExpect(jsonPath("$.lodgings[0].name").value("제주 호텔"))
+				.andExpect(jsonPath("$.lodgings[0].reservationNo").doesNotExist())
+				.andExpect(jsonPath("$.totalCost").value(120000));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages/{id}/trip - 존재하지 않으면 404")
+	void getSharedTrip_endpoint_notFound() throws Exception {
+		mockMvc.perform(get("/api/share-pages/{id}/trip", 99999L))
+				.andExpect(status().isNotFound());
 	}
 }
