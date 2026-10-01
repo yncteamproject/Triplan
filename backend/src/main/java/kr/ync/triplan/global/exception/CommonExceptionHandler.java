@@ -1,7 +1,7 @@
 package kr.ync.triplan.global.exception;
 
 import kr.ync.triplan.member.controller.MemberController;
-import kr.ync.triplan.travelTest.controller.TravelPreferenceController;
+import kr.ync.triplan.traveltest.controller.TravelPreferenceController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

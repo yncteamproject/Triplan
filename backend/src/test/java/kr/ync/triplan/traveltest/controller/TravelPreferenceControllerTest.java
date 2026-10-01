@@ -1,4 +1,4 @@
-package kr.ync.triplan.travelTest.controller;
+package kr.ync.triplan.traveltest.controller;
 
 import kr.ync.triplan.support.BaseController;
 import kr.ync.triplan.member.dto.request.SignupRequest;

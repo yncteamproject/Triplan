@@ -98,7 +98,7 @@ erDiagram
 | lodging | Lodging | trip | 여행의 숙소 |
 | share_page | SharePage | share | 여행 계획을 공유한 게시글 |
 | comment | Comment | share | 게시글 댓글 |
-| travel_preference_result | TravelPreferenceResult | travelTest | 여행 성향 테스트 결과 (여러 번 하면 여러 건) |
+| travel_preference_result | TravelPreferenceResult | traveltest | 여행 성향 테스트 결과 (여러 번 하면 여러 건) |
 
 ## 제약 조건
 

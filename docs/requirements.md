@@ -146,7 +146,7 @@
 | 여행지 | 국내 여행 | 해외(일본)는 API 카드 등록 · 여행지 정보 재기획 부담으로 기각 |
 | 인증 방식 | JWT (세션 없음) | React와 백엔드가 분리된 구조 |
 | DB | PostgreSQL (Neon), 팀 공용 | 설치 없이 모두 같은 DB 사용 |
-| 패키지 | `global` + 기능별(member / trip / share / travelTest), 기능 안에서 계층 | 담당 영역과 패키지를 맞춰 충돌을 줄이기 위해 |
+| 패키지 | `global` + 기능별(member / trip / share / traveltest), 기능 안에서 계층 | 담당 영역과 패키지를 맞춰 충돌을 줄이기 위해 |
 | 작성자 · 주인 저장 | 문자열 ID가 아니라 `member_id` FK | 로그인한 회원과 연결해 본인 확인을 하기 위해 |
 | 테스트 | `@SpringBootTest` + 실제 DB + `@Transactional` 롤백 | 수업(ex02) 방식과 동일, 실제 DB 동작까지 확인 |
 | 로그인 실패 메시지 | 이메일 · 비밀번호 구분 없이 하나로 | 가입된 이메일을 알아낼 수 없도록 (B9) |
@@ -160,5 +160,5 @@
 | K2 | 게시글 설명(2000자 허용) · 댓글(500자 허용)의 DB 컬럼이 기본 255자 | 256자 이상이면 검증은 통과하고 저장 단계에서 500 에러 | 엔티티에 `@Column(length = ...)` 지정 | ⏳ [#8](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/8) |
 | K3 | 내 정보 수정에서 비밀번호를 `""`로 보내면 8자 검증에 걸림 | "비우면 기존 값 유지"가 동작하지 않고 400 | 빈 값 허용 검증으로 변경, 또는 프론트에서 필드를 빼고 전송 | ⏳ [#9](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/9) |
 | K4 | `MyPageMemberRepository`와 `MemberRepository`가 같은 `Member`를 다룸 | 동작은 하지만 중복 | `Member`에 수정 메서드 추가 후 하나로 통합 | ⏳ [#10](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/10) |
-| K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest` 등으로 변경 검토 | ⏳ [#11](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/11) |
+| K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest`로 변경 | ✅ [#11](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/11) |
 | K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ⏳ |
