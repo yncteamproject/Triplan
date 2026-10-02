@@ -148,4 +148,4 @@ erDiagram
 | 날짜 | 변경 | 이유 |
 |------|------|------|
 | 2026-09-30 | `trip.user_id`, `share_page.writer_id`, `comment.writer_id`(문자열) 삭제 → `member_id`(FK)로 교체 | 로그인한 회원과 연결해서 본인 확인(B2 · B3)을 하기 위해 |
-| 2026-09-30 | 삭제 시 하위 데이터 함께 삭제 ([#7](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/7)) | 하위 데이터가 있으면 외래키 때문에 500 에러가 나던 문제(K1) 해결 |
+| 2026-09-30 | 삭제 시 하위 데이터 함께 삭제 ([#7](https://github.com/yncteamproject/Triplan/issues/7)) | 하위 데이터가 있으면 외래키 때문에 500 에러가 나던 문제(K1) 해결 |

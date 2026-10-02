@@ -115,7 +115,7 @@
   - 응답에 예약번호가 없다.
   - 없는 게시글이면 404.
 
-### S5 공유된 여행을 내 여행으로 복사 (예정, [#15](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/15))
+### S5 공유된 여행을 내 여행으로 복사 (예정, [#15](https://github.com/yncteamproject/Triplan/issues/15))
 작성자가 복사를 허용한 게시글의 여행을 내 여행으로 복사합니다. 복사 수를 보여줍니다.
 
 ## 여행 성향 테스트 (P)
@@ -147,7 +147,7 @@
 | B8 | 같은 이메일로 중복 가입 불가 | 409 | ✅ |
 | B9 | 로그인 실패 시 "이메일 없음"과 "비밀번호 틀림"을 구분하지 않음 (가입 여부 노출 방지) | 401 | ✅ |
 | B10 | 이동 구간의 출발 · 도착지는 본인 여행의 방문지만 | 403 | ✅ |
-| B11 | 공유된 여행은 작성자가 복사를 허용한 경우에만 복사 가능 (작성자 본인은 예외) | 403 | ⏳ [#15](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/15) |
+| B11 | 공유된 여행은 작성자가 복사를 허용한 경우에만 복사 가능 (작성자 본인은 예외) | 403 | ⏳ [#15](https://github.com/yncteamproject/Triplan/issues/15) |
 | B12 | 이동 · 숙소 예약번호는 공개하지 않고, 복사할 때도 가져가지 않음 | — (응답에서 제외) | ✅ 공개 제외 |
 
 작성자 · 주인은 요청 본문으로 받지 않고 **토큰에서** 꺼냅니다. 그래서 다른 사람 이름으로 글을 쓸 수 없습니다.
@@ -164,14 +164,15 @@
 | 테스트 | `@SpringBootTest` + 실제 DB + `@Transactional` 롤백 | 수업(ex02) 방식과 동일, 실제 DB 동작까지 확인 |
 | 로그인 실패 메시지 | 이메일 · 비밀번호 구분 없이 하나로 | 가입된 이메일을 알아낼 수 없도록 (B9) |
 | 삭제 방식 | 부모 삭제 시 하위 데이터도 서비스에서 함께 삭제 ([ERD — 삭제 규칙](erd.md#삭제-규칙)) | 공용 DB의 외래키 설정을 바꾸지 않고 해결, 삭제 순서가 코드에 드러남 |
+| 엔티티 값 수정 | 일반 엔티티는 `@Setter`, `Member`는 `@Setter` 없이 전용 메서드(`changeNickname`, `changePassword`) | 비밀번호 · 권한 · 이메일처럼 함부로 바뀌면 안 되는 값을 아무 데서나 바꿀 수 없도록 |
 
 ## 알려진 문제
 
 | # | 문제 | 영향 | 해결 방향 | 상태 |
 |---|------|------|-----------|:----:|
-| K1 | 하위 데이터가 있는 여행 · 방문지 · 게시글을 삭제하면 외래키 때문에 실패 | 500 에러 | 하위 데이터를 같이 지우도록 처리 | ✅ [#7](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/7) |
-| K2 | 게시글 설명(2000자 허용) · 댓글(500자 허용)의 DB 컬럼이 기본 255자 | 256자 이상이면 검증은 통과하고 저장 단계에서 500 에러 | 엔티티에 `@Column(length = ...)` 지정 | ⏳ [#8](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/8) |
-| K3 | 내 정보 수정에서 비밀번호를 `""`로 보내면 8자 검증에 걸림 | "비우면 기존 값 유지"가 동작하지 않고 400 | 빈 값 허용 검증으로 변경, 또는 프론트에서 필드를 빼고 전송 | ⏳ [#9](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/9) |
-| K4 | `MyPageMemberRepository`와 `MemberRepository`가 같은 `Member`를 다룸 | 동작은 하지만 중복 | `Member`에 수정 메서드 추가 후 하나로 통합 | ✅ [#10](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/10) |
-| K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest`로 변경 | ✅ [#11](https://github.com/yncteamproject/2026_team_project_planner_web_service/issues/11) |
-| K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ⏳ |
+| K1 | 하위 데이터가 있는 여행 · 방문지 · 게시글을 삭제하면 외래키 때문에 실패 | 500 에러 | 하위 데이터를 같이 지우도록 처리 | ✅ [#7](https://github.com/yncteamproject/Triplan/issues/7) |
+| K2 | 게시글 설명(2000자 허용) · 댓글(500자 허용)의 DB 컬럼이 기본 255자 | 256자 이상이면 검증은 통과하고 저장 단계에서 500 에러 | 엔티티에 `@Column(length = ...)` 지정 | ⏳ [#8](https://github.com/yncteamproject/Triplan/issues/8) |
+| K3 | 내 정보 수정에서 비밀번호를 `""`로 보내면 8자 검증에 걸림 | "비우면 기존 값 유지"가 동작하지 않고 400 | 빈 값 허용 검증으로 변경, 또는 프론트에서 필드를 빼고 전송 | ⏳ [#9](https://github.com/yncteamproject/Triplan/issues/9) |
+| K4 | `MyPageMemberRepository`와 `MemberRepository`가 같은 `Member`를 다룸 | 동작은 하지만 중복 | `Member`에 수정 메서드 추가 후 하나로 통합 | ✅ [#10](https://github.com/yncteamproject/Triplan/issues/10) |
+| K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest`로 변경 | ✅ [#11](https://github.com/yncteamproject/Triplan/issues/11) |
+| K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ⏳ [#19](https://github.com/yncteamproject/Triplan/issues/19) |
