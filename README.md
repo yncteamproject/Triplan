@@ -78,6 +78,8 @@ cd backend
 ```
 테스트는 `application-secret.yaml`의 DB에 실제로 붙지만, 모든 테스트가 `@Transactional`이라 끝나면 롤백되어 데이터가 남지 않습니다.
 
+> **Windows에서 `wrong name` 에러가 나면** 패키지 이름의 대소문자만 바뀐 경우(예: `travelTest` → `traveltest`)입니다. Windows는 폴더 이름의 대소문자를 구분하지 않아 이전 빌드 결과물 폴더가 그대로 남기 때문입니다. `./gradlew clean test`로 이전 빌드 결과물을 지우고 다시 실행하세요.
+
 ## 프로젝트 구조
 
 ```
@@ -165,8 +167,11 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 
 | 이름 | 담당 | 이슈 라벨 |
 |------|------|-----------|
-| [daengsuk2](https://github.com/daengsuk2) | 팀장, 여행 플래너, 공유 게시판, 인증 · 인가 | `영역: 여행 계획`, `영역: 공유 게시판`, `영역: 공통` |
+| [daengsuk2](https://github.com/daengsuk2) | 팀장, 여행 플래너, 공유 게시판 | `영역: 여행 계획`, `영역: 공유 게시판` |
 | [yoonhyoguen](https://github.com/yoonhyoguen) | 회원, 마이페이지, 회원 정보 수정, 여행 성향 테스트 | `영역: 회원`, `영역: 성향 테스트` |
+
+**인증 · 인가(로그인 · JWT · 권한 검사)와 공통 설정은 2명이 같이 담당합니다.**
+`영역: 공통` 이슈는 담당자를 2명 모두 지정하고, 리뷰는 작업하지 않은 사람이 합니다.
 
 ## 협업 규칙
 
