@@ -4,7 +4,7 @@ import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.dto.request.MemberUpdateRequest;
 import kr.ync.triplan.member.dto.response.MyPageResponse;
 import kr.ync.triplan.member.exception.MemberNotFoundException;
-import kr.ync.triplan.member.repository.MyPageMemberRepository;
+import kr.ync.triplan.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class MyPageService {
 
-	private final MyPageMemberRepository myPageMemberRepository;
+	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	public MyPageResponse getMyInfo(String email) {
@@ -28,17 +28,17 @@ public class MyPageService {
 
 		// 비워서 보낸 항목은 기존 값 유지
 		if (request.nickname() != null && !request.nickname().isBlank()) {
-			myPageMemberRepository.updateNickname(member.getId(), request.nickname());
+			member.changeNickname(request.nickname());
 		}
 		if (request.password() != null && !request.password().isBlank()) {
-			myPageMemberRepository.updatePassword(member.getId(), passwordEncoder.encode(request.password()));
+			member.changePassword(passwordEncoder.encode(request.password()));
 		}
 
-		return MyPageResponse.from(findMember(email));
+		return MyPageResponse.from(member);
 	}
 
 	private Member findMember(String email) {
-		return myPageMemberRepository.findByEmail(email)
+		return memberRepository.findByEmail(email)
 				.orElseThrow(MemberNotFoundException::new);
 	}
 }
