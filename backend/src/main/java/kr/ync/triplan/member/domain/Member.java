@@ -46,11 +46,11 @@ public class Member {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public void changeNickname(String nickname){
+	public void changeNickname(String nickname) {
 		this.nickname = nickname;
 	}
 
-	public void changePassword(String password){
+	public void changePassword(String password) {
 		this.password = password;
 	}
 }
