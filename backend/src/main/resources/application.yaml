@@ -12,4 +12,5 @@ spring:
         format_sql: true
 
 jwt:
-  secret: 0k2Tkmcl2QH/4sGUyXnW2jQtZFi5c9ZtBPFCvf977ag=
+  issuer: triplan
+  access-expiration-minutes: 1440 # 24시간

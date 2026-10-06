@@ -162,7 +162,7 @@ TODO: 화면 스크린샷 또는 Figma 이미지 (프론트엔드 화면이 완�
 ### 6.5 보안: 가입 여부와 민감 정보 노출 방지
 - 로그인 실패 시 "이메일 없음"과 "비밀번호 틀림"을 같은 메시지로 응답합니다 (B9, 가입된 이메일 노출 방지).
 - 공유된 여행 응답에서 예약번호를 제외합니다 (B12).
-- 설계 단계에서 알게 된 `jwt.secret`의 저장소 노출은 알려진 문제로 등록해 배포 전에 해결하기로 했습니다 (K6, [#19](https://github.com/yncteamproject/Triplan/issues/19)).
+- `jwt.secret`이 저장소에 공개돼 있던 문제(K6)는 노출된 키를 폐기하고, 새 키를 git에 올라가지 않는 `application-secret.yaml`로 옮겨 해결했습니다 ([#19](https://github.com/yncteamproject/Triplan/issues/19)).
 
 TODO: 각자 겪은 문제를 1~2개씩 더 추가 (원인을 찾는 과정이 드러나게)
 
@@ -229,10 +229,10 @@ TODO: 마지막에 수치 갱신 (`git log`, `gh issue list`, `gh pr list`)
 | S3 목록 페이징 | `Page`로 나눠 반환 | ⏳ 예정 |
 
 ### 해결할 알려진 문제
-K6(JWT 비밀키 공개)
+K1~K6 모두 해결
 
 ### 배포 전 체크
-- `jwt.secret`을 새 키로 교체해 `application-secret.yaml`로 이동
+- 배포 서버용 `jwt.secret_key`를 새로 만들어 서버의 `application-secret.yaml`에 설정
 - CORS 허용 주소를 실제 프론트엔드 주소로 변경
 
 ---
