@@ -1,6 +1,7 @@
 package kr.ync.triplan.share.controller;
 
 import jakarta.validation.Valid;
+import kr.ync.triplan.global.dto.PageResponse;
 import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
 import kr.ync.triplan.share.dto.request.TripCopyRequest;
@@ -20,9 +21,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/share-pages")
@@ -38,8 +38,10 @@ public class SharePageController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<SharePageListResponse>> getList() {
-		return ResponseEntity.ok(sharePageService.getList());
+	public ResponseEntity<PageResponse<SharePageListResponse>> getList(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		return ResponseEntity.ok(sharePageService.getList(page, size));
 	}
 
 	@GetMapping("/{id}")

@@ -273,12 +273,29 @@ Authorization: Bearer {accessToken}
   "allowCopy": true, "copyCount": 0 }
 ```
 
-**목록 `GET /api/share-pages`** 🔓: 최신 작성순으로 반환합니다.
+**목록 `GET /api/share-pages?page=0&size=10`** 🔓 (S3): 최신 작성순으로, 페이지 단위로 반환합니다.
+
+| 파라미터 | 타입 | 기본값 | 설명 |
+|----------|------|:------:|------|
+| page | number | 0 | 페이지 번호. **0부터 시작** |
+| size | number | 10 | 한 페이지의 게시글 수. 50보다 크게 보내면 50으로 제한 |
+
+- `page`가 음수이거나 `size`가 0 이하이면 400.
+- 범위를 벗어난 `page`는 빈 `content`와 200을 반환합니다.
 
 ```json
-[ { "id": 1, "title": "제주도 3박 4일", "writerId": 1, "writerNickname": "홍길동",
-    "writeDate": "2026-09-30T14:00:00", "viewCount": 1, "allowCopy": true, "copyCount": 0 } ]
+{ "content": [
+    { "id": 1, "title": "제주도 3박 4일", "writerId": 1, "writerNickname": "홍길동",
+      "writeDate": "2026-09-30T14:00:00", "viewCount": 1, "allowCopy": true, "copyCount": 0 } ],
+  "page": 0, "size": 10, "totalElements": 23, "totalPages": 3, "last": false }
 ```
+
+| 응답 필드 | 설명 |
+|-----------|------|
+| content | 이 페이지의 게시글 목록 |
+| page · size | 요청한 페이지 번호와 실제로 적용된 크기 |
+| totalElements · totalPages | 전체 게시글 수와 전체 페이지 수 |
+| last | 마지막 페이지면 `true` |
 
 **삭제 `DELETE /api/share-pages/{id}`**: 게시글에 달린 댓글도 함께 삭제됩니다.
 
