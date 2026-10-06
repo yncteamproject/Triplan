@@ -1,7 +1,9 @@
 package kr.ync.triplan.share.service;
 
 import jakarta.persistence.EntityManager;
+import kr.ync.triplan.global.dto.PageResponse;
 import kr.ync.triplan.global.exception.ForbiddenException;
+import kr.ync.triplan.global.exception.InvalidPageRequestException;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.repository.MemberRepository;
 import kr.ync.triplan.share.domain.Comment;
@@ -184,11 +186,76 @@ class SharePageServiceImplTest {
 		savedSharePage("t2", "c2");
 		savedSharePage("t3", "c3");
 		// when
-		List<SharePageListResponse> list = sharePageService.getList();
+		PageResponse<SharePageListResponse> response = sharePageService.getList(0, 10);
 		// then
-		assertThat(list).hasSize(3)
+		assertThat(response.content())
 				.extracting(SharePageListResponse::title)
-				.containsExactlyInAnyOrder("t1", "t2", "t3");
+				.containsExactly("t3", "t2", "t1");
+		assertThat(response)
+				.extracting(PageResponse::page, PageResponse::size, PageResponse::totalElements,
+						PageResponse::totalPages, PageResponse::last)
+				.containsExactly(0, 10, 3L, 1, true);
+	}
+
+	private void savedSharePages(int count) {
+		for (int i = 1; i <= count; i++) {
+			savedSharePage("t" + i, "c" + i);
+		}
+	}
+
+	@Test
+	@DisplayName("list - 페이지 크기만큼 나누어 조회, 다음 페이지는 그다음 글부터")
+	void list_paging() {
+		// given
+		savedSharePages(12);
+		// when
+		PageResponse<SharePageListResponse> first = sharePageService.getList(0, 10);
+		PageResponse<SharePageListResponse> second = sharePageService.getList(1, 10);
+		// then
+		assertThat(first.content())
+				.extracting(SharePageListResponse::title)
+				.containsExactly("t12", "t11", "t10", "t9", "t8", "t7", "t6", "t5", "t4", "t3");
+		assertThat(first)
+				.extracting(PageResponse::totalElements, PageResponse::totalPages, PageResponse::last)
+				.containsExactly(12L, 2, false);
+		assertThat(second.content())
+				.extracting(SharePageListResponse::title)
+				.containsExactly("t2", "t1");
+		assertThat(second.last()).isTrue();
+	}
+
+	@Test
+	@DisplayName("list - 범위를 벗어난 페이지는 빈 목록")
+	void list_pageOutOfRange() {
+		// given
+		savedSharePages(3);
+		// when
+		PageResponse<SharePageListResponse> response = sharePageService.getList(5, 10);
+		// then
+		assertThat(response.content()).isEmpty();
+		assertThat(response.totalElements()).isEqualTo(3);
+	}
+
+	@Test
+	@DisplayName("list - size가 50보다 크면 50개까지만 조회")
+	void list_sizeCapped() {
+		// given
+		savedSharePages(51);
+		// when
+		PageResponse<SharePageListResponse> response = sharePageService.getList(0, 1000);
+		// then
+		assertThat(response.size()).isEqualTo(50);
+		assertThat(response.content()).hasSize(50);
+		assertThat(response.totalElements()).isEqualTo(51);
+	}
+
+	@Test
+	@DisplayName("list - page가 음수이거나 size가 0 이하이면 예외")
+	void list_invalidPageRequest() {
+		assertThatThrownBy(() -> sharePageService.getList(-1, 10))
+				.isInstanceOf(InvalidPageRequestException.class);
+		assertThatThrownBy(() -> sharePageService.getList(0, 0))
+				.isInstanceOf(InvalidPageRequestException.class);
 	}
 
 	@Test

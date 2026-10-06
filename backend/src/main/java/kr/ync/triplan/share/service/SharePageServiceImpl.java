@@ -1,5 +1,7 @@
 package kr.ync.triplan.share.service;
 
+import kr.ync.triplan.global.dto.PageResponse;
+import kr.ync.triplan.global.exception.InvalidPageRequestException;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.exception.MemberNotFoundException;
 import kr.ync.triplan.member.repository.MemberRepository;
@@ -24,13 +26,15 @@ import kr.ync.triplan.trip.repository.StopRepository;
 import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -45,6 +49,9 @@ public class SharePageServiceImpl implements SharePageService {
 	private final StopRepository stopRepository;
 	private final TransportSegmentRepository transportSegmentRepository;
 	private final LodgingRepository lodgingRepository;
+
+	// 한 번에 가져갈 수 있는 게시글 수 상한 (size를 크게 보내 전체를 가져가는 것 방지)
+	private static final int MAX_PAGE_SIZE = 50;
 
 	// 게시글 작성 (본인 여행만 공유 가능)
 	@Override
@@ -68,12 +75,18 @@ public class SharePageServiceImpl implements SharePageService {
 		return SharePageResponse.from(sharePageRepository.save(sharePage));
 	}
 
-	// 게시글 리스트
+	// 게시글 리스트 (최신 작성순, 페이지 단위)
 	@Override
-	public List<SharePageListResponse> getList() {
-		return sharePageRepository.findAllByOrderByWriteDateDesc().stream()
-				.map(SharePageListResponse::from)
-				.toList();
+	public PageResponse<SharePageListResponse> getList(int page, int size) {
+		if (page < 0 || size < 1) {
+			throw new InvalidPageRequestException();
+		}
+		// 작성 시각이 같으면 나중에 만든 글이 먼저 오도록 id로 한 번 더 정렬 (페이지 사이에 글이 겹치거나 빠지지 않게)
+		Pageable pageable = PageRequest.of(
+				page, Math.min(size, MAX_PAGE_SIZE),
+				Sort.by(Sort.Order.desc("writeDate"), Sort.Order.desc("id")));
+		return PageResponse.from(
+				sharePageRepository.findAll(pageable).map(SharePageListResponse::from));
 	}
 
 	// 게시글 상세보기
