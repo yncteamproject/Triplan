@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -73,4 +74,39 @@ class MemberControllerTest extends BaseController {
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("5. 비밀번호를 빈 값으로 보내면 무시하고 닉네임만 수정.")
+    @WithMockUser(username = TEST_EMAIL)
+    void updateMyInfo_emptyPassword() throws Exception {
+        String body = """
+                { "nickname": "새닉네임", "password": "" }
+                """;
+
+        mockMvc.perform(put("/api/members/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickname").value("새닉네임"));
+    }
+
+    @Test
+    @DisplayName("6. 비밀번호를 빈 값으로 보내면 기존 비밀번호가 유지된다")
+    @WithMockUser(username = TEST_EMAIL)
+    void updateMyInfo_emptyPassword_keepsOldPassword() throws Exception {
+        mockMvc.perform(put("/api/members/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "password": "" }
+                                """))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "email": "member@example.com", "password": "password123" }
+                                """))
+                .andExpect(status().isOk());
+    }
+
 }
