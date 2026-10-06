@@ -125,6 +125,21 @@ class CommentControllerTest extends BaseController {
 	}
 
 	@Test
+	@DisplayName("POST /api/share-pages/{sharePageId}/comments - 내용 500자(최대 길이)도 저장됨")
+	void create_endpoint_maxLengthContent() throws Exception {
+		String maxContent = "가".repeat(500);
+		CommentCreateRequest request = new CommentCreateRequest(maxContent);
+
+		mockMvc.perform(
+						post("/api/share-pages/{sharePageId}/comments", sharePage.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.content").value(maxContent));
+	}
+
+	@Test
 	@DisplayName("POST /api/share-pages/{sharePageId}/comments - 존재하지 않는 게시글이면 404")
 	void create_endpoint_sharePageNotFound() throws Exception {
 		CommentCreateRequest request = new CommentCreateRequest("내용");

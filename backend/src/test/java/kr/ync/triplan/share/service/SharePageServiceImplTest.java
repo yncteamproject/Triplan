@@ -201,6 +201,21 @@ class SharePageServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("update - 설명 2000자(최대 길이)로 수정해도 저장됨")
+	void update_maxLengthDescription() {
+		// given
+		SharePage saved = savedSharePage("제목", "내용");
+		String maxDescription = "가".repeat(2000);
+		// when
+		sharePageService.update(
+				member.getEmail(), saved.getId(), new SharePageUpdateRequest("제목", maxDescription));
+		entityManager.flush(); // 수정 SQL을 실제로 DB에 보내서 컬럼 길이 초과 여부 확인
+		// then
+		assertThat(sharePageRepository.findById(saved.getId()).orElseThrow().getDescription())
+				.hasSize(2000);
+	}
+
+	@Test
 	@DisplayName("update - 존재하지 않으면 예외")
 	void update_notFound() {
 		assertThatThrownBy(() -> sharePageService.update(

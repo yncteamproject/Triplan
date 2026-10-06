@@ -224,7 +224,7 @@ TODO: 마지막에 수치 갱신 (`git log`, `gh issue list`, `gh pr list`)
 | S5 여행 복사 | 공유된 여행을 내 여행으로 복사 | ⏳ 예정 |
 
 ### 해결할 알려진 문제
-K2(255자 초과 시 500), K3(빈 비밀번호 400), K6(JWT 비밀키 공개)
+K6(JWT 비밀키 공개)
 
 ### 배포 전 체크
 - `jwt.secret`을 새 키로 교체해 `application-secret.yaml`로 이동

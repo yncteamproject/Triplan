@@ -36,6 +36,7 @@ public class SharePage {
 	@Column(nullable = false)
 	private String title;
 
+	@Column(length = 2000)
 	private String description;
 
 	@ManyToOne(fetch = FetchType.LAZY)

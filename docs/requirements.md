@@ -171,7 +171,7 @@
 | # | 문제 | 영향 | 해결 방향 | 상태 |
 |---|------|------|-----------|:----:|
 | K1 | 하위 데이터가 있는 여행 · 방문지 · 게시글을 삭제하면 외래키 때문에 실패 | 500 에러 | 하위 데이터를 같이 지우도록 처리 | ✅ [#7](https://github.com/yncteamproject/Triplan/issues/7) |
-| K2 | 게시글 설명(2000자 허용) · 댓글(500자 허용)의 DB 컬럼이 기본 255자 | 256자 이상이면 검증은 통과하고 저장 단계에서 500 에러 | 엔티티에 `@Column(length = ...)` 지정 | ⏳ [#8](https://github.com/yncteamproject/Triplan/issues/8) |
+| K2 | 게시글 설명(2000자 허용) · 댓글(500자 허용)의 DB 컬럼이 기본 255자 | 256자 이상이면 검증은 통과하고 저장 단계에서 500 에러 | 엔티티에 `@Column(length = ...)` 지정 | ✅ [#8](https://github.com/yncteamproject/Triplan/issues/8) |
 | K3 | 내 정보 수정에서 비밀번호를 `""`로 보내면 8자 검증에 걸림 | "비우면 기존 값 유지"가 동작하지 않고 400 | 빈 값 허용 검증으로 변경, 백엔드에서 빈 값을 보내지 않은 것으로 처리 | ✅ [#9](https://github.com/yncteamproject/Triplan/issues/9) |
 | K4 | `MyPageMemberRepository`와 `MemberRepository`가 같은 `Member`를 다룸 | 동작은 하지만 중복 | `Member`에 수정 메서드 추가 후 하나로 통합 | ✅ [#10](https://github.com/yncteamproject/Triplan/issues/10) |
 | K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest`로 변경 | ✅ [#11](https://github.com/yncteamproject/Triplan/issues/11) |

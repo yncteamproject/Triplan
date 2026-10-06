@@ -143,6 +143,21 @@ class SharePageControllerTest extends BaseController {
 	}
 
 	@Test
+	@DisplayName("POST /api/share-pages - 설명 2000자(최대 길이)도 저장됨")
+	void create_endpoint_maxLengthDescription() throws Exception {
+		String maxDescription = "가".repeat(2000);
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", maxDescription, trip.getId());
+
+		mockMvc.perform(
+						post("/api/share-pages")
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.description").value(maxDescription));
+	}
+
+	@Test
 	@DisplayName("POST /api/share-pages - 존재하지 않는 여행이면 404")
 	void create_endpoint_tripNotFound() throws Exception {
 		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", 99999L);

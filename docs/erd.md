@@ -67,7 +67,7 @@ erDiagram
         bigint trip_id FK
         bigint member_id FK "작성자"
         varchar title
-        varchar description "nullable, 255자 (알려진 문제)"
+        varchar description "nullable, 2000자"
         timestamp write_date
         timestamp update_date "nullable"
         int view_count
@@ -76,7 +76,7 @@ erDiagram
         bigint id PK
         bigint share_page_id FK
         bigint member_id FK "작성자"
-        varchar content "255자 (알려진 문제)"
+        varchar content "500자"
         timestamp created_at
     }
     TRAVEL_PREFERENCE_RESULT {
@@ -149,3 +149,4 @@ erDiagram
 |------|------|------|
 | 2026-09-30 | `trip.user_id`, `share_page.writer_id`, `comment.writer_id`(문자열) 삭제 → `member_id`(FK)로 교체 | 로그인한 회원과 연결해서 본인 확인(B2 · B3)을 하기 위해 |
 | 2026-09-30 | 삭제 시 하위 데이터 함께 삭제 ([#7](https://github.com/yncteamproject/Triplan/issues/7)) | 하위 데이터가 있으면 외래키 때문에 500 에러가 나던 문제(K1) 해결 |
+| 2026-10-06 | `share_page.description` 255 → 2000자, `comment.content` 255 → 500자 ([#8](https://github.com/yncteamproject/Triplan/issues/8)) | 검증은 통과하는데 DB 컬럼이 짧아 500 에러가 나던 문제(K2) 해결 |
