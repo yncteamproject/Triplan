@@ -49,4 +49,11 @@ public class Stop {
 
 	@Column(name = "stop_order")
 	private Integer stopOrder;
+
+	// 지도 표시 · 경로 조회용 좌표. 좌표 없이 이름만 있는 방문지도 허용
+	private Double latitude;
+
+	private Double longitude;
+
+	private String address;
 }

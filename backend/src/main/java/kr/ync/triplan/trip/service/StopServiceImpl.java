@@ -38,6 +38,9 @@ public class StopServiceImpl implements StopService {
 				.memo(request.memo())
 				.imageUrl(request.imageUrl())
 				.stopOrder(request.stopOrder())
+				.latitude(request.latitude())
+				.longitude(request.longitude())
+				.address(request.address())
 				.build();
 
 		return StopResponse.from(stopRepository.save(stop));
@@ -66,6 +69,9 @@ public class StopServiceImpl implements StopService {
 		stop.setMemo(request.memo());
 		stop.setImageUrl(request.imageUrl());
 		stop.setStopOrder(request.stopOrder());
+		stop.setLatitude(request.latitude());
+		stop.setLongitude(request.longitude());
+		stop.setAddress(request.address());
 		return StopResponse.from(stop);
 	}
 

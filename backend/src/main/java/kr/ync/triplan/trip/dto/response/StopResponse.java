@@ -13,7 +13,10 @@ public record StopResponse(
 		LocalTime time,
 		String memo,
 		String imageUrl,
-		Integer stopOrder
+		Integer stopOrder,
+		Double latitude,
+		Double longitude,
+		String address
 ) {
 
 	public static StopResponse from(Stop stop) {
@@ -25,7 +28,10 @@ public record StopResponse(
 				stop.getTime(),
 				stop.getMemo(),
 				stop.getImageUrl(),
-				stop.getStopOrder()
+				stop.getStopOrder(),
+				stop.getLatitude(),
+				stop.getLongitude(),
+				stop.getAddress()
 		);
 	}
 }
