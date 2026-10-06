@@ -41,6 +41,9 @@ erDiagram
         varchar memo "nullable"
         varchar image_url "nullable"
         int stop_order "nullable"
+        double latitude "nullable, 위도"
+        double longitude "nullable, 경도"
+        varchar address "nullable, 255자"
     }
     TRANSPORT_SEGMENT {
         bigint id PK
@@ -155,3 +158,4 @@ erDiagram
 | 2026-09-30 | 삭제 시 하위 데이터 함께 삭제 ([#7](https://github.com/yncteamproject/Triplan/issues/7)) | 하위 데이터가 있으면 외래키 때문에 500 에러가 나던 문제(K1) 해결 |
 | 2026-10-06 | `share_page.description` 255 → 2000자, `comment.content` 255 → 500자 ([#8](https://github.com/yncteamproject/Triplan/issues/8)) | 검증은 통과하는데 DB 컬럼이 짧아 500 에러가 나던 문제(K2) 해결 |
 | 2026-10-06 | `share_page.allow_copy`(기본 true), `share_page.copy_count`(기본 0) 추가 ([#15](https://github.com/yncteamproject/Triplan/issues/15)) | 공유된 여행 복사(S5)와 복사 허용 설정(B11)을 위해. 기존 행이 있어 NOT NULL + 기본값으로 추가 |
+| 2026-10-06 | `stop.latitude`, `stop.longitude`, `stop.address` 추가, 모두 NULL 허용 ([#31](https://github.com/yncteamproject/Triplan/issues/31)) | 지도 표시(T6)와 대중교통 경로 조회(T7)에 방문지 좌표가 필요해서 |

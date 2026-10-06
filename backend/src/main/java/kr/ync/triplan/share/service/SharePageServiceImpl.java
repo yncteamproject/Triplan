@@ -158,6 +158,9 @@ public class SharePageServiceImpl implements SharePageService {
 							.memo(stop.getMemo())
 							.imageUrl(stop.getImageUrl())
 							.stopOrder(stop.getStopOrder())
+							.latitude(stop.getLatitude())
+							.longitude(stop.getLongitude())
+							.address(stop.getAddress())
 							.build()
 			));
 		}

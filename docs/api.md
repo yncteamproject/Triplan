@@ -190,11 +190,15 @@ Authorization: Bearer {accessToken}
 | memo | string | | |
 | imageUrl | string | | |
 | stopOrder | number | | 0 이상 (B7) |
+| latitude | number | | 위도, -90 ~ 90. 경도와 함께 보내야 함 |
+| longitude | number | | 경도, -180 ~ 180. 위도와 함께 보내야 함 |
+| address | string | | 255자 이내 |
 
 ```json
 // 201 / 200
 { "id": 1, "tripId": 1, "name": "성산일출봉", "date": "2026-10-01", "time": "09:00:00",
-  "memo": "일출 명소", "imageUrl": null, "stopOrder": 1 }
+  "memo": "일출 명소", "imageUrl": null, "stopOrder": 1,
+  "latitude": 33.4581, "longitude": 126.9425, "address": "제주 서귀포시 성산읍" }
 ```
 
 **목록 `GET /api/trips/{tripId}/stops`**: `stopOrder` 오름차순으로 반환합니다.
@@ -308,9 +312,11 @@ Authorization: Bearer {accessToken}
 { "tripId": 1, "title": "제주도 여행", "startDate": "2026-10-01", "endDate": "2026-10-04",
   "stops": [
     { "id": 1, "name": "제주공항", "date": "2026-10-01", "time": "10:00:00",
-      "memo": null, "imageUrl": null, "stopOrder": 1 },
+      "memo": null, "imageUrl": null, "stopOrder": 1,
+      "latitude": 33.5059, "longitude": 126.4959, "address": "제주 제주시 공항로 2" },
     { "id": 2, "name": "제주 호텔", "date": "2026-10-01", "time": "15:00:00",
-      "memo": null, "imageUrl": null, "stopOrder": 2 } ],
+      "memo": null, "imageUrl": null, "stopOrder": 2,
+      "latitude": null, "longitude": null, "address": null } ],
   "transportSegments": [
     { "id": 1, "fromStopId": 1, "toStopId": 2, "mode": "CAR",
       "departTime": "2026-10-01T10:30:00", "arriveTime": "2026-10-01T11:30:00", "cost": 20000 } ],

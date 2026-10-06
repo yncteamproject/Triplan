@@ -32,12 +32,16 @@ public record SharedTripResponse(
 			LocalTime time,
 			String memo,
 			String imageUrl,
-			Integer stopOrder
+			Integer stopOrder,
+			Double latitude,
+			Double longitude,
+			String address
 	) {
 		static StopItem from(Stop stop) {
 			return new StopItem(
 					stop.getId(), stop.getName(), stop.getDate(), stop.getTime(),
-					stop.getMemo(), stop.getImageUrl(), stop.getStopOrder()
+					stop.getMemo(), stop.getImageUrl(), stop.getStopOrder(),
+					stop.getLatitude(), stop.getLongitude(), stop.getAddress()
 			);
 		}
 	}

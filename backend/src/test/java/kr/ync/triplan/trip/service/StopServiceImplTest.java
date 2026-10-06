@@ -96,7 +96,7 @@ class StopServiceImplTest {
 	void create_success() {
 		// given
 		StopCreateRequest request = new StopCreateRequest(
-				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
+				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1, null, null, null);
 		// when
 		StopResponse response = stopService.create(member.getEmail(), trip.getId(), request);
 		// then
@@ -107,10 +107,24 @@ class StopServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("create - 위도 · 경도 · 주소 저장")
+	void create_withLocation() {
+		// given
+		StopCreateRequest request = new StopCreateRequest(
+				"성산일출봉", LocalDate.now(), null, null, null, 1, 33.4581, 126.9425, "제주 서귀포시 성산읍");
+		// when
+		StopResponse response = stopService.create(member.getEmail(), trip.getId(), request);
+		// then
+		assertThat(response)
+				.extracting(StopResponse::latitude, StopResponse::longitude, StopResponse::address)
+				.containsExactly(33.4581, 126.9425, "제주 서귀포시 성산읍");
+	}
+
+	@Test
 	@DisplayName("create - 존재하지 않는 여행이면 예외")
 	void create_tripNotFound() {
 		StopCreateRequest request = new StopCreateRequest(
-				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
+				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1, null, null, null);
 
 		assertThatThrownBy(() -> stopService.create(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(TripNotFoundException.class);
@@ -122,7 +136,7 @@ class StopServiceImplTest {
 		// given
 		Trip othersTrip = savedTrip(savedMember("other@test.com"));
 		StopCreateRequest request = new StopCreateRequest(
-				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1);
+				"성산일출봉", LocalDate.now(), LocalTime.of(9, 0), "일출 명소", null, 1, null, null, null);
 		// when & then
 		assertThatThrownBy(() -> stopService.create(member.getEmail(), othersTrip.getId(), request))
 				.isInstanceOf(ForbiddenException.class);
@@ -179,7 +193,7 @@ class StopServiceImplTest {
 		// when
 		StopResponse response = stopService.update(
 				member.getEmail(), saved.getId(),
-				new StopUpdateRequest("변경된 이름", LocalDate.now(), LocalTime.of(10, 0), "메모", null, 2));
+				new StopUpdateRequest("변경된 이름", LocalDate.now(), LocalTime.of(10, 0), "메모", null, 2, null, null, null));
 		// then
 		assertThat(response)
 				.extracting(StopResponse::name, StopResponse::stopOrder)
@@ -190,7 +204,7 @@ class StopServiceImplTest {
 	@DisplayName("update - 존재하지 않으면 예외")
 	void update_notFound() {
 		StopUpdateRequest request = new StopUpdateRequest(
-				"이름", LocalDate.now(), null, null, null, 1);
+				"이름", LocalDate.now(), null, null, null, 1, null, null, null);
 		assertThatThrownBy(() -> stopService.update(member.getEmail(), NON_EXISTING_ID, request))
 				.isInstanceOf(StopNotFoundException.class);
 	}

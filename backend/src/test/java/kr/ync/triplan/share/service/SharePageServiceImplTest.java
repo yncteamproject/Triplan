@@ -527,4 +527,50 @@ class SharePageServiceImplTest {
 		assertThatThrownBy(() -> sharePageService.copyTrip(member.getEmail(), NON_EXISTING_ID, null))
 				.isInstanceOf(SharePageNotFoundException.class);
 	}
+
+	// 방문지 위치 (T6-1)
+	private Stop savedStopWithLocation() {
+		return stopRepository.save(
+				Stop.builder()
+						.trip(trip).name("성산일출봉").date(trip.getStartDate()).stopOrder(1)
+						.latitude(33.4581).longitude(126.9425).address("제주 서귀포시 성산읍")
+						.build()
+		);
+	}
+
+	@Test
+	@DisplayName("getSharedTrip - 방문지의 위도 · 경도 · 주소가 나옴")
+	void getSharedTrip_withLocation() {
+		// given
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+		savedStopWithLocation();
+
+		// when
+		SharedTripResponse response = sharePageService.getSharedTrip(saved.getId());
+
+		// then
+		assertThat(response.stops().getFirst())
+				.extracting(
+						SharedTripResponse.StopItem::latitude,
+						SharedTripResponse.StopItem::longitude,
+						SharedTripResponse.StopItem::address)
+				.containsExactly(33.4581, 126.9425, "제주 서귀포시 성산읍");
+	}
+
+	@Test
+	@DisplayName("copyTrip - 방문지의 위도 · 경도 · 주소도 복사됨")
+	void copyTrip_withLocation() {
+		// given
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+		savedStopWithLocation();
+		Member copier = savedMember("copier@test.com");
+
+		// when
+		TripResponse response = sharePageService.copyTrip(copier.getEmail(), saved.getId(), null);
+
+		// then
+		assertThat(stopRepository.findByTripIdOrderByStopOrderAsc(response.id()).getFirst())
+				.extracting(Stop::getLatitude, Stop::getLongitude, Stop::getAddress)
+				.containsExactly(33.4581, 126.9425, "제주 서귀포시 성산읍");
+	}
 }
