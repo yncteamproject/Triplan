@@ -32,7 +32,7 @@ public class Comment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 500)
 	private String content;
 
 	@ManyToOne(fetch = FetchType.LAZY)
