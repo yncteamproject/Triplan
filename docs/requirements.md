@@ -191,3 +191,4 @@
 | K4 | `MyPageMemberRepository`와 `MemberRepository`가 같은 `Member`를 다룸 | 동작은 하지만 중복 | `Member`에 수정 메서드 추가 후 하나로 통합 | ✅ [#10](https://github.com/yncteamproject/Triplan/issues/10) |
 | K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest`로 변경 | ✅ [#11](https://github.com/yncteamproject/Triplan/issues/11) |
 | K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ✅ [#19](https://github.com/yncteamproject/Triplan/issues/19) |
+| K7 | JWT 관련 파일 위치 · 이름이 흩어져 있고 yaml 키 형식(밑줄 · 하이픈)이 섞여 있음 | 동작 영향 없음 | 강의에서 배운 구조를 참고해 `global/config/jwt`로 정리하고 yaml 키를 밑줄 형식으로 통일 | ✅ [#37](https://github.com/yncteamproject/Triplan/issues/37) |

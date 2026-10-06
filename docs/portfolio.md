@@ -78,7 +78,7 @@ TODO: 다이어그램 이미지로 교체
 ### 4.2 패키지 구조: 화면이 아니라 도메인 기준
 ```
 kr.ync.triplan
-├─ global/      config(Security, CORS) · jwt · exception
+├─ global/      config(Security, CORS, jwt) · exception
 ├─ member/      회원 · 인증 · 마이페이지
 ├─ trip/        Trip + Stop + TransportSegment + Lodging
 ├─ share/       SharePage + Comment
@@ -95,7 +95,7 @@ kr.ync.triplan
 
 ### 4.4 인증 · 인가 흐름
 1. 로그인(`POST /api/auth/login`) → BCrypt로 비밀번호 확인 → JWT 발급
-2. 요청마다 `JwtAuthenticationFilter`가 토큰을 검증
+2. 요청마다 `TokenAuthenticationFilter`가 토큰을 검증
 3. `SecurityConfig`가 URL별 접근 규칙 적용 (미로그인 401, 권한 없음 403)
 4. 작성자 · 주인은 요청 본문이 아니라 **토큰에서** 꺼냄 → 다른 사람 이름으로 글을 쓸 수 없음
 

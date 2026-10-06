@@ -1,4 +1,4 @@
-package kr.ync.triplan.global.jwt;
+package kr.ync.triplan.global.config.jwt;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,7 +14,7 @@ import javax.crypto.SecretKey;
 
 @Component
 @RequiredArgsConstructor
-public class JwtTokenProvider {
+public class TokenProvider {
 
 	private final JwtProperties jwtProperties;
 	private SecretKey key;

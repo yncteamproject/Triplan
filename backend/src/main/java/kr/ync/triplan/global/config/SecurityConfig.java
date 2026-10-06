@@ -2,8 +2,7 @@ package kr.ync.triplan.global.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ync.triplan.global.exception.ErrorResponse;
-import kr.ync.triplan.global.jwt.JwtAuthenticationFilter;
-import kr.ync.triplan.global.jwt.JwtTokenProvider;
+import kr.ync.triplan.global.config.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtTokenProvider jwtTokenProvider;
+	private final TokenProvider jwtTokenProvider;
 	private final ObjectMapper objectMapper;
 
 	@Bean
@@ -54,7 +53,7 @@ public class SecurityConfig {
 						.accessDeniedHandler((request, response, ex) ->
 								writeError(response, HttpStatus.FORBIDDEN, "접근 권한이 없습니다.")))
 				.headers(headers -> headers.frameOptions(frame -> frame.disable()))
-				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(new TokenAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 

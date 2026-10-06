@@ -13,4 +13,4 @@ spring:
 
 jwt:
   issuer: triplan
-  access-expiration-minutes: 1440 # 24시간
+  access_expiration_minutes: 1440 # 24시간
