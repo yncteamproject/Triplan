@@ -40,7 +40,7 @@
 - Node.js 22 이상
 
 ### 2. 백엔드 설정
-DB 접속 정보는 git에 올리지 않고 `backend/src/main/resources/application-secret.yaml`에 따로 둡니다. 파일을 만들고 값은 팀장에게 받아서 채워 주세요.
+DB 접속 정보 및 JWT 비밀키는 git에 올리지 않고 `backend/src/main/resources/application-secret.yaml`에 따로 둡니다. 파일을 만들고 값은 팀장에게 받아서 채워 주세요.
 
 ```yaml
 spring:
@@ -49,6 +49,9 @@ spring:
     username: {계정}
     password: {비밀번호}
     driver-class-name: org.postgresql.Driver
+
+jwt:
+  secret_key: {Base64 비밀키, 32바이트 이상}
 ```
 
 > [!NOTE]
@@ -252,5 +255,5 @@ git push -u origin fix/7-delete-cascade
 
 ## 배포 전 확인할 것
 
-- `application.yaml`의 `jwt.secret`은 개발용 값입니다. 배포 전에 새 키를 만들어 `application-secret.yaml`로 옮겨야 합니다. 이 키를 아는 사람은 로그인 토큰을 위조할 수 있습니다.
+- `application-secret.yaml`의 `jwt.secret_key`는 개발용입니다. 배포 서버에는 키를 새로 만들어 넣어야 합니다.
 - CORS 허용 주소(`WebConfig`)를 실제 프론트엔드 주소로 바꿔야 합니다.

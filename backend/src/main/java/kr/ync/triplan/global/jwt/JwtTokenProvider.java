@@ -2,31 +2,42 @@ package kr.ync.triplan.global.jwt;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 import javax.crypto.SecretKey;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
-	private final SecretKey key;
-	private final long validityMs = 1000L * 60 * 60 * 24; // 24시간
+	private final JwtProperties jwtProperties;
+	private SecretKey key;
 
-	public JwtTokenProvider(@Value("${jwt.secret}") String secret) {
-		this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+	// 비밀키는 Base64 문자열로 받아서 디코딩한다 (application-secret.yaml의 jwt.secret_key)
+	@PostConstruct
+	void init() {
+		byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
+		this.key = Keys.hmacShaKeyFor(keyBytes);
 	}
 
 	public String createToken(String email, String role) {
 		Date now = new Date();
+		Date expiry = new Date(now.getTime()
+				+ Duration.ofMinutes(jwtProperties.getAccessExpirationMinutes()).toMillis());
 		return Jwts.builder()
+				.header().type("JWT")
+				.and()
+				.issuer(jwtProperties.getIssuer())
+				.issuedAt(now)
+				.expiration(expiry)
 				.subject(email)
 				.claim("role", role)
-				.issuedAt(now)
-				.expiration(new Date(now.getTime() + validityMs))
 				.signWith(key)
 				.compact();
 	}

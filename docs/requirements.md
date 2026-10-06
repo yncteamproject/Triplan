@@ -175,4 +175,4 @@
 | K3 | 내 정보 수정에서 비밀번호를 `""`로 보내면 8자 검증에 걸림 | "비우면 기존 값 유지"가 동작하지 않고 400 | 빈 값 허용 검증으로 변경, 백엔드에서 빈 값을 보내지 않은 것으로 처리 | ✅ [#9](https://github.com/yncteamproject/Triplan/issues/9) |
 | K4 | `MyPageMemberRepository`와 `MemberRepository`가 같은 `Member`를 다룸 | 동작은 하지만 중복 | `Member`에 수정 메서드 추가 후 하나로 통합 | ✅ [#10](https://github.com/yncteamproject/Triplan/issues/10) |
 | K5 | 패키지명 `travelTest`가 자바 관례(소문자)와 다름 | 동작 영향 없음 | `traveltest`로 변경 | ✅ [#11](https://github.com/yncteamproject/Triplan/issues/11) |
-| K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ⏳ [#19](https://github.com/yncteamproject/Triplan/issues/19) |
+| K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ✅ [#19](https://github.com/yncteamproject/Triplan/issues/19) |
