@@ -9,6 +9,9 @@ public record SharePageUpdateRequest(
 		String title,
 
 		@Size(max = 2000, message = "설명은 2000자 이내로 입력해주세요")
-		String description
+		String description,
+
+		// 복사 허용 여부. 안 보내면 기존 값 유지
+		Boolean allowCopy
 ) {
 }

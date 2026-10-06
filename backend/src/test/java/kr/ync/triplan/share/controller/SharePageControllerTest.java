@@ -4,6 +4,7 @@ import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.share.domain.SharePage;
 import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
+import kr.ync.triplan.share.dto.request.TripCopyRequest;
 import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.support.BaseController;
 import kr.ync.triplan.trip.domain.Lodging;
@@ -79,7 +80,7 @@ class SharePageControllerTest extends BaseController {
 	@Test
 	@DisplayName("POST /api/share-pages - 1.정상 데이터")
 	void create_endpoint_validData() throws Exception {
-		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", trip.getId());
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", trip.getId(), null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -117,7 +118,7 @@ class SharePageControllerTest extends BaseController {
 	@Test
 	@DisplayName("POST /api/share-pages - 3.null 값 (모든 필드 null)")
 	void create_endpoint_nullValues() throws Exception {
-		SharePageCreateRequest request = new SharePageCreateRequest(null, null, null);
+		SharePageCreateRequest request = new SharePageCreateRequest(null, null, null, null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -131,7 +132,7 @@ class SharePageControllerTest extends BaseController {
 	@DisplayName("POST /api/share-pages - 4.비정상 데이터 (제목 100자 초과)")
 	void create_endpoint_invalidData() throws Exception {
 		String tooLongTitle = "가".repeat(101);
-		SharePageCreateRequest request = new SharePageCreateRequest(tooLongTitle, "설명", trip.getId());
+		SharePageCreateRequest request = new SharePageCreateRequest(tooLongTitle, "설명", trip.getId(), null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -146,7 +147,7 @@ class SharePageControllerTest extends BaseController {
 	@DisplayName("POST /api/share-pages - 설명 2000자(최대 길이)도 저장됨")
 	void create_endpoint_maxLengthDescription() throws Exception {
 		String maxDescription = "가".repeat(2000);
-		SharePageCreateRequest request = new SharePageCreateRequest("제목", maxDescription, trip.getId());
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", maxDescription, trip.getId(), null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -160,7 +161,7 @@ class SharePageControllerTest extends BaseController {
 	@Test
 	@DisplayName("POST /api/share-pages - 존재하지 않는 여행이면 404")
 	void create_endpoint_tripNotFound() throws Exception {
-		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", 99999L);
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", 99999L, null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -174,7 +175,7 @@ class SharePageControllerTest extends BaseController {
 	@DisplayName("POST /api/share-pages - 남의 여행을 공유하면 403")
 	void create_endpoint_othersTripForbidden() throws Exception {
 		Trip othersTrip = savedTrip(createMember("other@test.com"));
-		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", othersTrip.getId());
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", othersTrip.getId(), null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -187,7 +188,7 @@ class SharePageControllerTest extends BaseController {
 	@Test
 	@DisplayName("POST /api/share-pages - 로그인 안 하면 401")
 	void create_endpoint_unauthorized() throws Exception {
-		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", trip.getId());
+		SharePageCreateRequest request = new SharePageCreateRequest("제목", "설명", trip.getId(), null);
 
 		mockMvc.perform(
 						post("/api/share-pages")
@@ -231,7 +232,7 @@ class SharePageControllerTest extends BaseController {
 	@DisplayName("PUT /api/share-pages/{id}")
 	void update_endpoint() throws Exception {
 		SharePage saved = savedSharePage("원본 제목", "원본 내용");
-		SharePageUpdateRequest request = new SharePageUpdateRequest("변경 제목", "변경 내용");
+		SharePageUpdateRequest request = new SharePageUpdateRequest("변경 제목", "변경 내용", null);
 
 		mockMvc.perform(put("/api/share-pages/{id}", saved.getId())
 						.header(HttpHeaders.AUTHORIZATION, bearer(member))
@@ -247,7 +248,7 @@ class SharePageControllerTest extends BaseController {
 	@DisplayName("PUT /api/share-pages/{id} - 작성자가 아니면 403")
 	void update_endpoint_forbidden() throws Exception {
 		SharePage saved = savedSharePage("원본 제목", "원본 내용");
-		SharePageUpdateRequest request = new SharePageUpdateRequest("변경 제목", "변경 내용");
+		SharePageUpdateRequest request = new SharePageUpdateRequest("변경 제목", "변경 내용", null);
 
 		mockMvc.perform(put("/api/share-pages/{id}", saved.getId())
 						.header(HttpHeaders.AUTHORIZATION, bearer(createMember("other@test.com")))
@@ -321,6 +322,135 @@ class SharePageControllerTest extends BaseController {
 	@DisplayName("GET /api/share-pages/{id}/trip - 존재하지 않으면 404")
 	void getSharedTrip_endpoint_notFound() throws Exception {
 		mockMvc.perform(get("/api/share-pages/{id}/trip", 99999L))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages - allowCopy를 안 보내면 true, false로 보내면 false")
+	void create_endpoint_allowCopy() throws Exception {
+		String defaultJson = """
+				{ "title": "제목", "tripId": %d }
+				""".formatted(trip.getId());
+		String notAllowedJson = """
+				{ "title": "제목", "tripId": %d, "allowCopy": false }
+				""".formatted(trip.getId());
+
+		mockMvc.perform(
+						post("/api/share-pages")
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(defaultJson))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.allowCopy").value(true))
+				.andExpect(jsonPath("$.copyCount").value(0));
+
+		mockMvc.perform(
+						post("/api/share-pages")
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(notAllowedJson))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.allowCopy").value(false));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages, /api/share-pages/{id} - 응답에 allowCopy · copyCount 포함")
+	void get_endpoint_allowCopyAndCopyCount() throws Exception {
+		SharePage saved = savedSharePage("제목", "내용");
+
+		mockMvc.perform(get("/api/share-pages/{id}", saved.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.allowCopy").value(true))
+				.andExpect(jsonPath("$.copyCount").value(0));
+
+		mockMvc.perform(get("/api/share-pages"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].allowCopy").value(true))
+				.andExpect(jsonPath("$[0].copyCount").value(0));
+	}
+
+	@Test
+	@DisplayName("PUT /api/share-pages/{id} - allowCopy 변경")
+	void update_endpoint_allowCopy() throws Exception {
+		SharePage saved = savedSharePage("제목", "내용");
+		SharePageUpdateRequest request = new SharePageUpdateRequest("제목", "내용", false);
+
+		mockMvc.perform(
+						put("/api/share-pages/{id}", saved.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(member))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.allowCopy").value(false));
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages/{id}/copy - 본문 없이 복사하면 원본 날짜 그대로 내 여행이 생김")
+	void copy_endpoint() throws Exception {
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+		Member copier = createMember("copier@test.com");
+
+		mockMvc.perform(
+						post("/api/share-pages/{id}/copy", saved.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(copier)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").isNumber())
+				.andExpect(jsonPath("$.title").value("제주도 여행"))
+				.andExpect(jsonPath("$.startDate").value(trip.getStartDate().toString()))
+				.andExpect(jsonPath("$.endDate").value(trip.getEndDate().toString()));
+
+		// 복사한 여행은 복사한 사람의 여행 목록에 나오고, 게시글의 복사 수가 오른다
+		mockMvc.perform(get("/api/trips").header(HttpHeaders.AUTHORIZATION, bearer(copier)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(1));
+		mockMvc.perform(get("/api/share-pages/{id}", saved.getId()))
+				.andExpect(jsonPath("$.copyCount").value(1));
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages/{id}/copy - startDate를 보내면 그 날짜로 옮겨서 복사")
+	void copy_endpoint_withStartDate() throws Exception {
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+		LocalDate newStartDate = trip.getStartDate().plusDays(30);
+		TripCopyRequest request = new TripCopyRequest(newStartDate);
+
+		mockMvc.perform(
+						post("/api/share-pages/{id}/copy", saved.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(createMember("copier@test.com")))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.startDate").value(newStartDate.toString()))
+				.andExpect(jsonPath("$.endDate").value(trip.getEndDate().plusDays(30).toString()));
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages/{id}/copy - 로그인 안 하면 401")
+	void copy_endpoint_unauthorized() throws Exception {
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+
+		mockMvc.perform(post("/api/share-pages/{id}/copy", saved.getId()))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages/{id}/copy - 복사를 허용하지 않은 게시글을 다른 사람이 복사하면 403")
+	void copy_endpoint_forbidden() throws Exception {
+		SharePage saved = savedSharePage("제주도 후기", "내용");
+		saved.setAllowCopy(false);
+
+		mockMvc.perform(
+						post("/api/share-pages/{id}/copy", saved.getId())
+								.header(HttpHeaders.AUTHORIZATION, bearer(createMember("copier@test.com"))))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("POST /api/share-pages/{id}/copy - 존재하지 않으면 404")
+	void copy_endpoint_notFound() throws Exception {
+		mockMvc.perform(
+						post("/api/share-pages/{id}/copy", 99999L)
+								.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
 }

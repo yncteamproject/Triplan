@@ -6,13 +6,18 @@ import kr.ync.triplan.member.repository.MemberRepository;
 import kr.ync.triplan.share.domain.SharePage;
 import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
+import kr.ync.triplan.share.dto.request.TripCopyRequest;
 import kr.ync.triplan.share.dto.response.SharePageListResponse;
 import kr.ync.triplan.share.dto.response.SharePageResponse;
 import kr.ync.triplan.share.dto.response.SharedTripResponse;
 import kr.ync.triplan.share.exception.SharePageNotFoundException;
 import kr.ync.triplan.share.repository.CommentRepository;
 import kr.ync.triplan.share.repository.SharePageRepository;
+import kr.ync.triplan.trip.domain.Lodging;
+import kr.ync.triplan.trip.domain.Stop;
+import kr.ync.triplan.trip.domain.TransportSegment;
 import kr.ync.triplan.trip.domain.Trip;
+import kr.ync.triplan.trip.dto.response.TripResponse;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
 import kr.ync.triplan.trip.repository.LodgingRepository;
 import kr.ync.triplan.trip.repository.StopRepository;
@@ -23,7 +28,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +62,7 @@ public class SharePageServiceImpl implements SharePageService {
 				.trip(trip)
 				.writer(writer)
 				.writeDate(LocalDateTime.now())
+				.allowCopy(request.allowCopy() == null || request.allowCopy())
 				.build();
 
 		return SharePageResponse.from(sharePageRepository.save(sharePage));
@@ -96,6 +105,9 @@ public class SharePageServiceImpl implements SharePageService {
 		sharePage.validateWriter(email);
 		sharePage.setTitle(request.title());
 		sharePage.setDescription(request.description());
+		if (request.allowCopy() != null) {
+			sharePage.setAllowCopy(request.allowCopy());
+		}
 		sharePage.setUpdateDate(LocalDateTime.now());
 		return SharePageResponse.from(sharePage);
 	}
@@ -108,6 +120,76 @@ public class SharePageServiceImpl implements SharePageService {
 		sharePage.validateWriter(email);
 		commentRepository.deleteBySharePageId(id);
 		sharePageRepository.delete(sharePage);
+	}
+
+	// 공유된 여행을 내 여행으로 복사 (복사 허용된 게시글만, 예약번호는 가져오지 않음)
+	@Override
+	@Transactional
+	public TripResponse copyTrip(String email, Long id, TripCopyRequest request) {
+		Member member = memberRepository.findByEmail(email)
+				.orElseThrow(MemberNotFoundException::new);
+		SharePage sharePage = findById(id);
+		sharePage.validateCopyable(email);
+
+		Trip source = sharePage.getTrip();
+		// 시작일을 지정하면 원본 시작일과의 차이만큼 모든 날짜를 옮긴다
+		long days = (request == null || request.startDate() == null)
+				? 0
+				: ChronoUnit.DAYS.between(source.getStartDate(), request.startDate());
+
+		Trip copy = tripRepository.save(
+				Trip.builder()
+						.title(source.getTitle())
+						.startDate(source.getStartDate().plusDays(days))
+						.endDate(source.getEndDate().plusDays(days))
+						.member(member)
+						.build()
+		);
+
+		// 원본 방문지 id → 복사한 방문지 (이동 구간을 새 방문지에 다시 연결하기 위해)
+		Map<Long, Stop> copiedStops = new HashMap<>();
+		for (Stop stop : stopRepository.findByTripIdOrderByStopOrderAsc(source.getId())) {
+			copiedStops.put(stop.getId(), stopRepository.save(
+					Stop.builder()
+							.trip(copy)
+							.name(stop.getName())
+							.date(stop.getDate().plusDays(days))
+							.time(stop.getTime())
+							.memo(stop.getMemo())
+							.imageUrl(stop.getImageUrl())
+							.stopOrder(stop.getStopOrder())
+							.build()
+			));
+		}
+
+		for (TransportSegment segment : transportSegmentRepository.findByTripId(source.getId())) {
+			transportSegmentRepository.save(
+					TransportSegment.builder()
+							.trip(copy)
+							.fromStop(copiedStops.get(segment.getFromStop().getId()))
+							.toStop(copiedStops.get(segment.getToStop().getId()))
+							.mode(segment.getMode())
+							.departTime(segment.getDepartTime().plusDays(days))
+							.arriveTime(segment.getArriveTime().plusDays(days))
+							.cost(segment.getCost())
+							.build()
+			);
+		}
+
+		for (Lodging lodging : lodgingRepository.findByTripId(source.getId())) {
+			lodgingRepository.save(
+					Lodging.builder()
+							.trip(copy)
+							.name(lodging.getName())
+							.checkIn(lodging.getCheckIn().plusDays(days))
+							.checkOut(lodging.getCheckOut().plusDays(days))
+							.cost(lodging.getCost())
+							.build()
+			);
+		}
+
+		sharePage.setCopyCount(sharePage.getCopyCount() + 1);
+		return TripResponse.from(copy);
 	}
 
 	private SharePage findById(Long id) {
