@@ -13,6 +13,9 @@ public record SharePageCreateRequest(
 		String description,
 
 		@NotNull(message = "여행 계획을 선택해주세요")
-		Long tripId
+		Long tripId,
+
+		// 복사 허용 여부. 안 보내면 허용(true)
+		Boolean allowCopy
 ) {
 }

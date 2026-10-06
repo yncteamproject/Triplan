@@ -71,6 +71,8 @@ erDiagram
         timestamp write_date
         timestamp update_date "nullable"
         int view_count
+        boolean allow_copy "복사 허용, 기본 true"
+        int copy_count "복사된 횟수, 기본 0"
     }
     COMMENT {
         bigint id PK
@@ -129,6 +131,8 @@ erDiagram
 | B7 | `cost ≥ 0`, `stop_order ≥ 0` |
 | B8 | `member.email` UNIQUE |
 | B10 | `transport_segment.from_stop_id` · `to_stop_id`의 `stop.trip_id`가 본인 여행 |
+| B11 | `share_page.allow_copy` = true 이거나, 요청한 사용자가 `share_page.member_id`(작성자) |
+| B12 | 복사한 `transport_segment` · `lodging`의 `reservation_no`는 NULL |
 
 ## 삭제 규칙
 
@@ -150,3 +154,4 @@ erDiagram
 | 2026-09-30 | `trip.user_id`, `share_page.writer_id`, `comment.writer_id`(문자열) 삭제 → `member_id`(FK)로 교체 | 로그인한 회원과 연결해서 본인 확인(B2 · B3)을 하기 위해 |
 | 2026-09-30 | 삭제 시 하위 데이터 함께 삭제 ([#7](https://github.com/yncteamproject/Triplan/issues/7)) | 하위 데이터가 있으면 외래키 때문에 500 에러가 나던 문제(K1) 해결 |
 | 2026-10-06 | `share_page.description` 255 → 2000자, `comment.content` 255 → 500자 ([#8](https://github.com/yncteamproject/Triplan/issues/8)) | 검증은 통과하는데 DB 컬럼이 짧아 500 에러가 나던 문제(K2) 해결 |
+| 2026-10-06 | `share_page.allow_copy`(기본 true), `share_page.copy_count`(기본 0) 추가 ([#15](https://github.com/yncteamproject/Triplan/issues/15)) | 공유된 여행 복사(S5)와 복사 허용 설정(B11)을 위해. 기존 행이 있어 NOT NULL + 기본값으로 추가 |

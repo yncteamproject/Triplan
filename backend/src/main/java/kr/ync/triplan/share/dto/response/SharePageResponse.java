@@ -13,7 +13,9 @@ public record SharePageResponse(
 		String writerNickname,
 		LocalDateTime writeDate,
 		LocalDateTime updateDate,
-		int viewCount
+		int viewCount,
+		boolean allowCopy,
+		int copyCount
 ) {
 
 	public static SharePageResponse from(SharePage sharePage) {
@@ -26,7 +28,9 @@ public record SharePageResponse(
 				sharePage.getWriter().getNickname(),
 				sharePage.getWriteDate(),
 				sharePage.getUpdateDate(),
-				sharePage.getViewCount()
+				sharePage.getViewCount(),
+				sharePage.isAllowCopy(),
+				sharePage.getCopyCount()
 		);
 	}
 }

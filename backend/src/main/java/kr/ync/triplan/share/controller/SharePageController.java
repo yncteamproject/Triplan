@@ -3,10 +3,12 @@ package kr.ync.triplan.share.controller;
 import jakarta.validation.Valid;
 import kr.ync.triplan.share.dto.request.SharePageCreateRequest;
 import kr.ync.triplan.share.dto.request.SharePageUpdateRequest;
+import kr.ync.triplan.share.dto.request.TripCopyRequest;
 import kr.ync.triplan.share.dto.response.SharePageListResponse;
 import kr.ync.triplan.share.dto.response.SharePageResponse;
 import kr.ync.triplan.share.dto.response.SharedTripResponse;
 import kr.ync.triplan.share.service.SharePageService;
+import kr.ync.triplan.trip.dto.response.TripResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,5 +64,13 @@ public class SharePageController {
 			@AuthenticationPrincipal String email, @PathVariable Long id) {
 		sharePageService.delete(email, id);
 		return ResponseEntity.noContent().build();
+	}
+
+	// 본문은 선택: startDate를 보내면 그 날짜에 맞춰 일정을 옮겨서 복사
+	@PostMapping("/{id}/copy")
+	public ResponseEntity<TripResponse> copyTrip(
+			@AuthenticationPrincipal String email, @PathVariable Long id,
+			@RequestBody(required = false) TripCopyRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(sharePageService.copyTrip(email, id, request));
 	}
 }

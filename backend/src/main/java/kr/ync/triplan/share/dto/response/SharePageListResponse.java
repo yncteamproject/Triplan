@@ -10,7 +10,9 @@ public record SharePageListResponse(
 		Long writerId,
 		String writerNickname,
 		LocalDateTime writeDate,
-		int viewCount
+		int viewCount,
+		boolean allowCopy,
+		int copyCount
 ) {
 
 	public static SharePageListResponse from(SharePage sharePage) {
@@ -20,7 +22,9 @@ public record SharePageListResponse(
 				sharePage.getWriter().getId(),
 				sharePage.getWriter().getNickname(),
 				sharePage.getWriteDate(),
-				sharePage.getViewCount()
+				sharePage.getViewCount(),
+				sharePage.isAllowCopy(),
+				sharePage.getCopyCount()
 		);
 	}
 }

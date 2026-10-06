@@ -85,6 +85,7 @@ Authorization: Bearer {accessToken}
 | S1 | PUT | `/api/share-pages/{id}` | 🔒 작성자 | 200 |
 | S1 | DELETE | `/api/share-pages/{id}` | 🔒 작성자 | 204 |
 | S4 | GET | `/api/share-pages/{id}/trip` | 🔓 | 200 |
+| S5 | POST | `/api/share-pages/{id}/copy` | 🔒 | 201 |
 | S2 | POST | `/api/share-pages/{sharePageId}/comments` | 🔒 | 201 |
 | S2 | GET | `/api/share-pages/{sharePageId}/comments` | 🔓 | 200 |
 | S2 | DELETE | `/api/comments/{commentId}` | 🔒 작성자 | 204 |
@@ -254,8 +255,9 @@ Authorization: Bearer {accessToken}
 | title | string | ✅ | 100자 이내 |
 | description | string | | 2000자 이내 |
 | tripId | number | ✅ | 본인 여행만 공유 가능 (B4) |
+| allowCopy | boolean | | 다른 사람의 복사 허용 여부. 안 보내면 `true` (B11) |
 
-**수정 `PUT /api/share-pages/{id}`**: `title`, `description`만 바꿀 수 있습니다 (검증은 생성과 같음).
+**수정 `PUT /api/share-pages/{id}`**: `title`, `description`, `allowCopy`를 바꿀 수 있습니다 (검증은 생성과 같음). `allowCopy`를 안 보내면 기존 값을 유지합니다.
 
 **상세 `GET /api/share-pages/{id}`** 🔓: 조회할 때마다 `viewCount`가 1 오릅니다.
 
@@ -263,14 +265,15 @@ Authorization: Bearer {accessToken}
 // 상세 · 생성 · 수정 응답
 { "id": 1, "title": "제주도 3박 4일", "description": "여행 후기", "tripId": 1,
   "writerId": 1, "writerNickname": "홍길동",
-  "writeDate": "2026-09-30T14:00:00", "updateDate": null, "viewCount": 1 }
+  "writeDate": "2026-09-30T14:00:00", "updateDate": null, "viewCount": 1,
+  "allowCopy": true, "copyCount": 0 }
 ```
 
 **목록 `GET /api/share-pages`** 🔓: 최신 작성순으로 반환합니다.
 
 ```json
 [ { "id": 1, "title": "제주도 3박 4일", "writerId": 1, "writerNickname": "홍길동",
-    "writeDate": "2026-09-30T14:00:00", "viewCount": 1 } ]
+    "writeDate": "2026-09-30T14:00:00", "viewCount": 1, "allowCopy": true, "copyCount": 0 } ]
 ```
 
 **삭제 `DELETE /api/share-pages/{id}`**: 게시글에 달린 댓글도 함께 삭제됩니다.
@@ -315,6 +318,30 @@ Authorization: Bearer {accessToken}
     { "id": 1, "name": "제주 호텔", "checkIn": "2026-10-01T15:00:00",
       "checkOut": "2026-10-02T11:00:00", "cost": 100000 } ],
   "transportCost": 20000, "lodgingCost": 100000, "totalCost": 120000 }
+```
+
+### S5 공유된 여행 복사 — `POST /api/share-pages/{id}/copy` 🔒
+
+게시글에 연결된 여행(방문지 · 이동 구간 · 숙소 포함)을 로그인한 사용자의 새 여행으로 복사합니다.
+복사를 허용하지 않은(`allowCopy: false`) 게시글은 작성자 본인만 복사할 수 있고, 다른 사람은 403입니다 (B11).
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|:----:|------|
+| startDate | date | | 복사한 여행의 시작일. 원본 시작일과의 차이만큼 모든 날짜가 같이 이동. 안 보내면 원본 날짜 그대로 |
+
+요청 본문은 통째로 생략할 수 있습니다.
+
+- 비용은 그대로 복사하고, 예약번호는 가져오지 않습니다 (B12).
+- 이동 구간의 출발 · 도착지는 새로 복사된 방문지로 연결됩니다.
+- 복사할 때마다 게시글의 `copyCount`가 1 오릅니다.
+- 복사한 여행은 원본과 별개라서, 원본을 수정 · 삭제해도 영향이 없습니다.
+
+```json
+// 요청 (선택)
+{ "startDate": "2026-12-01" }
+
+// 201: 새로 만들어진 내 여행 (이후 /api/trips/{id}로 조회 · 수정)
+{ "id": 7, "title": "제주도 여행", "startDate": "2026-12-01", "endDate": "2026-12-04" }
 ```
 
 ---
