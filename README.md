@@ -40,7 +40,7 @@
 - Node.js 22 이상
 
 ### 2. 백엔드 설정
-DB 접속 정보 및 JWT 비밀키는 git에 올리지 않고 `backend/src/main/resources/application-secret.yaml`에 따로 둡니다. 파일을 만들고 값은 팀장에게 받아서 채워 주세요.
+DB 접속 정보 · JWT 비밀키 · 외부 API 키는 git에 올리지 않고 `backend/src/main/resources/application-secret.yaml`에 따로 둡니다. 파일을 만들고 값은 팀장에게 받아서 채워 주세요.
 
 ```yaml
 spring:
@@ -52,7 +52,13 @@ spring:
 
 jwt:
   secret_key: {Base64 비밀키, 32바이트 이상}
+
+odsay:
+  api-key: {오디세이 키}  # 대중교통 경로(T7)용. 없어도 서버는 뜨고, 경로 조회만 502
 ```
+
+> [!NOTE]
+> 오디세이 키는 각자 [ODsay LAB](https://lab.odsay.com)에서 발급받아 쓰는 걸 권장합니다 (무료 하루 30건이 키마다 따로). 애플리케이션은 **Server** 플랫폼으로 등록하고, 서버를 띄울 컴퓨터의 공인 IP(`curl.exe ifconfig.me`)를 등록해야 합니다.
 
 > [!NOTE]
 > 자기 컴퓨터에서만 H2 같은 다른 DB를 쓰고 싶다면 이 파일에 설정하세요. `application.yaml`은 모두가 같이 쓰므로 바꾸지 않습니다.
@@ -135,7 +141,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | T4 | 숙소 (체크인 · 체크아웃 · 숙박비) | ✅ 완료 |
 | T5 | 자동 견적 합산 (교통비 + 숙박비) | ✅ 완료 |
 | T6 | 지도 시각화 (마커 + 경로, 카카오맵) | ⏳ 예정 (API 키 필요) |
-| T7 | 대중교통 경로 · 소요시간 (오디세이) | ⏳ 예정 (API 키 필요) |
+| T7 | 대중교통 경로 · 소요시간 (오디세이, 결과 캐시) | ✅ 완료 |
 | T8 | 환율 표시 (한국수출입은행) | ⏳ 예정 (API 키 필요) |
 
 ### 공유 게시판 (S)
