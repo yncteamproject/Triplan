@@ -11,6 +11,13 @@
 	--color-content-bg: #fbfcfe;
 	--color-footer: #0f172a;
 	--color-footer-text: #8b96a9;
+	--color-error: #dc2626;
+
+	/* 포인트 색 (여행 커버 · 숙소 · 성향 유형). 피그마 화면에 쓰인 색 */
+	--color-purple: #7c3aed;
+	--color-purple-tint: #f5f3ff;
+	--color-orange: #ed8c21;
+	--color-orange-tint: #fff7ed;
 
 	/* Form (로그인 페이지 스타일) */
 	--color-form-card: #f2f2f7;

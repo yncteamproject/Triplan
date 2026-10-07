@@ -123,9 +123,10 @@ frontend/src/
 ├─ api/           client.js(토큰 자동 첨부 · 401 처리), 기능별 API 함수
 ├─ context/       AuthContext(로그인 상태), ToastContext(알림)
 ├─ routes/        ProtectedRoute(로그인 필요한 화면 보호)
+├─ utils/         date.js(날짜 · 기간 · N박 M일 표시)
 ├─ components/
 │  ├─ layout/     Header(로그인 전 / 후), Footer, Layout
-│  └─ common/     Button, Input, Card, Toast, EmptyState, ComingSoon
+│  └─ common/     Button, Input, Card, Toast, EmptyState, PeriodCover, ComingSoon
 └─ pages/         화면. 백엔드처럼 기능별 폴더
    ├─ auth/ · member/ · traveltest/   # 윤효근
    └─ trip/ · share/                  # 김형준
@@ -214,6 +215,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `Input` | `variant`: `underline`(로그인 스타일) · `box`(플래너 · 게시판 폼). `label`, `helper`, `error` |
 | `Card` | `variant`: `form`(로그인 스타일, 연회색) · `panel`(흰 카드) |
 | `EmptyState` | 빈 화면 · 오류 화면. `icon`, `title`, `description`, `action` |
+| `PeriodCover` | 사진 대신 쓰는 여행 썸네일("3박 4일 / 9월"). `id`(색 결정), `startDate`, `endDate`, `size`: `sm` · `lg` |
 | `ComingSoon` | 아직 만들지 않은 화면의 자리 표시. 화면을 만들 때 지웁니다 |
 
 `pages/auth/LoginPage`가 공통 부품을 쓰는 예시입니다.

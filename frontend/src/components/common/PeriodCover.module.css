@@ -1,0 +1,57 @@
+.cover {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	flex-shrink: 0;
+	border-radius: var(--radius-form);
+}
+
+.nights {
+	font-weight: 700;
+}
+
+/* size */
+.sm {
+	width: 96px;
+	height: 72px;
+}
+
+.sm .nights {
+	font-size: 14px;
+}
+
+.sm .month {
+	font-size: 11px;
+}
+
+.lg {
+	width: 100%;
+	height: 150px;
+	border-radius: 0;
+}
+
+.lg .nights {
+	font-size: 28px;
+}
+
+.lg .month {
+	font-size: 13px;
+}
+
+/* tone */
+.blue {
+	background: var(--color-primary-tint);
+	color: var(--color-primary);
+}
+
+.purple {
+	background: var(--color-purple-tint);
+	color: var(--color-purple);
+}
+
+.orange {
+	background: var(--color-orange-tint);
+	color: var(--color-orange);
+}
