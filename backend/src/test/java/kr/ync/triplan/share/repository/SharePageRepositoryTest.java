@@ -10,6 +10,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -66,8 +69,8 @@ class SharePageRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("findAllByOrderByWriteDateDesc - 작성일 최신순 정렬")
-	void findAllByOrderByWriteDateDesc_success() {
+	@DisplayName("findAll(Pageable) - 작성일 최신순으로 페이지 크기만큼 조회")
+	void findAll_paging() {
 		// given
 		LocalDateTime now = LocalDateTime.now();
 		savedSharePage("먼저 쓴 글", trip, now.minusDays(2));
@@ -75,12 +78,15 @@ class SharePageRepositoryTest {
 		savedSharePage("중간에 쓴 글", trip, now.minusDays(1));
 
 		// when
-		List<SharePage> result = sharePageRepository.findAllByOrderByWriteDateDesc();
+		Page<SharePage> result = sharePageRepository.findAll(
+				PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "writeDate")));
 
 		// then
-		assertThat(result)
+		assertThat(result.getContent())
 				.extracting(SharePage::getTitle)
-				.containsExactly("나중에 쓴 글", "중간에 쓴 글", "먼저 쓴 글");
+				.containsExactly("나중에 쓴 글", "중간에 쓴 글");
+		assertThat(result.getTotalElements()).isEqualTo(3);
+		assertThat(result.hasNext()).isTrue();
 	}
 
 	@Test

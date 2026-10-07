@@ -225,7 +225,60 @@ class SharePageControllerTest extends BaseController {
 
 		mockMvc.perform(get("/api/share-pages"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(3));
+				.andExpect(jsonPath("$.content.length()").value(3))
+				.andExpect(jsonPath("$.content[0].title").value("t3"))
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(10))
+				.andExpect(jsonPath("$.totalElements").value(3))
+				.andExpect(jsonPath("$.totalPages").value(1))
+				.andExpect(jsonPath("$.last").value(true));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages?page=1&size=2 - 다음 페이지 조회")
+	void list_endpoint_secondPage() throws Exception {
+		savedSharePage("t1", "c1");
+		savedSharePage("t2", "c2");
+		savedSharePage("t3", "c3");
+
+		mockMvc.perform(get("/api/share-pages").param("page", "1").param("size", "2"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].title").value("t1"))
+				.andExpect(jsonPath("$.page").value(1))
+				.andExpect(jsonPath("$.size").value(2))
+				.andExpect(jsonPath("$.totalPages").value(2))
+				.andExpect(jsonPath("$.last").value(true));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - 범위를 벗어난 페이지는 빈 목록과 200")
+	void list_endpoint_pageOutOfRange() throws Exception {
+		savedSharePage("t1", "c1");
+
+		mockMvc.perform(get("/api/share-pages").param("page", "9"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(0))
+				.andExpect(jsonPath("$.totalElements").value(1));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - size가 50보다 크면 50으로 제한")
+	void list_endpoint_sizeCapped() throws Exception {
+		mockMvc.perform(get("/api/share-pages").param("size", "1000"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.size").value(50));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - page가 음수이거나 size가 0 이하이면 400")
+	void list_endpoint_invalidPageRequest() throws Exception {
+		mockMvc.perform(get("/api/share-pages").param("page", "-1"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("page는 0 이상, size는 1 이상이어야 합니다."));
+
+		mockMvc.perform(get("/api/share-pages").param("size", "0"))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -365,8 +418,8 @@ class SharePageControllerTest extends BaseController {
 
 		mockMvc.perform(get("/api/share-pages"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].allowCopy").value(true))
-				.andExpect(jsonPath("$[0].copyCount").value(0));
+				.andExpect(jsonPath("$.content[0].allowCopy").value(true))
+				.andExpect(jsonPath("$.content[0].copyCount").value(0));
 	}
 
 	@Test
