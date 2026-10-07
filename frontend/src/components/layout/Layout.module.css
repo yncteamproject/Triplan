@@ -1,0 +1,12 @@
+.layout {
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
+	min-width: 1024px;
+}
+
+/* 내용이 짧아도 푸터가 화면 아래에 붙도록 남는 높이를 채운다 */
+.main {
+	flex: 1;
+	background: var(--color-content-bg);
+}

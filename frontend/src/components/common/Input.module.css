@@ -1,0 +1,60 @@
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	width: 100%;
+}
+
+.label {
+	font-weight: 600;
+	font-size: 15px;
+}
+
+.input {
+	width: 100%;
+	border: none;
+	outline: none;
+	background: transparent;
+	font-size: 16px;
+}
+
+.input::placeholder {
+	color: rgba(0, 0, 0, 0.5);
+}
+
+/* 로그인 스타일: 아래 밑줄만 */
+.underline {
+	padding: 8px 6px 12px;
+	border-bottom: 1px solid var(--color-input-line);
+}
+
+.underline:focus {
+	border-bottom-color: var(--color-primary);
+}
+
+/* 플래너 · 게시판 폼: 테두리 상자 */
+.box {
+	padding: 11px 14px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-form);
+	background: var(--color-bg);
+	font-size: 14px;
+}
+
+.box:focus {
+	border-color: var(--color-primary);
+}
+
+.invalid {
+	border-color: #dc2626;
+}
+
+.helper {
+	font: var(--font-caption);
+	color: var(--color-text-muted);
+}
+
+.error {
+	font: var(--font-caption);
+	color: #dc2626;
+}

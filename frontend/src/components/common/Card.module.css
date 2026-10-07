@@ -1,0 +1,15 @@
+.card {
+	border: 1px solid var(--color-border);
+}
+
+.form {
+	background: var(--color-form-card);
+	border-radius: var(--radius-form);
+	padding: 32px 40px;
+}
+
+.panel {
+	background: var(--color-bg);
+	border-radius: var(--radius-card);
+	padding: 20px;
+}
