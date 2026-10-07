@@ -28,7 +28,7 @@
 | 백엔드 | Spring Boot 4.0.7, Java 21, Spring Data JPA, Bean Validation, Lombok |
 | DB | PostgreSQL (Neon) |
 | 인증 | Spring Security + JWT (jjwt 0.12.6, 토큰 유효기간 24시간, BCrypt) |
-| 프론트엔드 | React 19, Vite 8, axios |
+| 프론트엔드 | React 19, Vite 8, React Router 7, axios |
 | 테스트 | JUnit 5, MockMvc, spring-security-test (실제 DB + `@Transactional` 롤백) |
 | 빌드 | Gradle (백엔드), npm (프론트엔드) |
 | 외부 API (예정) | 카카오맵 JS SDK, 오디세이(ODsay), 한국수출입은행 환율 |
@@ -80,6 +80,10 @@ npm run dev
 ```
 http://localhost:5173 에서 열립니다. 백엔드 주소는 `.env`의 `VITE_API_BASE_URL`로 바꿀 수 있고, 백엔드는 이 주소(5173)의 요청만 CORS로 허용합니다.
 
+`.env`의 `VITE_KAKAO_MAP_KEY`는 지도(T6)에 쓸 카카오 **JavaScript 키**입니다. Kakao Developers에서 앱을 만들고 Web 플랫폼에 `http://localhost:5173`을 등록해야 동작합니다. `.env`는 git에 올라가지 않습니다.
+
+PR을 올리기 전에 `npm run lint`와 `npm run build`가 통과하는지 확인합니다.
+
 ### 5. 테스트
 ```bash
 cd backend
@@ -114,7 +118,17 @@ backend/src/test/java/kr/ync/triplan/   # main과 같은 패키지 구조
 └─ support/BaseController.java          # MockMvc + Security, 로그인 사용자 · 토큰 헬퍼
 
 frontend/src/
-└─ api/   client.js(토큰 자동 첨부), authApi.js, tripApi.js
+├─ App.jsx        화면 주소 목록 (Routes)
+├─ index.css      디자인 가이드 값 (색 · 글자 크기 CSS 변수)
+├─ api/           client.js(토큰 자동 첨부 · 401 처리), 기능별 API 함수
+├─ context/       AuthContext(로그인 상태), ToastContext(알림)
+├─ routes/        ProtectedRoute(로그인 필요한 화면 보호)
+├─ components/
+│  ├─ layout/     Header(로그인 전 / 후), Footer, Layout
+│  └─ common/     Button, Input, Card, Toast, EmptyState, ComingSoon
+└─ pages/         화면. 백엔드처럼 기능별 폴더
+   ├─ auth/ · member/ · traveltest/   # 윤효근
+   └─ trip/ · share/                  # 김형준
 ```
 
 새 기능은 **데이터 종류(도메인)** 기준으로 패키지를 나눕니다. 화면(페이지) 기준으로 나누지 않습니다.
@@ -159,11 +173,50 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | P1 | 성향 테스트 제출 · 결과 계산 | ✅ 완료 |
 | P2 | 내 최근 결과 조회 | ✅ 완료 |
 
-### 화면 (프론트엔드)
-| 기능 | 상태 |
+위 표의 상태는 **백엔드 기준**입니다. 화면 진행 상황은 노션 기능 목록의 "화면" 체크로만 관리합니다.
+
+## 화면 (프론트엔드)
+
+공통 틀(라우터 · 레이아웃 · 로그인 상태 · 공통 부품)까지 만들어져 있고, 각 화면은 "준비 중" 자리 표시(`ComingSoon`)를 실제 내용으로 바꿔 가며 만듭니다.
+디자인은 피그마를 기준으로 합니다 (맨 위 "문서" 표의 Figma 링크). `ComingSoon`에 적힌 이름이 피그마 프레임 이름입니다.
+
+### 화면 주소
+| 주소 | 화면 | 로그인 | 파일 (`pages/`) |
+|------|------|:------:|------|
+| `/` | 메인 | | `MainPage` |
+| `/login` | 로그인 | | `auth/LoginPage` |
+| `/signup` | 회원가입 | | `auth/SignupPage` |
+| `/mypage` | 마이페이지 | 🔒 | `member/MyPage` |
+| `/travel-test` | 여행 성향 테스트 | 🔒 | `traveltest/TravelTestPage` |
+| `/travel-test/result` | 성향 테스트 결과 | 🔒 | `traveltest/TravelTestResultPage` |
+| `/trips` | 내 여행 목록 (없으면 빈 화면) | 🔒 | `trip/TripListPage` |
+| `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
+| `/trips/:tripId` | 여행 상세 · 편집 | 🔒 | `trip/TripDetailPage` |
+| `/share-pages` | 게시판 목록 | | `share/SharePageListPage` |
+| `/share-pages/:id` | 게시글 상세 · 댓글 | | `share/SharePageDetailPage` |
+| `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 | 🔒 | `share/SharePageFormPage` |
+
+🔒 화면에 로그인 없이 들어가면 로그인 화면으로 이동하고, 로그인하면 원래 가려던 화면으로 돌아옵니다.
+새 주소는 `App.jsx`에 등록하고 이 표도 같이 고칩니다.
+
+### 프론트 코드 규칙
+- **스타일은 CSS Modules**: `Button.jsx` 옆에 `Button.module.css`. 파일마다 클래스 이름이 따로 관리돼서 서로 겹치지 않습니다.
+- **색 · 글자 크기는 `index.css`의 CSS 변수만** 씁니다 (`var(--color-primary)` 등). 색 값을 직접 적지 않습니다.
+- **API 호출은 `api/` 폴더의 함수로만** 합니다. 화면에서 `axios`를 직접 부르지 않습니다. 오류 문구는 `getErrorMessage(error)`로 꺼냅니다.
+- **로그인 상태는 `useAuth()`** (`user`, `isLoggedIn`, `login`, `logout`), **알림은 `useToast().showToast("문구")`**.
+- 토큰이 붙은 요청이 401을 받으면 자동으로 로그아웃되고 로그인 화면으로 이동합니다. 화면마다 따로 처리하지 않습니다.
+- 글꼴은 Pretendard입니다 (피그마의 Inter에는 한글이 없음).
+
+### 공통 부품 (`components/common`)
+| 부품 | 쓰는 법 |
 |------|------|
-| Vite + React 기본 구조, API 클라이언트 | ✅ 완료 |
-| 각 페이지 화면 | ⏳ 예정 (Figma 기준) |
+| `Button` | `variant`: `primary`(파랑) · `secondary`(흰색 + 테두리) · `text`(글자만). `to`를 주면 링크. `size="lg"`, `fullWidth` |
+| `Input` | `variant`: `underline`(로그인 스타일) · `box`(플래너 · 게시판 폼). `label`, `helper`, `error` |
+| `Card` | `variant`: `form`(로그인 스타일, 연회색) · `panel`(흰 카드) |
+| `EmptyState` | 빈 화면 · 오류 화면. `icon`, `title`, `description`, `action` |
+| `ComingSoon` | 아직 만들지 않은 화면의 자리 표시. 화면을 만들 때 지웁니다 |
+
+`pages/auth/LoginPage`가 공통 부품을 쓰는 예시입니다.
 
 ## 비즈니스 규칙
 

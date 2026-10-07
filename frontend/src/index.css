@@ -1,111 +1,75 @@
+/* 디자인 가이드(피그마 "🎨 디자인 시스템 가이드")의 값을 모아둔 곳. 색 · 크기는 여기 변수만 쓴다 */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+	/* Colors */
+	--color-primary: #2563eb;
+	--color-primary-tint: #f0f5ff;
+	--color-text: #0f172a;
+	--color-text-secondary: #64748b;
+	--color-border: #e2e8f0;
+	--color-surface: #f8fafc;
+	--color-bg: #ffffff;
+	--color-content-bg: #fbfcfe;
+	--color-footer: #0f172a;
+	--color-footer-text: #8b96a9;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+	/* Form (로그인 페이지 스타일) */
+	--color-form-card: #f2f2f7;
+	--color-input-line: #d9d9d9;
+	--color-text-muted: #7c7c7c;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	/* Typography */
+	--font-sans: "Pretendard", system-ui, "Segoe UI", Roboto, sans-serif;
+	--font-h1: 700 48px/1.25 var(--font-sans);
+	--font-h2: 700 32px/1.3 var(--font-sans);
+	--font-h3: 600 22px/1.35 var(--font-sans);
+	--font-body: 400 16px/1.5 var(--font-sans);
+	--font-caption: 400 13px/1.4 var(--font-sans);
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+	/* Spacing · Radius: 8px 그리드, 섹션 좌우 패딩 64px */
+	--space-section: 64px;
+	--radius-form: 8px;
+	--radius-card: 14px;
+	--radius-pill: 999px;
+
+	--header-height: 72px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+html,
+body,
+#root {
+	height: 100%;
 }
 
 body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+	margin: 0;
+	font: var(--font-body);
+	color: var(--color-text);
+	background: var(--color-bg);
+	-webkit-font-smoothing: antialiased;
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
+h2,
+h3,
 p {
-  margin: 0;
+	margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+a {
+	color: inherit;
+	text-decoration: none;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+button,
+input,
+textarea,
+select {
+	font: inherit;
+	color: inherit;
 }
