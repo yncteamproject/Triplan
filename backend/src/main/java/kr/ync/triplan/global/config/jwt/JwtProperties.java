@@ -1,4 +1,4 @@
-package kr.ync.triplan.global.jwt;
+package kr.ync.triplan.global.config.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

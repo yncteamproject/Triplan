@@ -1,6 +1,6 @@
 package kr.ync.triplan.support;
 
-import kr.ync.triplan.global.jwt.JwtTokenProvider;
+import kr.ync.triplan.global.config.jwt.TokenProvider;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ public abstract class BaseController {
 	private PasswordEncoder passwordEncoder;
 
 	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
+	private TokenProvider jwtTokenProvider;
 
 	protected Member member;
 	// 로그인한 기본 사용자

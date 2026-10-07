@@ -95,8 +95,8 @@ cd backend
 backend/src/main/java/kr/ync/triplan/
 ├─ TriplanApplication.java
 ├─ global/                         # 모든 기능이 같이 쓰는 것
-│  ├─ config/     SecurityConfig(URL별 접근 규칙, 401/403 응답), WebConfig(CORS)
-│  ├─ jwt/        JwtTokenProvider, JwtAuthenticationFilter
+│  ├─ config/     SecurityConfig(URL별 접근 규칙, 401/403 응답), WebConfig(CORS), TokenAuthenticationFilter
+│  │  └─ jwt/     JwtProperties, TokenProvider
 │  └─ exception/  CustomException, ErrorResponse, GlobalExceptionHandler,
 │                 CommonExceptionHandler, ForbiddenException
 ├─ member/                         # 회원 · 인증 · 마이페이지 (하위 구성은 아래 기능 모두 동일)

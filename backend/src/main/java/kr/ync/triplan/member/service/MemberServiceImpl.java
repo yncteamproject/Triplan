@@ -1,6 +1,6 @@
 package kr.ync.triplan.member.service;
 
-import kr.ync.triplan.global.jwt.JwtTokenProvider;
+import kr.ync.triplan.global.config.jwt.TokenProvider;
 import kr.ync.triplan.member.domain.Member;
 import kr.ync.triplan.member.dto.request.LoginRequest;
 import kr.ync.triplan.member.dto.request.SignupRequest;
@@ -21,7 +21,7 @@ public class MemberServiceImpl implements MemberService {
 
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final JwtTokenProvider jwtTokenProvider;
+	private final TokenProvider jwtTokenProvider;
 
 	@Override
 	@Transactional
