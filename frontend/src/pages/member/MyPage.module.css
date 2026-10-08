@@ -1,0 +1,98 @@
+.wrap {
+	display: flex;
+	justify-content: center;
+	padding: 48px 24px 72px;
+}
+
+.inner {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	width: 640px;
+	max-width: 100%;
+}
+
+.title {
+	font: var(--font-h2);
+}
+
+.profile {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.avatar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	border: 1px solid var(--color-border);
+	border-radius: 50%;
+	background: var(--color-bg);
+	font-weight: 700;
+	font-size: 24px;
+	color: var(--color-primary);
+}
+
+.nickname {
+	font: var(--font-h3);
+}
+
+.email {
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.joined {
+	font: var(--font-caption);
+	color: var(--color-text-muted);
+}
+
+.status {
+	color: var(--color-text-secondary);
+}
+
+.cardTitle {
+	font: var(--font-h3);
+}
+
+.cardDescription {
+	margin-top: 4px;
+	font: var(--font-caption);
+	color: var(--color-text-muted);
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	margin-top: 24px;
+}
+
+
+.cardBody {
+	margin-top: 20px;
+}
+
+.typeBadge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: var(--radius-pill);
+	background: var(--color-primary-tint);
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--color-primary);
+}
+
+.typeDescription {
+	margin-top: 12px;
+}
+
+.links {
+	display: flex;
+	justify-content: center;
+	gap: 16px;
+	margin-top: 20px;
+}
