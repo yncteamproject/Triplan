@@ -1,0 +1,245 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	min-height: 560px;
+	padding: 40px var(--space-section) 64px;
+	background: var(--color-surface);
+}
+
+.loading {
+	padding: 96px 0;
+	text-align: center;
+	color: var(--color-text-secondary);
+}
+
+.head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.headInfo {
+	min-width: 0;
+}
+
+.title {
+	font: 700 28px/1.2 var(--font-sans);
+	overflow-wrap: anywhere;
+}
+
+.period {
+	margin-top: 6px;
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.headActions {
+	display: flex;
+	flex-shrink: 0;
+	gap: 4px;
+}
+
+.deleteButton {
+	color: var(--color-error);
+}
+
+/* 요약 카드 4개 */
+.summary {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.summaryCard {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-card);
+	background: var(--color-bg);
+}
+
+.summaryLabel {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.summaryValue {
+	font-weight: 700;
+	font-size: 20px;
+}
+
+.summaryPrimary {
+	color: var(--color-primary);
+}
+
+/* Day 탭: 날짜가 많으면 옆으로 넘긴다 */
+.tabs {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	padding-bottom: 4px;
+}
+
+.tab {
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	gap: 2px;
+	padding: 10px 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-form);
+	background: var(--color-bg);
+	text-align: left;
+	cursor: pointer;
+}
+
+.tabOn {
+	border-color: var(--color-primary);
+	background: var(--color-primary-tint);
+}
+
+.tabDay {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.tabOn .tabDay {
+	color: var(--color-primary);
+}
+
+.tabDate {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.schedule {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.timeline {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.timelineItem {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.stop {
+	display: flex;
+	gap: 16px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 12px;
+	background: var(--color-bg);
+}
+
+.stopTime {
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	gap: 2px;
+	width: 72px;
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--color-primary);
+}
+
+.stopDate {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.stopBody {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.stopName {
+	font-weight: 600;
+	font-size: 16px;
+	overflow-wrap: anywhere;
+}
+
+.stopAddress {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.stopMemo {
+	font-size: 14px;
+	color: var(--color-text-secondary);
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+}
+
+/* 방문지 사이의 이동 구간 칩 */
+.segment {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 10px;
+	align-self: flex-start;
+	margin-left: 28px;
+	padding: 6px 12px;
+	border-radius: var(--radius-pill);
+	background: var(--color-primary-tint);
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.segmentMode {
+	font-weight: 600;
+	color: var(--color-primary);
+}
+
+.lodging {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 12px;
+	background: var(--color-purple-tint);
+}
+
+.lodgingBadge {
+	flex-shrink: 0;
+	width: 72px;
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--color-purple);
+}
+
+.lodgingCost {
+	flex-shrink: 0;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.confirmName {
+	color: var(--color-text);
+}
+
+.error {
+	font: var(--font-caption);
+	color: var(--color-error);
+}

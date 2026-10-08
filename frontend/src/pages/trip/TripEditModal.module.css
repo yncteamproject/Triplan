@@ -1,0 +1,29 @@
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	color: var(--color-text);
+}
+
+.dates {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.helper {
+	font: var(--font-caption);
+	color: var(--color-text-muted);
+}
+
+.error {
+	font: var(--font-caption);
+	color: var(--color-error);
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 8px;
+}

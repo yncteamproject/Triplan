@@ -53,3 +53,9 @@
 	padding-left: 12px;
 	padding-right: 12px;
 }
+
+.danger {
+	background: var(--color-error);
+	border-color: var(--color-error);
+	color: #ffffff;
+}
