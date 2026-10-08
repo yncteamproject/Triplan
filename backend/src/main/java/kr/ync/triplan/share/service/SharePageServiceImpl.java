@@ -20,12 +20,15 @@ import kr.ync.triplan.trip.domain.Stop;
 import kr.ync.triplan.trip.domain.TransportSegment;
 import kr.ync.triplan.trip.domain.Trip;
 import kr.ync.triplan.trip.dto.response.TripResponse;
+import kr.ync.triplan.trip.dto.response.TripSummary;
 import kr.ync.triplan.trip.exception.TripNotFoundException;
 import kr.ync.triplan.trip.repository.LodgingRepository;
 import kr.ync.triplan.trip.repository.StopRepository;
 import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
+import kr.ync.triplan.trip.service.TripSummaryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -49,6 +53,7 @@ public class SharePageServiceImpl implements SharePageService {
 	private final StopRepository stopRepository;
 	private final TransportSegmentRepository transportSegmentRepository;
 	private final LodgingRepository lodgingRepository;
+	private final TripSummaryService tripSummaryService;
 
 	// 한 번에 가져갈 수 있는 게시글 수 상한 (size를 크게 보내 전체를 가져가는 것 방지)
 	private static final int MAX_PAGE_SIZE = 50;
@@ -85,8 +90,17 @@ public class SharePageServiceImpl implements SharePageService {
 		Pageable pageable = PageRequest.of(
 				page, Math.min(size, MAX_PAGE_SIZE),
 				Sort.by(Sort.Order.desc("writeDate"), Sort.Order.desc("id")));
-		return PageResponse.from(
-				sharePageRepository.findAll(pageable).map(SharePageListResponse::from));
+		Page<SharePage> sharePages = sharePageRepository.findAll(pageable);
+
+		// 이 페이지에 나온 여행들의 요약(지역 · 방문지 수 · 총 경비)을 한 번에 구한다
+		List<Long> tripIds = sharePages.getContent().stream()
+				.map(sharePage -> sharePage.getTrip().getId())
+				.distinct()
+				.toList();
+		Map<Long, TripSummary> summaries = tripSummaryService.summarize(tripIds);
+
+		return PageResponse.from(sharePages.map(sharePage ->
+				SharePageListResponse.of(sharePage, summaries.get(sharePage.getTrip().getId()))));
 	}
 
 	// 게시글 상세보기

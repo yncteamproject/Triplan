@@ -506,4 +506,41 @@ class SharePageControllerTest extends BaseController {
 								.header(HttpHeaders.AUTHORIZATION, bearer(member)))
 				.andExpect(status().isNotFound());
 	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - 목록에 여행 요약(기간 · 지역 · 방문지 수 · 총 경비) 포함")
+	void list_endpoint_tripSummary() throws Exception {
+		savedSharePage("제주도 후기", "내용");
+		stopRepository.save(
+				Stop.builder().trip(trip).name("성산일출봉").date(LocalDate.now()).stopOrder(1)
+						.address("제주특별자치도 서귀포시 성산읍").build());
+		lodgingRepository.save(
+				Lodging.builder()
+						.trip(trip).name("제주 호텔")
+						.checkIn(LocalDateTime.now())
+						.checkOut(LocalDateTime.now().plusDays(1))
+						.cost(100000)
+						.build()
+		);
+
+		mockMvc.perform(get("/api/share-pages"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].tripStartDate").value(trip.getStartDate().toString()))
+				.andExpect(jsonPath("$.content[0].tripEndDate").value(trip.getEndDate().toString()))
+				.andExpect(jsonPath("$.content[0].region").value("제주"))
+				.andExpect(jsonPath("$.content[0].stopCount").value(1))
+				.andExpect(jsonPath("$.content[0].totalCost").value(100000));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - 방문지 · 비용이 없으면 0, 주소가 없으면 region은 null")
+	void list_endpoint_tripSummary_empty() throws Exception {
+		savedSharePage("빈 여행", "내용");
+
+		mockMvc.perform(get("/api/share-pages"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].region").isEmpty())
+				.andExpect(jsonPath("$.content[0].stopCount").value(0))
+				.andExpect(jsonPath("$.content[0].totalCost").value(0));
+	}
 }

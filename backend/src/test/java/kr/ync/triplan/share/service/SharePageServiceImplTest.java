@@ -29,6 +29,8 @@ import kr.ync.triplan.trip.repository.StopRepository;
 import kr.ync.triplan.trip.repository.TransportSegmentRepository;
 import kr.ync.triplan.trip.repository.TripRepository;
 import kr.ync.triplan.trip.service.TripService;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -639,5 +641,107 @@ class SharePageServiceImplTest {
 		assertThat(stopRepository.findByTripIdOrderByStopOrderAsc(response.id()).getFirst())
 				.extracting(Stop::getLatitude, Stop::getLongitude, Stop::getAddress)
 				.containsExactly(33.4581, 126.9425, "제주 서귀포시 성산읍");
+	}
+
+	// 목록의 여행 요약 (S6)
+	@Test
+	@DisplayName("list - 여행 기간 · 지역 · 방문지 수 · 총 경비가 나옴")
+	void list_tripSummary() {
+		// given
+		savedSharePage("제주도 후기", "내용");
+		saveTripDetails(); // 방문지 2곳(주소 없음), 교통비 20,000원, 숙박비 100,000원
+		savedStopWithLocation(); // 주소: 제주 서귀포시 성산읍
+
+		// when
+		SharePageListResponse item = sharePageService.getList(0, 10).content().getFirst();
+
+		// then
+		assertThat(item)
+				.extracting(
+						SharePageListResponse::tripStartDate, SharePageListResponse::tripEndDate,
+						SharePageListResponse::region, SharePageListResponse::stopCount, SharePageListResponse::totalCost)
+				.containsExactly(trip.getStartDate(), trip.getEndDate(), "제주", 3, 120000);
+	}
+
+	@Test
+	@DisplayName("list - 방문지 · 비용이 없는 여행은 0, 주소가 없으면 지역은 null")
+	void list_tripSummary_empty() {
+		// given
+		savedSharePage("빈 여행", "내용");
+
+		// when
+		SharePageListResponse item = sharePageService.getList(0, 10).content().getFirst();
+
+		// then
+		assertThat(item)
+				.extracting(SharePageListResponse::region, SharePageListResponse::stopCount, SharePageListResponse::totalCost)
+				.containsExactly(null, 0, 0);
+		assertThat(item.tripStartDate()).isEqualTo(trip.getStartDate());
+	}
+
+	@Test
+	@DisplayName("list - 지역은 주소가 있는 방문지 중 방문 순서가 가장 빠른 것 기준")
+	void list_tripSummary_regionByStopOrder() {
+		// given
+		savedSharePage("전국 일주", "내용");
+		stopRepository.save(Stop.builder().trip(trip).name("주소 없는 곳").date(trip.getStartDate()).stopOrder(1).build());
+		stopRepository.save(Stop.builder().trip(trip).name("해운대").date(trip.getStartDate()).stopOrder(3)
+				.address("부산광역시 해운대구 우동").build());
+		stopRepository.save(Stop.builder().trip(trip).name("제주공항").date(trip.getStartDate()).stopOrder(2)
+				.address("제주특별자치도 제주시 공항로 2").build());
+
+		// when
+		SharePageListResponse item = sharePageService.getList(0, 10).content().getFirst();
+
+		// then
+		assertThat(item.region()).isEqualTo("제주");
+		assertThat(item.stopCount()).isEqualTo(3);
+	}
+
+	// 여행 · 방문지 · 숙소가 딸린 게시글을 count개 만든다 (게시글마다 다른 여행)
+	private void savedSharePagesWithOwnTrips(int count) {
+		for (int i = 0; i < count; i++) {
+			Trip ownTrip = savedTrip(member);
+			stopRepository.save(Stop.builder().trip(ownTrip).name("방문지").date(ownTrip.getStartDate()).stopOrder(1)
+					.address("제주 제주시").build());
+			lodgingRepository.save(Lodging.builder().trip(ownTrip).name("숙소")
+					.checkIn(ownTrip.getStartDate().atTime(15, 0)).checkOut(ownTrip.getStartDate().plusDays(1).atTime(11, 0))
+					.cost(50000).build());
+			sharePageRepository.save(SharePage.builder()
+					.title("글").trip(ownTrip).writer(member).writeDate(LocalDateTime.now()).viewCount(0).build());
+		}
+	}
+
+	// 목록을 한 번 조회할 때 DB로 나간 SQL 수
+	private long countListQueries(Statistics statistics) {
+		entityManager.flush();
+		entityManager.clear(); // 이미 불러온 엔티티를 재사용하지 못하게 비운다
+		statistics.clear();
+		sharePageService.getList(0, 50);
+		return statistics.getPrepareStatementCount();
+	}
+
+	@Test
+	@DisplayName("list - 글이 늘어도 조회 쿼리 수는 늘지 않음 (글마다 따로 조회하지 않음)")
+	void list_queryCountDoesNotGrow() {
+		// given
+		Statistics statistics = entityManager.getEntityManagerFactory().unwrap(SessionFactory.class).getStatistics();
+		statistics.setStatisticsEnabled(true);
+
+		// when
+		savedSharePagesWithOwnTrips(2);
+		long queriesForTwo = countListQueries(statistics);
+		savedSharePagesWithOwnTrips(6);
+		long queriesForEight = countListQueries(statistics);
+
+		// then
+		assertThat(queriesForEight).isEqualTo(queriesForTwo);
+		assertThat(sharePageService.getList(0, 50).content())
+				.allSatisfy(item -> {
+					assertThat(item.region()).isEqualTo("제주");
+					assertThat(item.stopCount()).isEqualTo(1);
+					assertThat(item.totalCost()).isEqualTo(50000);
+				});
+		statistics.setStatisticsEnabled(false);
 	}
 }

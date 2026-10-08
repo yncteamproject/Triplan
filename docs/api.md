@@ -325,7 +325,9 @@ Authorization: Bearer {accessToken}
 ```json
 { "content": [
     { "id": 1, "title": "제주도 3박 4일", "writerId": 1, "writerNickname": "홍길동",
-      "writeDate": "2026-09-30T14:00:00", "viewCount": 1, "allowCopy": true, "copyCount": 0 } ],
+      "writeDate": "2026-09-30T14:00:00", "viewCount": 1, "allowCopy": true, "copyCount": 0,
+      "tripStartDate": "2026-10-01", "tripEndDate": "2026-10-04",
+      "region": "제주", "stopCount": 5, "totalCost": 203000 } ],
   "page": 0, "size": 10, "totalElements": 23, "totalPages": 3, "last": false }
 ```
 
@@ -335,6 +337,17 @@ Authorization: Bearer {accessToken}
 | page · size | 요청한 페이지 번호와 실제로 적용된 크기 |
 | totalElements · totalPages | 전체 게시글 수와 전체 페이지 수 |
 | last | 마지막 페이지면 `true` |
+
+각 게시글에는 목록 카드에 쓸 **여행 요약**이 함께 들어 있습니다 (S6).
+
+| 게시글 필드 | 설명 | 값이 없을 때 |
+|-------------|------|------|
+| tripStartDate · tripEndDate | 연결된 여행의 시작일 · 종료일 | 항상 있음 |
+| region | 주소가 있는 방문지 중 방문 순서가 가장 빠른 것의 시 · 도 (예: `"제주특별자치도 제주시 …"` → `"제주"`, `"충청북도 …"` → `"충북"`) | 주소가 있는 방문지가 없으면 `null` |
+| stopCount | 방문지 수 | 0 |
+| totalCost | 교통비 + 숙박비 (T5 견적과 같은 계산, 원) | 0 |
+
+글 수와 상관없이 정해진 횟수의 쿼리로 계산합니다 (글마다 따로 조회하지 않음).
 
 **삭제 `DELETE /api/share-pages/{id}`**: 게시글에 달린 댓글도 함께 삭제됩니다.
 
