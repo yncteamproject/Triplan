@@ -1,0 +1,96 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	min-height: 560px;
+	padding: 40px var(--space-section) 64px;
+	background: var(--color-surface);
+}
+
+.head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.title {
+	font: 700 28px/1.2 var(--font-sans);
+}
+
+.subtitle {
+	margin-top: 6px;
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 12px;
+	background: var(--color-bg);
+	transition: border-color 0.15s;
+}
+
+.item:hover {
+	border-color: var(--color-primary);
+}
+
+.info {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+
+.name {
+	font-weight: 600;
+	font-size: 16px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.meta {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.loading {
+	padding: 96px 0;
+	text-align: center;
+	color: var(--color-text-secondary);
+}
+
+/* 여행이 하나도 없을 때 */
+.blank {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	min-height: 560px;
+	padding: 64px var(--space-section);
+	text-align: center;
+}
+
+.blankTitle {
+	font: var(--font-h3);
+}
+
+.blankDescription {
+	margin-bottom: 12px;
+	color: var(--color-text-secondary);
+}

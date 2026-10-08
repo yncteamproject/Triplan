@@ -46,7 +46,7 @@
 }
 
 .invalid {
-	border-color: #dc2626;
+	border-color: var(--color-error);
 }
 
 .helper {
@@ -56,5 +56,5 @@
 
 .error {
 	font: var(--font-caption);
-	color: #dc2626;
+	color: var(--color-error);
 }
