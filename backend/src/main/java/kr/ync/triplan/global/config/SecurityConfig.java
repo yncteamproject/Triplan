@@ -1,5 +1,6 @@
 package kr.ync.triplan.global.config;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ync.triplan.global.exception.ErrorResponse;
 import kr.ync.triplan.global.config.jwt.TokenProvider;
@@ -42,6 +43,8 @@ public class SecurityConfig {
 				.cors(Customizer.withDefaults())
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						// 스프링이 오류를 /error로 넘길 때는 로그인 검사를 하지 않는다. 막으면 400 · 500이 401로 바뀐다 (K8)
+						.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 						.requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
 						.requestMatchers(HttpMethod.GET,
 								"/api/share-pages", "/api/share-pages/*", "/api/share-pages/*/comments",
