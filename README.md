@@ -123,7 +123,7 @@ frontend/src/
 ├─ api/           client.js(토큰 자동 첨부 · 401 처리), 기능별 API 함수
 ├─ context/       AuthContext(로그인 상태), ToastContext(알림)
 ├─ routes/        ProtectedRoute(로그인 필요한 화면 보호)
-├─ utils/         date.js(날짜 · 기간 · N박 M일 · 시간 표시), format.js(금액 표시)
+├─ utils/         date.js(날짜 · 기간 · N박 M일 · 시간 표시), format.js(금액 표시 · 비용 입력 검사)
 ├─ components/
 │  ├─ layout/     Header(로그인 전 / 후), Footer, Layout
 │  └─ common/     Button, Input, Card, Toast, EmptyState, PeriodCover, ComingSoon
@@ -193,7 +193,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `/travel-test/result` | 성향 테스트 결과 | 🔒 | `traveltest/TravelTestResultPage` |
 | `/trips` | 내 여행 목록 (없으면 빈 화면) | 🔒 | `trip/TripListPage` |
 | `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
-| `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약, 여행 수정 · 삭제) | 🔒 | `trip/TripDetailPage` |
+| `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제) | 🔒 | `trip/TripDetailPage` |
 | `/share-pages` | 게시판 목록 | | `share/SharePageListPage` |
 | `/share-pages/:id` | 게시글 상세 · 댓글 | | `share/SharePageDetailPage` |
 | `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 | 🔒 | `share/SharePageFormPage` |
@@ -214,6 +214,8 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 |------|------|
 | `Button` | `variant`: `primary`(파랑) · `secondary`(흰색 + 테두리) · `text`(글자만) · `danger`(빨강, 삭제). `to`를 주면 링크. `size="lg"`, `fullWidth` |
 | `Input` | `variant`: `underline`(로그인 스타일) · `box`(플래너 · 게시판 폼). `label`, `helper`, `error` |
+| `Select` | 선택칸(상자 모양). `label`, `options`(`[{ value, label }]`), `placeholder`, `error` |
+| `Textarea` | 여러 줄 입력칸(상자 모양). `label`, `helper`, `error`, `rows` |
 | `Card` | `variant`: `form`(로그인 스타일, 연회색) · `panel`(흰 카드) |
 | `Modal` | 가운데에 뜨는 창(수정 폼 · 삭제 확인). `title`, `onClose`, `footer`(버튼들). 바깥 클릭 · Esc로 닫힘 |
 | `EmptyState` | 빈 화면 · 오류 화면. `icon`, `title`, `description`, `action` |

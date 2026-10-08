@@ -1,0 +1,36 @@
+/* 방문지 · 이동 구간 · 숙소 폼이 같이 쓰는 스타일 */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.title {
+	font: 700 18px/1.2 var(--font-sans);
+}
+
+.row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.notice {
+	padding: 10px 12px;
+	border-radius: var(--radius-form);
+	background: var(--color-orange-tint);
+	font: var(--font-caption);
+	color: var(--color-orange);
+}
+
+.error {
+	font: var(--font-caption);
+	color: var(--color-error);
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 4px;
+}

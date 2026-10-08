@@ -243,3 +243,100 @@
 	font: var(--font-caption);
 	color: var(--color-error);
 }
+
+/* 왼쪽 일정 + 오른쪽 추가 · 수정 패널 */
+.columns {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 360px;
+	align-items: start;
+	gap: 24px;
+}
+
+.main {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-width: 0;
+}
+
+.side {
+	position: sticky;
+	top: calc(var(--header-height) + 16px); /* 위에 붙어 있는 헤더에 가리지 않게 */
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 20px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-card);
+	background: var(--color-bg);
+}
+
+.sideHint {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.addButtons {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+
+.addButton {
+	padding: 10px 4px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-form);
+	background: var(--color-bg);
+	font-weight: 600;
+	font-size: 13px;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.addButton:hover,
+.addButtonOn {
+	border-color: var(--color-primary);
+	background: var(--color-primary-tint);
+	color: var(--color-primary);
+}
+
+/* 일정 카드의 수정 · 삭제 */
+.itemActions {
+	display: flex;
+	flex-shrink: 0;
+	align-self: flex-start;
+	gap: 2px;
+}
+
+.itemButton {
+	padding: 2px 6px;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+	cursor: pointer;
+}
+
+.itemButton:hover {
+	background: var(--color-surface);
+	color: var(--color-text);
+}
+
+.itemDelete:hover {
+	color: var(--color-error);
+}
+
+.segment .itemActions {
+	align-self: center;
+}
+
+@media (max-width: 960px) {
+	.columns {
+		grid-template-columns: 1fr;
+	}
+
+	.side {
+		position: static;
+	}
+}

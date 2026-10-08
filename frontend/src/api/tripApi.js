@@ -29,3 +29,30 @@ export const getLodgings = (tripId) =>
 // 견적: 교통비 · 숙박비 · 합계
 export const getEstimate = (tripId) =>
 	apiClient.get(`/api/trips/${tripId}/estimate`).then((res) => res.data);
+
+// 방문지 · 이동 구간 · 숙소의 추가 · 수정 · 삭제
+// 수정(PUT)은 보낸 값으로 전부 바뀐다. 비워 보낸 칸은 지워지니 기존 값을 모두 채워서 보낸다
+export const createStop = (tripId, request) =>
+	apiClient.post(`/api/trips/${tripId}/stops`, request).then((res) => res.data);
+
+export const updateStop = (id, request) =>
+	apiClient.put(`/api/stops/${id}`, request).then((res) => res.data);
+
+// 이 방문지를 출발지 · 도착지로 쓰는 이동 구간도 함께 지워진다
+export const deleteStop = (id) => apiClient.delete(`/api/stops/${id}`);
+
+export const createTransportSegment = (tripId, request) =>
+	apiClient.post(`/api/trips/${tripId}/transport-segments`, request).then((res) => res.data);
+
+export const updateTransportSegment = (id, request) =>
+	apiClient.put(`/api/transport-segments/${id}`, request).then((res) => res.data);
+
+export const deleteTransportSegment = (id) => apiClient.delete(`/api/transport-segments/${id}`);
+
+export const createLodging = (tripId, request) =>
+	apiClient.post(`/api/trips/${tripId}/lodgings`, request).then((res) => res.data);
+
+export const updateLodging = (id, request) =>
+	apiClient.put(`/api/lodgings/${id}`, request).then((res) => res.data);
+
+export const deleteLodging = (id) => apiClient.delete(`/api/lodgings/${id}`);
