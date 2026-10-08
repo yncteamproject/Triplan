@@ -99,6 +99,7 @@ export default function SegmentForm({ trip, stops, segment, defaults, onCancel, 
 				value={toStopId}
 				onChange={change(setToStopId)}
 			/>
+			<p className={styles.hint}>숙소를 고르려면 숙소 카드의 "방문지로 추가"를 먼저 눌러주세요.</p>
 			<Select
 				label="이동 수단"
 				placeholder="수단 선택"

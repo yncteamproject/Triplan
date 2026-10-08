@@ -23,6 +23,12 @@
 	color: var(--color-orange);
 }
 
+.hint {
+	margin-top: -6px;
+	font: var(--font-caption);
+	color: var(--color-text-muted);
+}
+
 .error {
 	font: var(--font-caption);
 	color: var(--color-error);

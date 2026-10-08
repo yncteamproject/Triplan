@@ -225,10 +225,14 @@ export default function TripDetailPage() {
 
 	// 새 방문지 · 이동 구간 · 숙소 폼에 미리 채워둘 값
 	const baseDate = activeDay === OUTSIDE ? trip.startDate : activeDay;
+	const stopDefaults = (date) => {
+		// 방문 순서는 그날 마지막 순서 + 1
+		const orders = stops.filter((stop) => stop.date === date).map((stop) => stop.stopOrder ?? 0);
+		return { date, stopOrder: orders.length === 0 ? 1 : Math.max(...orders) + 1 };
+	};
 	const defaultsFor = (type) => {
 		if (type === "stop") {
-			const orders = stops.filter((stop) => stop.date === baseDate).map((stop) => stop.stopOrder ?? 0);
-			return { date: baseDate, stopOrder: orders.length === 0 ? 1 : Math.max(...orders) + 1 };
+			return stopDefaults(baseDate);
 		}
 		if (type === "segment") {
 			// 보고 있는 날의 첫 두 방문지를 출발지 · 도착지로 제안한다
@@ -246,6 +250,17 @@ export default function TripDetailPage() {
 	};
 
 	const openPanel = (type, item) => setPanel({ type, item });
+
+	// 이동 구간의 출발지 · 도착지는 방문지만 고를 수 있다. 숙소를 오가는 구간을 만들려면 숙소를 방문지로도 추가해야 한다
+	// 숙소 이름 · 체크인 날짜 · 시간을 채운 방문지 폼을 연다. 저장하면 숙소와 상관없는 보통 방문지가 된다
+	const hasStopFor = (lodging) =>
+		stops.some((stop) => stop.name === lodging.name && stop.date === dateOf(lodging.checkIn));
+	const openStopFromLodging = (lodging) =>
+		setPanel({
+			type: "stop",
+			presetKey: `lodging-${lodging.id}`,
+			preset: { ...stopDefaults(dateOf(lodging.checkIn)), name: lodging.name, time: timeOf(lodging.checkIn) },
+		});
 	const closePanel = () => setPanel(null);
 
 	const handleItemSaved = (type, saved) => {
@@ -299,8 +314,9 @@ export default function TripDetailPage() {
 		return confirm.kind === "segment" ? segmentLabel(confirm.item) : confirm.item.name;
 	};
 
-	const itemActions = (kind, item, label) => (
+	const itemActions = (kind, item, label, extra) => (
 		<span className={styles.itemActions}>
+			{extra}
 			<button type="button" className={styles.itemButton} aria-label={`${label} 수정`} onClick={() => openPanel(kind, item)}>
 				수정
 			</button>
@@ -318,7 +334,9 @@ export default function TripDetailPage() {
 	const addButton = (type, label) => (
 		<button
 			type="button"
-			className={panel?.type === type && !panel.item ? `${styles.addButton} ${styles.addButtonOn}` : styles.addButton}
+			className={
+				panel?.type === type && !panel.item && !panel.preset ? `${styles.addButton} ${styles.addButtonOn}` : styles.addButton
+			}
 			onClick={() => openPanel(type)}
 		>
 			{label}
@@ -329,15 +347,15 @@ export default function TripDetailPage() {
 		if (!panel) {
 			return <p className={styles.sideHint}>추가할 것을 고르거나, 일정에서 "수정"을 눌러 고칠 수 있어요.</p>;
 		}
-		const { type, item } = panel;
-		const key = `${type}-${item?.id ?? "new"}`; // 다른 대상을 열면 폼을 새로 만든다
+		const { type, item, preset, presetKey } = panel;
+		const key = `${type}-${item?.id ?? presetKey ?? "new"}`; // 다른 대상을 열면 폼을 새로 만든다
 		if (type === "stop") {
 			return (
 				<StopForm
 					key={key}
 					trip={trip}
 					stop={item}
-					defaults={defaultsFor("stop")}
+					defaults={preset ?? defaultsFor("stop")}
 					onCancel={closePanel}
 					onSaved={(saved) => handleItemSaved("stop", saved)}
 				/>
@@ -506,7 +524,22 @@ export default function TripDetailPage() {
 											{lodging.reservationNo && <p className={styles.stopAddress}>예약 {lodging.reservationNo}</p>}
 										</div>
 										{lodging.cost != null && <span className={styles.lodgingCost}>{formatWon(lodging.cost)}</span>}
-										{itemActions("lodging", lodging, lodging.name)}
+										{itemActions(
+											"lodging",
+											lodging,
+											lodging.name,
+											// 같은 이름 · 같은 날짜의 방문지가 이미 있으면 또 만들지 않게 숨긴다
+											!hasStopFor(lodging) && (
+												<button
+													type="button"
+													className={`${styles.itemButton} ${styles.itemPrimary}`}
+													title="이동 구간의 출발지 · 도착지로 고를 수 있게 돼요"
+													onClick={() => openStopFromLodging(lodging)}
+												>
+													방문지로 추가
+												</button>
+											),
+										)}
 									</div>
 								);
 							})}

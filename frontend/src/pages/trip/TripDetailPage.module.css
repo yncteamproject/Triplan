@@ -323,6 +323,14 @@
 	color: var(--color-text);
 }
 
+.itemPrimary {
+	color: var(--color-primary);
+}
+
+.itemPrimary:hover {
+	color: var(--color-primary);
+}
+
 .itemDelete:hover {
 	color: var(--color-error);
 }

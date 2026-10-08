@@ -7,12 +7,13 @@ import Textarea from "../../components/common/Textarea";
 import { formatPeriod, formatTime } from "../../utils/date";
 import styles from "./TripForms.module.css";
 
-// 방문지 추가 · 수정 폼. stop이 있으면 수정, 없으면 추가 (defaults: 새 방문지의 기본 날짜 · 순서)
+// 방문지 추가 · 수정 폼. stop이 있으면 수정, 없으면 추가
+// defaults: 새 방문지에 미리 채워둘 값 { date, stopOrder, name?, time? } (name · time은 숙소를 방문지로 추가할 때만)
 // 위치(위도 · 경도)는 FE-7에서 장소 검색으로 넣는다. 여기서는 주소만 글자로 받는다
 export default function StopForm({ trip, stop, defaults, onCancel, onSaved }) {
-	const [name, setName] = useState(stop?.name ?? "");
+	const [name, setName] = useState(stop?.name ?? defaults.name ?? "");
 	const [date, setDate] = useState(stop?.date ?? defaults.date);
-	const [time, setTime] = useState(stop?.time ? formatTime(stop.time) : "");
+	const [time, setTime] = useState(stop?.time ? formatTime(stop.time) : (defaults.time ?? ""));
 	const [stopOrder, setStopOrder] = useState(String(stop ? (stop.stopOrder ?? "") : defaults.stopOrder));
 	const [address, setAddress] = useState(stop?.address ?? "");
 	const [memo, setMemo] = useState(stop?.memo ?? "");
