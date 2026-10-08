@@ -185,7 +185,13 @@ export default function TripDetailPage() {
 	const days = listDates(trip.startDate, trip.endDate);
 	const isOutside = (isoDate) => !days.includes(isoDate);
 	const dayOf = (isoDate) => (isOutside(isoDate) ? OUTSIDE : isoDate);
-	const hasOutside = stops.some((stop) => isOutside(stop.date)) || lodgings.some((lodging) => isOutside(dateOf(lodging.checkIn)));
+	// 그날 쓰는 숙소인지: 체크인 날부터 체크아웃하는 날까지
+	// (체크아웃하는 날 아침에도 그 숙소에서 출발하므로 같이 보여준다)
+	const staysOn = (lodging, isoDate) => dateOf(lodging.checkIn) <= isoDate && isoDate <= dateOf(lodging.checkOut);
+	// 숙소가 처음 보이는 탭. 여행 기간과 전혀 겹치지 않으면 "기간 밖"
+	const lodgingDay = (lodging) => days.find((day) => staysOn(lodging, day)) ?? OUTSIDE;
+	const hasOutside =
+		stops.some((stop) => isOutside(stop.date)) || lodgings.some((lodging) => lodgingDay(lodging) === OUTSIDE);
 
 	// 기간을 고쳐서 보던 날짜가 없어지면 첫째 날로 돌아간다
 	const selectable = selectedDay === OUTSIDE ? hasOutside : days.includes(selectedDay);
@@ -193,7 +199,9 @@ export default function TripDetailPage() {
 	const inActiveDay = (isoDate) => dayOf(isoDate) === activeDay;
 
 	const dayStops = stops.filter((stop) => inActiveDay(stop.date));
-	const dayLodgings = lodgings.filter((lodging) => inActiveDay(dateOf(lodging.checkIn)));
+	const dayLodgings = lodgings.filter((lodging) =>
+		activeDay === OUTSIDE ? lodgingDay(lodging) === OUTSIDE : staysOn(lodging, activeDay),
+	);
 	const stopNames = new Map(stops.map((stop) => [stop.id, stop.name]));
 	const segmentLabel = (segment) => `${stopNames.get(segment.fromStopId)} → ${stopNames.get(segment.toStopId)}`;
 
@@ -270,7 +278,7 @@ export default function TripDetailPage() {
 		if (type === "stop") {
 			setSelectedDay(dayOf(saved.date));
 		} else if (type === "lodging") {
-			setSelectedDay(dayOf(dateOf(saved.checkIn)));
+			setSelectedDay(lodgingDay(saved));
 		}
 		refresh();
 	};
@@ -426,47 +434,130 @@ export default function TripDetailPage() {
 				<li className={styles.summaryCard}>
 					<span className={styles.summaryLabel}>총 교통비</span>
 					<span className={styles.summaryValue}>{formatWon(estimate.transportCost)}</span>
+					<span className={styles.summaryCount}>이동 {segments.length}구간</span>
 				</li>
 				<li className={styles.summaryCard}>
 					<span className={styles.summaryLabel}>총 숙박비</span>
 					<span className={styles.summaryValue}>{formatWon(estimate.lodgingCost)}</span>
+					<span className={styles.summaryCount}>숙소 {lodgings.length}곳</span>
 				</li>
 			</ul>
 
+			{/* 숙소는 일정과 따로, Day 탭 위에 크게 보여준다. 보고 있는 날에 쓰는 숙소만 나온다 */}
+			{lodgings.length > 0 && (
+				<div className={styles.lodgings}>
+					{dayLodgings.length === 0 && (
+						// 탭을 바꿀 때 아래 내용이 오르내리지 않게, 숙소가 없는 날에도 자리를 지킨다
+						<div className={`${styles.lodging} ${styles.lodgingNone}`}>
+							<span className={styles.lodgingBadge}>이 날 숙소</span>
+							<p className={styles.lodgingEmpty}>이 날은 묵는 숙소가 없어요</p>
+						</div>
+					)}
+					{dayLodgings.map((lodging) => {
+						const checkInDate = dateOf(lodging.checkIn);
+						const checkOutDate = dateOf(lodging.checkOut);
+						const nights = countNights(checkInDate, checkOutDate);
+						return (
+							<div key={lodging.id} className={styles.lodging}>
+								<div className={styles.lodgingHead}>
+									<span className={styles.lodgingBadge}>{activeDay === OUTSIDE ? "숙소" : "이 날 숙소"}</span>
+									{activeDay !== OUTSIDE && nights > 0 && (
+										<span className={styles.lodgingStatus}>
+											{activeDay === checkOutDate
+												? "체크아웃하는 날"
+												: nights > 1
+													? `${nights}박 중 ${countNights(checkInDate, activeDay) + 1}번째 밤`
+													: "체크인하는 날"}
+										</span>
+									)}
+									{itemActions(
+										"lodging",
+										lodging,
+										lodging.name,
+										// 같은 이름 · 같은 날짜의 방문지가 이미 있으면 또 만들지 않게 숨긴다
+										!hasStopFor(lodging) && (
+											<button
+												type="button"
+												className={`${styles.itemButton} ${styles.itemPrimary}`}
+												title="이동 구간의 출발지 · 도착지로 고를 수 있게 돼요"
+												onClick={() => openStopFromLodging(lodging)}
+											>
+												방문지로 추가
+											</button>
+										),
+									)}
+								</div>
+								<p className={styles.lodgingName}>{lodging.name}</p>
+								<dl className={styles.lodgingInfo}>
+									<div>
+										<dt>체크인</dt>
+										<dd>
+											{formatDayLabel(checkInDate)} {timeOf(lodging.checkIn)}
+										</dd>
+									</div>
+									<div>
+										<dt>체크아웃</dt>
+										<dd>
+											{formatDayLabel(checkOutDate)} {timeOf(lodging.checkOut)}
+										</dd>
+									</div>
+									<div>
+										<dt>숙박</dt>
+										<dd>{nights <= 0 ? "당일" : `${nights}박`}</dd>
+									</div>
+									{lodging.cost != null && (
+										<div>
+											<dt>비용</dt>
+											<dd>{formatWon(lodging.cost)}</dd>
+										</div>
+									)}
+									{lodging.reservationNo && (
+										<div>
+											<dt>예약번호</dt>
+											<dd>{lodging.reservationNo}</dd>
+										</div>
+									)}
+								</dl>
+							</div>
+						);
+					})}
+				</div>
+			)}
+
+			<div className={styles.tabs} role="tablist">
+				{days.map((day, index) => (
+					<button
+						key={day}
+						type="button"
+						role="tab"
+						aria-selected={day === activeDay}
+						className={day === activeDay ? `${styles.tab} ${styles.tabOn}` : styles.tab}
+						onClick={() => setSelectedDay(day)}
+					>
+						<span className={styles.tabDay}>Day {index + 1}</span>
+						<span className={styles.tabDate}>{formatDayLabel(day)}</span>
+					</button>
+				))}
+				{hasOutside && (
+					<button
+						type="button"
+						role="tab"
+						aria-selected={activeDay === OUTSIDE}
+						className={activeDay === OUTSIDE ? `${styles.tab} ${styles.tabOn}` : styles.tab}
+						onClick={() => setSelectedDay(OUTSIDE)}
+					>
+						<span className={styles.tabDay}>기간 밖</span>
+						<span className={styles.tabDate}>여행 기간이 아닌 일정</span>
+					</button>
+				)}
+			</div>
+
 			<div className={styles.columns}>
 				<div className={styles.main}>
-					<div className={styles.tabs} role="tablist">
-						{days.map((day, index) => (
-							<button
-								key={day}
-								type="button"
-								role="tab"
-								aria-selected={day === activeDay}
-								className={day === activeDay ? `${styles.tab} ${styles.tabOn}` : styles.tab}
-								onClick={() => setSelectedDay(day)}
-							>
-								<span className={styles.tabDay}>Day {index + 1}</span>
-								<span className={styles.tabDate}>{formatDayLabel(day)}</span>
-							</button>
-						))}
-						{hasOutside && (
-							<button
-								type="button"
-								role="tab"
-								aria-selected={activeDay === OUTSIDE}
-								className={activeDay === OUTSIDE ? `${styles.tab} ${styles.tabOn}` : styles.tab}
-								onClick={() => setSelectedDay(OUTSIDE)}
-							>
-								<span className={styles.tabDay}>기간 밖</span>
-								<span className={styles.tabDate}>여행 기간이 아닌 일정</span>
-							</button>
-						)}
-					</div>
-
-					{dayStops.length === 0 && dayLodgings.length === 0 ? (
+					{dayStops.length === 0 ? (
 						<EmptyState
-							title={stops.length === 0 && lodgings.length === 0 ? "아직 일정이 없어요" : "이 날은 일정이 없어요"}
-							description="오른쪽에서 방문지와 숙소를 추가해보세요"
+							title={stops.length === 0 ? "아직 일정이 없어요" : "이 날은 일정이 없어요"}
+							description="오른쪽에서 방문지를 추가해보세요"
 						/>
 					) : (
 						<div className={styles.schedule}>
@@ -508,41 +599,6 @@ export default function TripDetailPage() {
 									))}
 								</ol>
 							)}
-
-							{dayLodgings.map((lodging) => {
-								const nights = countNights(dateOf(lodging.checkIn), dateOf(lodging.checkOut));
-								return (
-									<div key={lodging.id} className={styles.lodging}>
-										<span className={styles.lodgingBadge}>숙소</span>
-										<div className={styles.stopBody}>
-											<p className={styles.stopName}>{lodging.name}</p>
-											<p className={styles.stopAddress}>
-												{formatDayLabel(dateOf(lodging.checkIn))} {timeOf(lodging.checkIn)} 체크인 ·{" "}
-												{formatDayLabel(dateOf(lodging.checkOut))} {timeOf(lodging.checkOut)} 체크아웃 ·{" "}
-												{nights <= 0 ? "당일" : `${nights}박`}
-											</p>
-											{lodging.reservationNo && <p className={styles.stopAddress}>예약 {lodging.reservationNo}</p>}
-										</div>
-										{lodging.cost != null && <span className={styles.lodgingCost}>{formatWon(lodging.cost)}</span>}
-										{itemActions(
-											"lodging",
-											lodging,
-											lodging.name,
-											// 같은 이름 · 같은 날짜의 방문지가 이미 있으면 또 만들지 않게 숨긴다
-											!hasStopFor(lodging) && (
-												<button
-													type="button"
-													className={`${styles.itemButton} ${styles.itemPrimary}`}
-													title="이동 구간의 출발지 · 도착지로 고를 수 있게 돼요"
-													onClick={() => openStopFromLodging(lodging)}
-												>
-													방문지로 추가
-												</button>
-											),
-										)}
-									</div>
-								);
-							})}
 						</div>
 					)}
 				</div>
