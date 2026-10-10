@@ -58,3 +58,9 @@
 	font: var(--font-caption);
 	color: var(--color-error);
 }
+
+/* Textarea.jsx에서 같이 쓴다 */
+.textarea {
+	resize: vertical;
+	line-height: 1.5;
+}
