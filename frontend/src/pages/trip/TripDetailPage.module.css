@@ -45,254 +45,6 @@
 	color: var(--color-error);
 }
 
-/* 요약 카드 4개 */
-.summary {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	gap: 12px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.summaryCard {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 16px;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-card);
-	background: var(--color-bg);
-}
-
-.summaryLabel {
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.summaryValue {
-	font-weight: 700;
-	font-size: 20px;
-}
-
-.summaryCount {
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.summaryPrimary {
-	color: var(--color-primary);
-}
-
-/* Day 탭: 날짜가 많으면 옆으로 넘긴다 */
-.tabs {
-	display: flex;
-	gap: 8px;
-	overflow-x: auto;
-	padding-bottom: 4px;
-}
-
-.tab {
-	display: flex;
-	flex-direction: column;
-	flex-shrink: 0;
-	gap: 2px;
-	padding: 10px 16px;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-form);
-	background: var(--color-bg);
-	text-align: left;
-	cursor: pointer;
-}
-
-.tabOn {
-	border-color: var(--color-primary);
-	background: var(--color-primary-tint);
-}
-
-.tabDay {
-	font-weight: 600;
-	font-size: 14px;
-}
-
-.tabOn .tabDay {
-	color: var(--color-primary);
-}
-
-.tabDate {
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.schedule {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.timeline {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.timelineItem {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.stop {
-	display: flex;
-	gap: 16px;
-	padding: 16px;
-	border: 1px solid var(--color-border);
-	border-radius: 12px;
-	background: var(--color-bg);
-}
-
-.stopTime {
-	display: flex;
-	flex-direction: column;
-	flex-shrink: 0;
-	gap: 2px;
-	width: 72px;
-	font-weight: 600;
-	font-size: 14px;
-	color: var(--color-primary);
-}
-
-.stopDate {
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.stopBody {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	gap: 4px;
-	min-width: 0;
-}
-
-.stopName {
-	font-weight: 600;
-	font-size: 16px;
-	overflow-wrap: anywhere;
-}
-
-.stopAddress {
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.stopMemo {
-	font-size: 14px;
-	color: var(--color-text-secondary);
-	white-space: pre-line;
-	overflow-wrap: anywhere;
-}
-
-/* 방문지 사이의 이동 구간 칩 */
-.segment {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 4px 10px;
-	align-self: flex-start;
-	margin-left: 28px;
-	padding: 6px 12px;
-	border-radius: var(--radius-pill);
-	background: var(--color-primary-tint);
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.segmentMode {
-	font-weight: 600;
-	color: var(--color-primary);
-}
-
-/* 보고 있는 날에 쓰는 숙소. Day 탭 위에 크게 (보통 1개, 체크아웃 · 체크인이 겹치는 날은 2개가 나란히) */
-.lodgings {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: 12px;
-}
-
-.lodging {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	min-height: 148px;
-	padding: 20px 24px;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-card);
-	background: var(--color-purple-tint);
-}
-
-.lodgingHead {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.lodgingHead .itemActions {
-	align-self: center;
-	margin-left: auto;
-}
-
-.lodgingBadge {
-	font-weight: 600;
-	font-size: 14px;
-	color: var(--color-purple);
-}
-
-.lodgingStatus {
-	padding: 2px 10px;
-	border-radius: var(--radius-pill);
-	background: var(--color-bg);
-	font: var(--font-caption);
-	color: var(--color-purple);
-}
-
-.lodgingName {
-	font: 700 22px/1.3 var(--font-sans);
-	overflow-wrap: anywhere;
-}
-
-.lodgingInfo {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px 32px;
-	margin: 0;
-}
-
-.lodgingInfo dt {
-	font: var(--font-caption);
-	color: var(--color-text-secondary);
-}
-
-.lodgingInfo dd {
-	margin: 2px 0 0;
-	font-weight: 600;
-	font-size: 15px;
-}
-
-/* 숙소가 없는 날의 빈 자리 */
-.lodgingNone {
-	border-style: dashed;
-	background: var(--color-bg);
-}
-
-.lodgingEmpty {
-	margin: auto 0;
-	color: var(--color-text-secondary);
-}
-
 .confirmName {
 	color: var(--color-text);
 }
@@ -302,21 +54,7 @@
 	color: var(--color-error);
 }
 
-/* 왼쪽 일정 + 오른쪽 추가 · 수정 패널 */
-.columns {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) 360px;
-	align-items: start;
-	gap: 24px;
-}
-
-.main {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-	min-width: 0;
-}
-
+/* 일정 오른쪽의 추가 · 수정 패널 (일정 모양은 components/trip/TripSchedule) */
 .side {
 	position: sticky;
 	top: calc(var(--header-height) + 16px); /* 위에 붙어 있는 헤더에 가리지 않게 */
@@ -358,14 +96,7 @@
 	color: var(--color-primary);
 }
 
-/* 일정 카드의 수정 · 삭제 */
-.itemActions {
-	display: flex;
-	flex-shrink: 0;
-	align-self: flex-start;
-	gap: 2px;
-}
-
+/* 일정 카드에 붙이는 수정 · 삭제 버튼 */
 .itemButton {
 	padding: 2px 6px;
 	border: none;
@@ -393,15 +124,7 @@
 	color: var(--color-error);
 }
 
-.segment .itemActions {
-	align-self: center;
-}
-
 @media (max-width: 960px) {
-	.columns {
-		grid-template-columns: 1fr;
-	}
-
 	.side {
 		position: static;
 	}
