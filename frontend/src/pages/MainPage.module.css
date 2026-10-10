@@ -320,18 +320,3 @@
 	padding: 48px 0;
 	color: var(--color-text-secondary);
 }
-
-@media (max-width: 960px) {
-	.title {
-		font-size: 34px;
-	}
-
-	/* 좁은 화면에서는 카드를 세로로 쌓고, 열린 카드는 아래로만 늘어난다 */
-	.featureList {
-		flex-direction: column;
-	}
-
-	.cards {
-		grid-template-columns: 1fr;
-	}
-}
