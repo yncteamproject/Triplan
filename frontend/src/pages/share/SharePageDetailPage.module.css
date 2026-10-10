@@ -1,0 +1,185 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	min-height: 560px;
+	padding: 32px var(--space-section) 64px;
+	background: var(--color-surface);
+}
+
+.loading {
+	padding: 96px 0;
+	text-align: center;
+	color: var(--color-text-secondary);
+}
+
+.back {
+	align-self: flex-start;
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.back:hover {
+	color: var(--color-primary);
+}
+
+.head,
+.tripHead {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.headInfo {
+	min-width: 0;
+}
+
+.title {
+	font: 700 28px/1.2 var(--font-sans);
+	overflow-wrap: anywhere;
+}
+
+.meta {
+	margin-top: 6px;
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.headActions {
+	display: flex;
+	flex-shrink: 0;
+	gap: 4px;
+}
+
+.deleteButton {
+	color: var(--color-error);
+}
+
+.description {
+	padding: 20px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-card);
+	background: var(--color-bg);
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+}
+
+/* 공유된 여행의 제목 줄 */
+.tripHead {
+	align-items: center;
+	padding-top: 24px;
+	border-top: 1px solid var(--color-border);
+}
+
+.tripTitle {
+	font: var(--font-h3);
+	overflow-wrap: anywhere;
+}
+
+.noCopy {
+	flex-shrink: 0;
+	padding: 6px 12px;
+	border-radius: var(--radius-pill);
+	background: var(--color-border);
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+/* 댓글 */
+.comments {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding-top: 24px;
+	border-top: 1px solid var(--color-border);
+}
+
+.commentsTitle {
+	font: var(--font-h3);
+}
+
+.noComments {
+	color: var(--color-text-secondary);
+}
+
+.commentList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.comment {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 14px 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 12px;
+	background: var(--color-bg);
+}
+
+.commentHead {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.commentWriter {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.commentDate {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.commentDelete {
+	margin-left: auto;
+	padding: 2px 6px;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+	cursor: pointer;
+}
+
+.commentDelete:hover {
+	color: var(--color-error);
+}
+
+.commentContent {
+	font-size: 14px;
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+}
+
+.commentForm {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.commentLogin {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 16px;
+	border: 1px dashed var(--color-border);
+	border-radius: 12px;
+	background: var(--color-bg);
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.error {
+	font: var(--font-caption);
+	color: var(--color-error);
+}
