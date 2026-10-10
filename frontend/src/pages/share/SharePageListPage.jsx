@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../api/client";
 import { getSharePages } from "../../api/sharePageApi";
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import Pagination from "../../components/common/Pagination";
-import PeriodCover from "../../components/common/PeriodCover";
-import { formatPeriod } from "../../utils/date";
-import { formatWon } from "../../utils/format";
+import SharePageCard from "../../components/share/SharePageCard";
 import styles from "./SharePageListPage.module.css";
 
 const PAGE_SIZE = 9; // 한 줄에 3개씩 세 줄
@@ -117,23 +115,7 @@ export default function SharePageListPage() {
 			<ul className={styles.grid}>
 				{content.map((post) => (
 					<li key={post.id}>
-						<Link to={`/share-pages/${post.id}`} className={styles.card}>
-							<div className={styles.cover}>
-								<PeriodCover id={post.id} startDate={post.tripStartDate} endDate={post.tripEndDate} size="lg" />
-								{post.copyCount > 0 && <span className={styles.copyBadge}>{post.copyCount}명이 복사</span>}
-							</div>
-							<div className={styles.body}>
-								<p className={styles.name}>{post.title}</p>
-								{/* 주소가 있는 방문지가 없으면 지역(region)이 없다. 그때는 기간만 */}
-								<p className={styles.summary}>
-									{post.region && `${post.region} · `}
-									{formatPeriod(post.tripStartDate, post.tripEndDate)}
-								</p>
-								<p className={styles.numbers}>
-									방문지 {post.stopCount}곳 · {formatWon(post.totalCost)}
-								</p>
-							</div>
-						</Link>
+						<SharePageCard post={post} />
 					</li>
 				))}
 			</ul>

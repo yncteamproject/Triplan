@@ -185,7 +185,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 ### 화면 주소
 | 주소 | 화면 | 로그인 | 파일 (`pages/`) |
 |------|------|:------:|------|
-| `/` | 메인 | | `MainPage` |
+| `/` | 메인 (소개 · 기능 4가지 · 최근 공유된 여행 3개) | | `MainPage` |
 | `/login` | 로그인 | | `auth/LoginPage` |
 | `/signup` | 회원가입 | | `auth/SignupPage` |
 | `/mypage` | 마이페이지 | 🔒 | `member/MyPage` |
