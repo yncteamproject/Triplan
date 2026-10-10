@@ -77,3 +77,9 @@ export const formatDuration = (minutes) => {
 	}
 	return rest === 0 ? `${hours}시간` : `${hours}시간 ${rest}분`;
 };
+
+// "2026-09-10" + 1 → "2026-09-11"
+export const addDays = (isoDate, days) => new Date(toUtc(isoDate) + days * DAY_MS).toISOString().slice(0, 10);
+
+// 서버의 날짜+시간 → <input type="datetime-local"> 값 ("2026-09-10T09:30")
+export const toDateTimeInput = (dateTime) => dateTime.slice(0, 16);
