@@ -89,7 +89,12 @@ PR을 올리기 전에 `npm run lint`와 `npm run build`가 통과하는지 확�
 cd backend
 ./gradlew test
 ```
-테스트는 `application-secret.yaml`의 DB에 실제로 붙지만, 모든 테스트가 `@Transactional`이라 끝나면 롤백되어 데이터가 남지 않습니다.
+테스트는 공용 DB(Neon)에 연결하지 않고, **각자 컴퓨터의 메모리에만 있는 임시 DB(H2)**로 돕니다 (`src/test/resources/config/application.yaml`).
+
+- 공용 DB에 실제 글이 있어도 테스트 결과가 달라지지 않고, 두 사람이 동시에 돌려도 서로 영향을 주지 않습니다.
+- `application-secret.yaml`이 없거나 인터넷이 안 돼도 테스트는 돌아갑니다.
+- 앱을 실행할 때(`./gradlew bootRun`)는 전과 같이 `application-secret.yaml`의 DB에 연결됩니다.
+- H2는 PostgreSQL과 완전히 같지는 않습니다. 테이블 구조를 바꾼 작업은 테스트가 통과해도 `bootRun`으로 한 번 더 확인합니다.
 
 > **Windows에서 `wrong name` 에러가 나면** 패키지 이름의 대소문자만 바뀐 경우(예: `travelTest` → `traveltest`)입니다. Windows는 폴더 이름의 대소문자를 구분하지 않아 이전 빌드 결과물 폴더가 그대로 남기 때문입니다. `./gradlew clean test`로 이전 빌드 결과물을 지우고 다시 실행하세요.
 
@@ -318,6 +323,7 @@ git push -u origin fix/7-delete-cascade
 - 로그인이 필요한 API는 비로그인(401), 남의 데이터(403) 케이스를 같이 확인합니다.
 - 테스트 메서드 이름은 영어로 쓰고, 설명은 `@DisplayName`에 한글로 씁니다.
 - `./gradlew test`가 모두 통과해야 PR을 올립니다.
+- 테스트는 임시 DB(H2)에서 돌기 때문에 DB가 비어 있는 상태에서 시작합니다. 테스트에 필요한 데이터는 테스트 안에서 직접 만듭니다.
 
 ## 배포 전 확인할 것
 

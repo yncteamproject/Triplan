@@ -266,3 +266,4 @@
 | K6 | `jwt.secret`이 `application.yaml`에 들어 있음 | 저장소를 보면 토큰 위조 가능 | 배포 전 `application-secret.yaml`로 옮기고 새 키 발급 | ✅ [#19](https://github.com/yncteamproject/Triplan/issues/19) |
 | K7 | JWT 관련 파일 위치 · 이름이 흩어져 있고 yaml 키 형식(밑줄 · 하이픈)이 섞여 있음 | 동작 영향 없음 | 강의에서 배운 구조를 참고해 `global/config/jwt`로 정리하고 yaml 키를 밑줄 형식으로 통일 | ✅ [#37](https://github.com/yncteamproject/Triplan/issues/37) |
 | K8 | 따로 처리하지 않은 오류(id 자리에 글자, 깨진 본문, 서버 버그 등)가 401로 응답됨 | 프론트가 로그인 만료로 보고 로그아웃시킴. 서버 버그도 로그아웃으로 보여 원인을 찾기 어려움 | `GlobalExceptionHandler`에서 400 · 404 · 405 · 500으로 구분해 응답하고, 스프링의 오류 전달(`/error`)에는 로그인 검사를 하지 않음 | ✅ [#55](https://github.com/yncteamproject/Triplan/issues/55) |
+| K9 | 테스트가 공용 DB(Neon)에 연결돼서, DB에 있는 실제 데이터가 테스트에 섞임 | 게시판에 실제 글이 생기자 목록 테스트 10개가 실패. 동시에 돌리면 서로 기다리며 멈추기도 함 | 테스트할 때만 각자 컴퓨터의 임시 DB(H2)를 쓰도록 테스트 전용 설정 추가. 앱 실행은 그대로 Neon | ✅ [#66](https://github.com/yncteamproject/Triplan/issues/66) |
