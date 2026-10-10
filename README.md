@@ -194,7 +194,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `/trips` | 내 여행 목록 (없으면 빈 화면) | 🔒 | `trip/TripListPage` |
 | `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
 | `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제) | 🔒 | `trip/TripDetailPage` |
-| `/share-pages` | 게시판 목록 | | `share/SharePageListPage` |
+| `/share-pages` | 게시판 목록 (카드 9개씩, `?page=2`로 페이지 넘김) | | `share/SharePageListPage` |
 | `/share-pages/:id` | 게시글 상세 · 댓글 | | `share/SharePageDetailPage` |
 | `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 | 🔒 | `share/SharePageFormPage` |
 
@@ -220,6 +220,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `Modal` | 가운데에 뜨는 창(수정 폼 · 삭제 확인). `title`, `onClose`, `footer`(버튼들). 바깥 클릭 · Esc로 닫힘 |
 | `EmptyState` | 빈 화면 · 오류 화면. `icon`, `title`, `description`, `action` |
 | `PeriodCover` | 사진 대신 쓰는 여행 썸네일("3박 4일 / 9월"). `id`(색 결정), `startDate`, `endDate`, `size`: `sm` · `lg` |
+| `Pagination` | 페이지 넘김(이전 · 번호 · 다음). `page`(1부터), `totalPages`, `onChange` |
 | `ComingSoon` | 아직 만들지 않은 화면의 자리 표시. 화면을 만들 때 지웁니다 |
 
 `pages/auth/LoginPage`가 공통 부품을 쓰는 예시입니다.
