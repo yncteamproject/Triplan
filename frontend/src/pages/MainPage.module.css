@@ -71,37 +71,68 @@
 }
 
 .featureList {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	display: flex;
+	align-items: stretch;
 	gap: 24px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-/* 기능 카드는 버튼이다. 누르면 아래에 설명이 펼쳐진다 */
+/* 기능 카드. 열린 카드는 옆으로 커지고 나머지는 그만큼 줄어든다 */
 .feature {
+	position: relative;
 	display: flex;
+	flex: 1 1 0;
 	flex-direction: column;
-	gap: 8px;
-	width: 100%;
-	height: 100%;
-	padding: 24px;
+	min-width: 0;
+	overflow: hidden;
 	border: 1px solid transparent;
 	border-radius: var(--radius-card);
 	background: var(--color-surface);
-	text-align: left;
-	cursor: pointer;
-	transition: border-color 0.15s;
+	transition:
+		flex-grow 0.45s ease,
+		border-color 0.2s,
+		background-color 0.2s;
 }
 
 .feature:hover,
 .featureOn {
-	border-color: var(--color-primary);
+	border-color: var(--tone);
 }
 
 .featureOn {
-	background: var(--color-primary-tint);
+	flex-grow: 2.4;
+	background: var(--color-bg);
+}
+
+/* 카드의 포인트 색 */
+.blue {
+	--tone: var(--color-primary);
+}
+
+.purple {
+	--tone: var(--color-purple);
+}
+
+.orange {
+	--tone: var(--color-orange);
+}
+
+/* 카드에서 누르는 부분 (아이콘 · 제목 · 한 줄 설명) */
+.featureHead {
+	position: relative;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	width: 100%;
+	padding: 24px;
+	border: none;
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
 }
 
 .featureIcon {
@@ -112,8 +143,13 @@
 	height: 44px;
 	margin-bottom: 8px;
 	border-radius: 50%;
-	background: var(--color-primary);
+	background: var(--tone);
 	color: #ffffff;
+	transition: transform 0.45s ease;
+}
+
+.featureOn .featureIcon {
+	transform: scale(1.1) rotate(-8deg);
 }
 
 .featureTitle {
@@ -125,6 +161,7 @@
 	font-size: 14px;
 	color: var(--color-text-secondary);
 	white-space: pre-line;
+	word-break: keep-all; /* 카드가 좁아져도 낱말 중간에서 끊기지 않게 */
 }
 
 .featureMore {
@@ -132,29 +169,130 @@
 	padding-top: 8px;
 	font: var(--font-caption);
 	font-weight: 600;
-	color: var(--color-primary);
+	color: var(--tone);
 }
 
-/* 펼쳐진 설명 */
+/* 펼쳐지는 설명: 높이를 0 → 내용만큼으로 부드럽게 (grid 행 높이를 0fr ↔ 1fr로 바꾸는 방법) */
 .featureDetail {
+	position: relative;
+	display: grid;
+	grid-template-rows: 0fr;
+	opacity: 0;
+	transition:
+		grid-template-rows 0.45s ease,
+		opacity 0.3s ease;
+}
+
+.featureOn .featureDetail {
+	grid-template-rows: 1fr;
+	opacity: 1;
+	transition-delay: 0s, 0.15s;
+}
+
+.featureDetailInner {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 12px;
-	margin-top: -16px;
-	padding: 24px 28px;
-	border: 1px solid var(--color-primary);
-	border-radius: var(--radius-card);
-	background: var(--color-bg);
+	min-height: 0;
+	overflow: hidden;
+	padding: 0 24px;
 }
 
-.featureDetailTitle {
-	font-weight: 700;
-	font-size: 18px;
+.featureOn .featureDetailInner {
+	padding-bottom: 24px;
 }
 
 .featureDetailText {
+	padding-top: 12px;
+	border-top: 1px solid var(--color-border);
+	font-size: 14px;
 	color: var(--color-text-secondary);
+	word-break: keep-all;
+}
+
+/* 카드 오른쪽 위의 꾸밈 도형. 색은 카드의 포인트 색을 연하게 쓴다 */
+.shapes {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.shapes span {
+	position: absolute;
+	transition: transform 0.6s ease;
+}
+
+.shapeBig {
+	top: -44px;
+	right: -44px;
+	width: 132px;
+	height: 132px;
+	border-radius: 50%;
+	background: var(--tone);
+	opacity: 0.1;
+}
+
+.shapeRing {
+	top: 64px;
+	right: -14px;
+	width: 40px;
+	height: 40px;
+	border: 5px solid var(--tone);
+	border-radius: 50%;
+	opacity: 0.22;
+}
+
+.shapeSquare {
+	right: 20px;
+	bottom: 66px;
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	background: var(--tone);
+	opacity: 0.28;
+	transform: rotate(18deg);
+}
+
+.shapeDot {
+	right: 44px;
+	bottom: 50px;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--tone);
+	opacity: 0.45;
+}
+
+/* 카드에 올리거나 열면 도형이 조금씩 움직인다 */
+.feature:hover .shapeBig,
+.featureOn .shapeBig {
+	transform: scale(1.18);
+}
+
+.feature:hover .shapeRing,
+.featureOn .shapeRing {
+	transform: translate(-8px, 6px);
+}
+
+.feature:hover .shapeSquare,
+.featureOn .shapeSquare {
+	transform: rotate(108deg);
+}
+
+.feature:hover .shapeDot,
+.featureOn .shapeDot {
+	transform: translate(6px, -10px);
+}
+
+/* 움직임을 줄이도록 설정한 사용자에게는 애니메이션 없이 바로 바꾼다 */
+@media (prefers-reduced-motion: reduce) {
+	.feature,
+	.featureIcon,
+	.featureDetail,
+	.shapes span {
+		transition: none;
+	}
 }
 
 /* 이런 여행은 어때요? */
@@ -188,8 +326,9 @@
 		font-size: 34px;
 	}
 
+	/* 좁은 화면에서는 카드를 세로로 쌓고, 열린 카드는 아래로만 늘어난다 */
 	.featureList {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		flex-direction: column;
 	}
 
 	.cards {

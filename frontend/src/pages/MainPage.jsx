@@ -9,11 +9,13 @@ import styles from "./MainPage.module.css";
 
 const LATEST_COUNT = 3; // "이런 여행은 어때요?"에 보여줄 글 수
 
-// 기능 소개 카드. 누르면 아래에 자세한 설명(detail)이 펼쳐진다
+// 기능 소개 카드. 누르면 그 카드가 옆으로 커지면서 자세한 설명(detail)이 나타난다
+// tone: 카드의 포인트 색 (아이콘 동그라미 · 꾸밈 도형)
 // icon: 동그라미 안에 그릴 선 그림(SVG path 목록, 24 × 24 기준)
 const FEATURES = [
 	{
 		title: "일정 계획",
+		tone: "blue",
 		description: "방문지 · 이동 · 숙소를\n날짜별로 정리하기",
 		detail:
 			"여행 기간을 정하면 날짜별 Day 탭이 만들어져요. 날짜마다 방문지를 추가하고 순서와 시간을 정리할 수 있어요. 방문지 사이의 이동 구간과 그날 묵는 숙소도 한 화면에서 같이 봐요.",
@@ -22,6 +24,7 @@ const FEATURES = [
 	},
 	{
 		title: "자동 견적",
+		tone: "purple",
 		description: "교통비와 숙박비를\n자동으로 합산",
 		detail:
 			"이동 구간과 숙소에 비용을 적어 두면 총 교통비, 총 숙박비, 총 경비가 자동으로 계산돼요. 일정을 추가하거나 고칠 때마다 바로 반영돼서 따로 계산할 필요가 없어요.",
@@ -30,6 +33,7 @@ const FEATURES = [
 	},
 	{
 		title: "대중교통 경로",
+		tone: "orange",
 		description: "방문지 사이 소요시간과\n요금을 한눈에",
 		detail:
 			"방문지 두 곳을 고르면 지하철 · 버스 경로를 찾아 소요시간, 요금, 환승 횟수를 알려줘요. 지도와 함께 여행 상세 화면에 곧 추가될 예정이에요.",
@@ -38,6 +42,7 @@ const FEATURES = [
 	},
 	{
 		title: "플래너 공유",
+		tone: "blue",
 		description: "게시판에 공유하고\n마음에 드는 계획은 복사",
 		detail:
 			"내 여행 계획을 게시판에 올려 다른 여행자와 나눌 수 있어요. 마음에 드는 계획은 \"내 여행으로 복사\"로 가져와서 날짜만 바꿔 쓰면 돼요. 예약번호는 공유되지 않아요.",
@@ -52,7 +57,6 @@ export default function MainPage() {
 	// 공유된 여행: 불러오는 중이면 null, 실패하면 "error", 성공하면 글 목록
 	const [posts, setPosts] = useState(null);
 	const [openFeature, setOpenFeature] = useState(null); // 설명을 펼친 기능 카드의 제목 (없으면 null)
-	const openedFeature = FEATURES.find((feature) => feature.title === openFeature);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -107,17 +111,27 @@ export default function MainPage() {
 					{FEATURES.map((feature) => {
 						const opened = feature.title === openFeature;
 						return (
-							<li key={feature.title}>
-								{/* 카드를 누르면 아래에 설명이 펼쳐지고, 다시 누르면 닫힌다 */}
+							<li
+								key={feature.title}
+								className={[styles.feature, styles[feature.tone], opened ? styles.featureOn : ""].filter(Boolean).join(" ")}
+							>
+								{/* 카드 오른쪽의 꾸밈 도형 (카드가 열리면 조금 움직인다) */}
+								<span className={styles.shapes} aria-hidden="true">
+									<span className={styles.shapeBig} />
+									<span className={styles.shapeRing} />
+									<span className={styles.shapeSquare} />
+									<span className={styles.shapeDot} />
+								</span>
+
+								{/* 누르면 카드가 옆으로 커지면서 설명이 나타나고, 다시 누르면 닫힌다 */}
 								<button
 									type="button"
-									className={opened ? `${styles.feature} ${styles.featureOn}` : styles.feature}
+									className={styles.featureHead}
 									aria-expanded={opened}
-									aria-controls="feature-detail"
 									onClick={() => setOpenFeature(opened ? null : feature.title)}
 								>
-									<span className={styles.featureIcon} aria-hidden="true">
-										<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<span className={styles.featureIcon}>
+										<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 											{feature.icon.map((path) => (
 												<path key={path} d={path} />
 											))}
@@ -127,21 +141,22 @@ export default function MainPage() {
 									<span className={styles.featureDescription}>{feature.description}</span>
 									<span className={styles.featureMore}>{opened ? "닫기" : "자세히 보기"}</span>
 								</button>
+
+								{/* 닫혀 있을 때는 높이 0으로 접혀 있다. inert: 접힌 동안 안의 버튼이 눌리거나 Tab으로 잡히지 않게 */}
+								<div className={styles.featureDetail} inert={!opened}>
+									<div className={styles.featureDetailInner}>
+										<p className={styles.featureDetailText}>{feature.detail}</p>
+										{feature.link && (
+											<Button to={feature.link.to} variant="secondary">
+												{feature.link.label}
+											</Button>
+										)}
+									</div>
+								</div>
 							</li>
 						);
 					})}
 				</ul>
-				{openedFeature && (
-					<div id="feature-detail" className={styles.featureDetail}>
-						<p className={styles.featureDetailTitle}>{openedFeature.title}</p>
-						<p className={styles.featureDetailText}>{openedFeature.detail}</p>
-						{openedFeature.link && (
-							<Button to={openedFeature.link.to} variant="secondary">
-								{openedFeature.link.label}
-							</Button>
-						)}
-					</div>
-				)}
 			</section>
 
 			{posts !== "error" && (
