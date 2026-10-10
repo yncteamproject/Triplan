@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSharePages } from "../api/sharePageApi";
+import heroImage from "../assets/main-hero.jpg";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
 import SharePageCard from "../components/share/SharePageCard";
@@ -64,16 +65,16 @@ export default function MainPage() {
 						둘러보기
 					</Button>
 				</div>
+				{/* 사진 3장을 이어 붙인 꾸밈용 그림이라 대체 글은 비워둔다 */}
+				<img className={styles.heroImage} src={heroImage} alt="" width="1212" height="466" />
 			</section>
 
 			<section className={styles.features}>
 				<h2 className={styles.sectionTitle}>여행을 더 스마트하게</h2>
 				<ul className={styles.featureList}>
-					{FEATURES.map((feature, index) => (
+					{FEATURES.map((feature) => (
 						<li key={feature.title} className={styles.feature}>
-							<span className={styles.featureIcon} aria-hidden="true">
-								{index + 1}
-							</span>
+							<span className={styles.featureIcon} aria-hidden="true" />
 							<p className={styles.featureTitle}>{feature.title}</p>
 							<p className={styles.featureDescription}>{feature.description}</p>
 						</li>

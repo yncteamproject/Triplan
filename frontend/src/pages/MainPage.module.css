@@ -4,7 +4,7 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 20px;
-	padding: 72px var(--space-section) 88px;
+	padding: 24px var(--space-section);
 	background: var(--color-primary-tint);
 	text-align: center;
 }
@@ -33,6 +33,20 @@
 	justify-content: center;
 	gap: 12px;
 	margin-top: 8px;
+}
+
+/* 소개의 버튼은 다른 곳보다 좌우가 넓다 (피그마) */
+.actions a {
+	padding-left: 28px;
+	padding-right: 28px;
+}
+
+.heroImage {
+	width: 720px;
+	max-width: 100%;
+	height: auto;
+	margin-top: 8px;
+	border-radius: var(--radius-card);
 }
 
 /* 섹션 공통 제목 */
@@ -75,16 +89,11 @@
 }
 
 .featureIcon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	width: 44px;
 	height: 44px;
 	margin-bottom: 8px;
 	border-radius: 50%;
 	background: var(--color-primary);
-	font-weight: 700;
-	color: #ffffff;
 }
 
 .featureTitle {
