@@ -1,0 +1,134 @@
+.wrap {
+	display: flex;
+	justify-content: center;
+	padding: 48px 24px 72px;
+}
+
+.card {
+	width: 720px;
+	max-width: 100%;
+	padding: 32px 40px;
+}
+
+.progress {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.bar {
+	flex: 1;
+	height: 6px;
+	border-radius: var(--radius-pill);
+	background: var(--color-border);
+	overflow: hidden;
+}
+
+.fill {
+	height: 100%;
+	background: var(--color-primary);
+	transition: width 0.2s;
+}
+
+.count {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.number {
+	margin-top: 28px;
+	text-align: center;
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--color-primary);
+}
+
+.title {
+	margin-top: 4px;
+	text-align: center;
+	font: var(--font-h3);
+}
+
+.options {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	margin-top: 28px;
+}
+
+.option {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	min-height: 180px;
+	padding: 20px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-card);
+	background: var(--color-surface);
+	font: inherit;
+	color: var(--color-text);
+	cursor: pointer;
+	transition: border-color 0.15s, background 0.15s;
+}
+
+.option:hover {
+	border-color: var(--color-primary);
+}
+
+.selected {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 1px var(--color-primary);
+	background: var(--color-primary-tint);
+}
+
+.mark {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border: 1px solid var(--color-border);
+	border-radius: 50%;
+	background: var(--color-bg);
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.selected .mark {
+	border-color: var(--color-primary);
+	background: var(--color-primary);
+	color: #ffffff;
+}
+
+.label {
+	font-weight: 600;
+	font-size: 16px;
+	text-align: center;
+	word-break: keep-all;
+}
+
+.selected .label {
+	color: var(--color-primary);
+}
+
+.error {
+	margin-top: 16px;
+	text-align: center;
+	font: var(--font-caption);
+	color: var(--color-error);
+}
+
+.actions {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 12px;
+	margin-top: 28px;
+}
+
+.next {
+	min-width: 160px;
+}

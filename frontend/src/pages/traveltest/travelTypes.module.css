@@ -1,0 +1,20 @@
+/* 성향별 색. 클래스 이름 = 서버의 travelType 값 */
+.FREE_EXPLORER {
+	--type-color: var(--color-primary);
+	--type-tint: var(--color-primary-tint);
+}
+
+.RELAXED_HEALER {
+	--type-color: #1d9e7e;
+	--type-tint: #ecfdf5;
+}
+
+.CULTURE_LOVER {
+	--type-color: var(--color-purple);
+	--type-tint: var(--color-purple-tint);
+}
+
+.FOOD_EXPLORER {
+	--type-color: var(--color-orange);
+	--type-tint: var(--color-orange-tint);
+}

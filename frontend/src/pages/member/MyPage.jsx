@@ -8,6 +8,7 @@ import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import typeStyles from "../traveltest/travelTypes.module.css";
 import styles from "./MyPage.module.css";
 
 const formatDate = (dateTime) => dateTime.slice(0, 10).replaceAll("-", ".");
@@ -161,7 +162,7 @@ function TravelResultCard() {
 			<div className={styles.cardBody}>
 				{result ? (
 					<>
-						<span className={styles.typeBadge}>{result.displayName}</span>
+						<span className={`${styles.typeBadge} ${typeStyles[result.travelType]}`}>{result.displayName}</span>
 						<p className={styles.typeDescription}>{result.description}</p>
 						<p className={styles.joined}>테스트한 날 {formatDate(result.testedAt)}</p>
 						<div className={styles.links}>
