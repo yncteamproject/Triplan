@@ -82,6 +82,7 @@
 
 .stepType {
 	flex-shrink: 0;
+	align-self: flex-start; /* 옆 글이 두 줄이 돼도 표시가 세로로 늘어나지 않게 */
 	width: 44px;
 	padding: 1px 0;
 	border-radius: var(--radius-pill);
