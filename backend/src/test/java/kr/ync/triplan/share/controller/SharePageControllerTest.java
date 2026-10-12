@@ -543,4 +543,30 @@ class SharePageControllerTest extends BaseController {
 				.andExpect(jsonPath("$.content[0].stopCount").value(0))
 				.andExpect(jsonPath("$.content[0].totalCost").value(0));
 	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - 목록에 경로 좌표(route) 포함 (S7)")
+	void list_endpoint_route() throws Exception {
+		savedSharePage("제주도 후기", "내용");
+		stopRepository.save(
+				Stop.builder().trip(trip).name("성산일출봉").date(LocalDate.now()).stopOrder(1)
+						.latitude(33.4581).longitude(126.9425).build());
+
+		mockMvc.perform(get("/api/share-pages"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].route.length()").value(1))
+				.andExpect(jsonPath("$.content[0].route[0].latitude").value(33.4581))
+				.andExpect(jsonPath("$.content[0].route[0].longitude").value(126.9425));
+	}
+
+	@Test
+	@DisplayName("GET /api/share-pages - 좌표가 있는 방문지가 없으면 route는 빈 배열")
+	void list_endpoint_route_empty() throws Exception {
+		savedSharePage("좌표 없는 여행", "내용");
+
+		mockMvc.perform(get("/api/share-pages"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].route").isArray())
+				.andExpect(jsonPath("$.content[0].route").isEmpty());
+	}
 }

@@ -20,4 +20,9 @@ public interface StopRepository extends JpaRepository<Stop, Long> {
 
 	// 여러 여행에서 주소가 있는 방문지를 방문 순서대로 (여행의 지역을 구할 때 쓴다)
 	List<Stop> findByTripIdInAndAddressIsNotNullOrderByStopOrderAsc(Collection<Long> tripIds);
+
+	// 여러 여행에서 좌표가 있는 방문지를 일정 순서(날짜 → 방문 순서)대로 (목록 카드의 경로 그림에 쓴다)
+	@Query("select s from Stop s where s.trip.id in :tripIds and s.latitude is not null and s.longitude is not null "
+			+ "order by s.date, s.stopOrder, s.id")
+	List<Stop> findRouteStopsByTripIds(@Param("tripIds") Collection<Long> tripIds);
 }

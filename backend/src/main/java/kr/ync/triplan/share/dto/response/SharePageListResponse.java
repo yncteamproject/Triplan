@@ -1,10 +1,12 @@
 package kr.ync.triplan.share.dto.response;
 
 import kr.ync.triplan.share.domain.SharePage;
+import kr.ync.triplan.trip.dto.response.RoutePoint;
 import kr.ync.triplan.trip.dto.response.TripSummary;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record SharePageListResponse(
 		Long id,
@@ -20,7 +22,9 @@ public record SharePageListResponse(
 		LocalDate tripEndDate,
 		String region,
 		int stopCount,
-		int totalCost
+		int totalCost,
+		// 좌표가 있는 방문지를 일정 순서대로 (S7). 목록 카드의 경로 그림에 쓴다. 없으면 빈 목록
+		List<RoutePoint> route
 ) {
 
 	public static SharePageListResponse of(SharePage sharePage, TripSummary summary) {
@@ -37,7 +41,8 @@ public record SharePageListResponse(
 				sharePage.getTrip().getEndDate(),
 				summary.region(),
 				summary.stopCount(),
-				summary.totalCost()
+				summary.totalCost(),
+				summary.route()
 		);
 	}
 }
