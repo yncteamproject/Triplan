@@ -89,7 +89,12 @@ PR을 올리기 전에 `npm run lint`와 `npm run build`가 통과하는지 확�
 cd backend
 ./gradlew test
 ```
-테스트는 `application-secret.yaml`의 DB에 실제로 붙지만, 모든 테스트가 `@Transactional`이라 끝나면 롤백되어 데이터가 남지 않습니다.
+테스트는 공용 DB(Neon)에 연결하지 않고, **각자 컴퓨터의 메모리에만 있는 임시 DB(H2)**로 돕니다 (`src/test/resources/config/application.yaml`).
+
+- 공용 DB에 실제 글이 있어도 테스트 결과가 달라지지 않고, 두 사람이 동시에 돌려도 서로 영향을 주지 않습니다.
+- `application-secret.yaml`이 없거나 인터넷이 안 돼도 테스트는 돌아갑니다.
+- 앱을 실행할 때(`./gradlew bootRun`)는 전과 같이 `application-secret.yaml`의 DB에 연결됩니다.
+- H2는 PostgreSQL과 완전히 같지는 않습니다. 테이블 구조를 바꾼 작업은 테스트가 통과해도 `bootRun`으로 한 번 더 확인합니다.
 
 > **Windows에서 `wrong name` 에러가 나면** 패키지 이름의 대소문자만 바뀐 경우(예: `travelTest` → `traveltest`)입니다. Windows는 폴더 이름의 대소문자를 구분하지 않아 이전 빌드 결과물 폴더가 그대로 남기 때문입니다. `./gradlew clean test`로 이전 빌드 결과물을 지우고 다시 실행하세요.
 
@@ -123,10 +128,12 @@ frontend/src/
 ├─ api/           client.js(토큰 자동 첨부 · 401 처리), 기능별 API 함수
 ├─ context/       AuthContext(로그인 상태), ToastContext(알림)
 ├─ routes/        ProtectedRoute(로그인 필요한 화면 보호)
-├─ utils/         date.js(날짜 · 기간 · N박 M일 · 시간 표시), format.js(금액 표시 · 비용 입력 검사)
+├─ utils/         date.js(날짜 · 기간 · N박 M일 · 시간 표시), format.js(금액 표시 · 비용 입력 검사),
+│                 schedule.js(일정을 Day 탭별로 나누는 계산), tripLabels.js(이동 수단 이름)
 ├─ components/
 │  ├─ layout/     Header(로그인 전 / 후), Footer, Layout
-│  └─ common/     Button, Input, Card, Toast, EmptyState, PeriodCover, ComingSoon
+│  ├─ common/     Button, Input, Card, Toast, EmptyState, PeriodCover, ComingSoon 등 (아래 "공통 부품" 표)
+│  └─ trip/       TripSchedule(여행 일정 보기. 여행 상세와 게시글 상세가 같이 씀)
 └─ pages/         화면. 백엔드처럼 기능별 폴더
    ├─ auth/ · member/ · traveltest/   # 윤효근
    └─ trip/ · share/                  # 김형준
@@ -185,7 +192,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 ### 화면 주소
 | 주소 | 화면 | 로그인 | 파일 (`pages/`) |
 |------|------|:------:|------|
-| `/` | 메인 | | `MainPage` |
+| `/` | 메인 (소개 · 기능 4가지 · 최근 공유된 여행 3개) | | `MainPage` |
 | `/login` | 로그인 | | `auth/LoginPage` |
 | `/signup` | 회원가입 | | `auth/SignupPage` |
 | `/mypage` | 마이페이지 | 🔒 | `member/MyPage` |
@@ -195,7 +202,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
 | `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제) | 🔒 | `trip/TripDetailPage` |
 | `/share-pages` | 게시판 목록 (카드 9개씩, `?page=2`로 페이지 넘김) | | `share/SharePageListPage` |
-| `/share-pages/:id` | 게시글 상세 · 댓글 | | `share/SharePageDetailPage` |
+| `/share-pages/:id` | 게시글 상세 (공유된 여행 보기 · 여행 복사 · 댓글) | | `share/SharePageDetailPage` |
 | `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 | 🔒 | `share/SharePageFormPage` |
 
 🔒 화면에 로그인 없이 들어가면 로그인 화면으로 이동하고, 로그인하면 원래 가려던 화면으로 돌아옵니다.
@@ -318,6 +325,7 @@ git push -u origin fix/7-delete-cascade
 - 로그인이 필요한 API는 비로그인(401), 남의 데이터(403) 케이스를 같이 확인합니다.
 - 테스트 메서드 이름은 영어로 쓰고, 설명은 `@DisplayName`에 한글로 씁니다.
 - `./gradlew test`가 모두 통과해야 PR을 올립니다.
+- 테스트는 임시 DB(H2)에서 돌기 때문에 DB가 비어 있는 상태에서 시작합니다. 테스트에 필요한 데이터는 테스트 안에서 직접 만듭니다.
 
 ## 배포 전 확인할 것
 

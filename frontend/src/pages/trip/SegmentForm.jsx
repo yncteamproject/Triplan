@@ -6,7 +6,7 @@ import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import { formatDayLabel, toDateTimeInput } from "../../utils/date";
 import { isValidCost, toCost } from "../../utils/format";
-import { MODE_OPTIONS } from "./tripLabels";
+import { MODE_OPTIONS } from "../../utils/tripLabels";
 import styles from "./TripForms.module.css";
 
 // 이동 구간 추가 · 수정 폼. segment가 있으면 수정, 없으면 추가 (defaults: 새 구간의 기본 출발지 · 도착지 · 시간)

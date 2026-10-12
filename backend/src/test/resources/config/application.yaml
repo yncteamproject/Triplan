@@ -1,0 +1,24 @@
+# 테스트 전용 설정 (K9). ./gradlew test로 테스트를 돌릴 때만 적용된다
+#
+# 이 파일은 config 폴더에 있어서 src/main/resources/application.yaml과 application-secret.yaml을
+# 지우지 않고, 겹치는 값만 덮어쓴다. 나머지 설정(JPA 옵션 · JWT 만료 시간 등)은 그대로 쓴다.
+# 앱을 실행할 때(bootRun)는 이 파일이 쓰이지 않아서 전처럼 application-secret.yaml의 DB에 연결된다.
+spring:
+  datasource:
+    # 각자 컴퓨터의 메모리에만 있는 임시 DB. 공용 DB(Neon)에 있는 실제 데이터가 테스트에 섞이지 않고,
+    # 여러 사람이 동시에 테스트를 돌려도 서로 영향을 주지 않는다
+    url: jdbc:h2:mem:triplan-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # 시작할 때 테이블을 만들고, 끝나면 지운다
+    show-sql: false # 테스트 로그가 SQL로 뒤덮이지 않게
+
+jwt:
+  # 테스트용 가짜 키 (Base64). 실제 키가 아니다. application-secret.yaml이 없는 컴퓨터에서도 테스트가 돌게 한다
+  secret_key: dHJpcGxhbi10ZXN0LW9ubHkta2V5LW5vdC1hLXJlYWwtc2VjcmV0LTAxMjM0NTY3ODk=
+
+odsay:
+  api-key: test-key # 가짜 값. 테스트는 오디세이를 실제로 부르지 않는다 (OdsayClient를 가짜로 바꿔서 확인)
