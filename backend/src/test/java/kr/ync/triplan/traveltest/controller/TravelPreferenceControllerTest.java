@@ -93,4 +93,15 @@ class TravelPreferenceControllerTest extends BaseController {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("선택하지 않은 답변이 있습니다"));
     }
+
+    @Test
+    @DisplayName("6. 본문 형식이 깨지면 400 (CommonExceptionHandler 문구)")
+    @WithMockUser(username = TEST_EMAIL)
+    void submit_brokenBody() throws Exception {
+        mockMvc.perform(post("/api/travel-test")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"selectedTypes\": "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("요청 본문이 없거나 형식이 올바르지 않습니다."));
+    }
 }
