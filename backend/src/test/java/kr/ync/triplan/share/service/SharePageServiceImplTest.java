@@ -19,6 +19,7 @@ import kr.ync.triplan.share.repository.CommentRepository;
 import kr.ync.triplan.share.repository.SharePageRepository;
 import kr.ync.triplan.trip.domain.Lodging;
 import kr.ync.triplan.trip.domain.Stop;
+import kr.ync.triplan.trip.dto.response.RoutePoint;
 import kr.ync.triplan.trip.domain.TransportMode;
 import kr.ync.triplan.trip.domain.TransportSegment;
 import kr.ync.triplan.trip.domain.Trip;
@@ -703,7 +704,7 @@ class SharePageServiceImplTest {
 		for (int i = 0; i < count; i++) {
 			Trip ownTrip = savedTrip(member);
 			stopRepository.save(Stop.builder().trip(ownTrip).name("방문지").date(ownTrip.getStartDate()).stopOrder(1)
-					.address("제주 제주시").build());
+					.address("제주 제주시").latitude(33.4996).longitude(126.5312).build());
 			lodgingRepository.save(Lodging.builder().trip(ownTrip).name("숙소")
 					.checkIn(ownTrip.getStartDate().atTime(15, 0)).checkOut(ownTrip.getStartDate().plusDays(1).atTime(11, 0))
 					.cost(50000).build());
@@ -741,7 +742,76 @@ class SharePageServiceImplTest {
 					assertThat(item.region()).isEqualTo("제주");
 					assertThat(item.stopCount()).isEqualTo(1);
 					assertThat(item.totalCost()).isEqualTo(50000);
+					assertThat(item.route()).hasSize(1);
 				});
 		statistics.setStatisticsEnabled(false);
+	}
+
+	// 목록의 경로 좌표 (S7)
+	private void savedStopAt(String name, LocalDate date, int stopOrder, Double latitude, Double longitude) {
+		stopRepository.save(Stop.builder().trip(trip).name(name).date(date).stopOrder(stopOrder)
+				.latitude(latitude).longitude(longitude).build());
+	}
+
+	@Test
+	@DisplayName("list - 경로는 좌표가 있는 방문지를 일정 순서(날짜 → 방문 순서)대로")
+	void list_route_ordered() {
+		// given
+		savedSharePage("제주도 후기", "내용");
+		LocalDate firstDay = trip.getStartDate();
+		savedStopAt("둘째 날 첫 방문지", firstDay.plusDays(1), 1, 33.3, 126.3);
+		savedStopAt("첫째 날 두 번째", firstDay, 2, 33.2, 126.2);
+		savedStopAt("첫째 날 첫 번째", firstDay, 1, 33.1, 126.1);
+
+		// when
+		SharePageListResponse item = sharePageService.getList(0, 10).content().getFirst();
+
+		// then
+		assertThat(item.route()).containsExactly(
+				new RoutePoint(33.1, 126.1), new RoutePoint(33.2, 126.2), new RoutePoint(33.3, 126.3));
+	}
+
+	@Test
+	@DisplayName("list - 좌표가 없는 방문지는 경로에서 빠짐 (방문지 수에는 포함)")
+	void list_route_skipsStopsWithoutLocation() {
+		// given
+		savedSharePage("제주도 후기", "내용");
+		savedStopAt("좌표 없는 곳", trip.getStartDate(), 1, null, null);
+		savedStopAt("좌표 있는 곳", trip.getStartDate(), 2, 33.4581, 126.9425);
+
+		// when
+		SharePageListResponse item = sharePageService.getList(0, 10).content().getFirst();
+
+		// then
+		assertThat(item.stopCount()).isEqualTo(2);
+		assertThat(item.route()).containsExactly(new RoutePoint(33.4581, 126.9425));
+	}
+
+	@Test
+	@DisplayName("list - 좌표가 있는 방문지가 없으면 경로는 빈 목록 (null 아님)")
+	void list_route_empty() {
+		// given
+		savedSharePage("좌표 없는 여행", "내용");
+		savedStopAt("좌표 없는 곳", trip.getStartDate(), 1, null, null);
+
+		// when
+		SharePageListResponse item = sharePageService.getList(0, 10).content().getFirst();
+
+		// then
+		assertThat(item.route()).isNotNull().isEmpty();
+	}
+
+	@Test
+	@DisplayName("list - 경로는 그 글의 여행 것만 (다른 글의 방문지가 섞이지 않음)")
+	void list_route_perTrip() {
+		// given
+		savedSharePagesWithOwnTrips(3); // 글마다 좌표가 있는 방문지 1곳
+
+		// when
+		List<SharePageListResponse> items = sharePageService.getList(0, 10).content();
+
+		// then
+		assertThat(items).hasSize(3).allSatisfy(item ->
+				assertThat(item.route()).containsExactly(new RoutePoint(33.4996, 126.5312)));
 	}
 }
