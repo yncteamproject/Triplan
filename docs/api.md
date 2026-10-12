@@ -455,8 +455,32 @@ Authorization: Bearer {accessToken}
 
 ## 외부 API
 
-우리 서버가 호출하는 외부 API입니다. 공식 문서를 옮겨 적지 않고, **우리가 쓰는 부분과 직접 호출해서 알아낸 점**만 적습니다.
-키는 모두 `application-secret.yaml`에 두고 git에 올리지 않습니다.
+우리 서버와 화면이 호출하는 외부 API입니다. 공식 문서를 옮겨 적지 않고, **우리가 쓰는 부분과 직접 호출해서 알아낸 점**만 적습니다.
+서버가 쓰는 키는 `application-secret.yaml`에, 화면이 쓰는 키는 `frontend/.env`에 두고 둘 다 git에 올리지 않습니다.
+
+### 카카오맵 — 장소 검색 · 지도 (T6)
+
+이 API는 **서버가 아니라 화면(브라우저)이 직접** 부릅니다. 그래서 키도 서버 설정이 아니라 `frontend/.env`의 `VITE_KAKAO_MAP_KEY`에 둡니다.
+
+| 항목 | 내용 |
+|------|------|
+| 쓰는 것 | 카카오맵 JavaScript SDK (`https://dapi.kakao.com/v2/maps/sdk.js`), `services` 라이브러리의 장소 검색(`Places.keywordSearch`) |
+| 키 | **JavaScript 키**. 화면 코드에 들어가서 누구나 볼 수 있는 키라, Kakao Developers에 등록한 주소에서만 동작하도록 막혀 있다 |
+| 등록 | 앱 설정 → 플랫폼 → Web에 `http://localhost:5173` 등록, 카카오맵 사용 설정 켜기 (안 하면 지도와 검색이 동작하지 않는다) |
+| 코드 | `frontend/src/utils/kakao.js` (SDK를 한 번만 불러오고, 검색 결과를 우리 형식으로 바꾼다) |
+
+장소 검색에서 쓰는 값
+
+| 카카오 응답 | 우리가 쓰는 곳 |
+|------|------|
+| `place_name` | 방문지 이름 |
+| `road_address_name` (없으면 `address_name`) | 방문지 주소 |
+| `y`, `x` (문자열) | 위도, 경도 (숫자로 바꿔서 저장. **x가 경도, y가 위도**) |
+| `category_group_name` | 검색 결과에 보여주는 분류 (관광명소 · 음식점 등) |
+
+- 검색 결과는 한 번에 최대 15개가 온다.
+- 결과가 없으면 오류가 아니라 "결과 없음" 상태(`ZERO_RESULT`)로 온다.
+- REST API 키 · Admin 키는 쓰지 않는다.
 
 ### 오디세이(ODsay) 대중교통 길찾기 — T7
 
