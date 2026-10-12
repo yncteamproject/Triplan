@@ -123,10 +123,12 @@ frontend/src/
 ├─ api/           client.js(토큰 자동 첨부 · 401 처리), 기능별 API 함수
 ├─ context/       AuthContext(로그인 상태), ToastContext(알림)
 ├─ routes/        ProtectedRoute(로그인 필요한 화면 보호)
-├─ utils/         date.js(날짜 · 기간 · N박 M일 · 시간 표시), format.js(금액 표시 · 비용 입력 검사)
+├─ utils/         date.js(날짜 · 기간 · N박 M일 · 시간 표시), format.js(금액 표시 · 비용 입력 검사),
+│                 schedule.js(일정을 Day 탭별로 나누는 계산), tripLabels.js(이동 수단 이름)
 ├─ components/
 │  ├─ layout/     Header(로그인 전 / 후), Footer, Layout
-│  └─ common/     Button, Input, Card, Toast, EmptyState, PeriodCover, ComingSoon
+│  ├─ common/     Button, Input, Card, Toast, EmptyState, PeriodCover, ComingSoon 등 (아래 "공통 부품" 표)
+│  └─ trip/       TripSchedule(여행 일정 보기. 여행 상세와 게시글 상세가 같이 씀)
 └─ pages/         화면. 백엔드처럼 기능별 폴더
    ├─ auth/ · member/ · traveltest/   # 윤효근
    └─ trip/ · share/                  # 김형준
@@ -195,7 +197,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
 | `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제) | 🔒 | `trip/TripDetailPage` |
 | `/share-pages` | 게시판 목록 (카드 9개씩, `?page=2`로 페이지 넘김) | | `share/SharePageListPage` |
-| `/share-pages/:id` | 게시글 상세 · 댓글 | | `share/SharePageDetailPage` |
+| `/share-pages/:id` | 게시글 상세 (공유된 여행 보기 · 여행 복사 · 댓글) | | `share/SharePageDetailPage` |
 | `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 | 🔒 | `share/SharePageFormPage` |
 
 🔒 화면에 로그인 없이 들어가면 로그인 화면으로 이동하고, 로그인하면 원래 가려던 화면으로 돌아옵니다.

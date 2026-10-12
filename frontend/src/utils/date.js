@@ -83,3 +83,6 @@ export const addDays = (isoDate, days) => new Date(toUtc(isoDate) + days * DAY_M
 
 // 서버의 날짜+시간 → <input type="datetime-local"> 값 ("2026-09-10T09:30")
 export const toDateTimeInput = (dateTime) => dateTime.slice(0, 16);
+
+// "2026-09-30T14:00:00" → "2026.09.30 14:00"
+export const formatDateTime = (dateTime) => `${formatDate(dateOf(dateTime))} ${timeOf(dateTime)}`;
