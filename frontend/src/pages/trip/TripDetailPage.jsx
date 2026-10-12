@@ -15,6 +15,7 @@ import {
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import Modal from "../../components/common/Modal";
+import TripMap from "../../components/trip/TripMap";
 import TripSchedule from "../../components/trip/TripSchedule";
 import { useToast } from "../../context/ToastContext";
 import { addDays, dateOf, formatNights, formatPeriod, formatTime, timeOf } from "../../utils/date";
@@ -155,6 +156,10 @@ export default function TripDetailPage() {
 	const { trip, segments, lodgings, estimate } = result;
 	const schedule = buildSchedule({ trip, stops: result.stops, lodgings, selectedDay });
 	const { stops, activeDay, dayStops, dayOf, lodgingDay } = schedule;
+	// 지도에 찍을 곳: 보고 있는 날의 방문지 중 위치가 있는 것. 번호는 그날의 방문 순서(일정에 보이는 번호와 같다)
+	const mapPoints = dayStops
+		.map((stop, index) => ({ label: String(index + 1), name: stop.name, latitude: stop.latitude, longitude: stop.longitude }))
+		.filter((point) => point.latitude != null && point.longitude != null);
 	const stopNames = new Map(stops.map((stop) => [stop.id, stop.name]));
 	const segmentLabel = (segment) => `${stopNames.get(segment.fromStopId)} → ${stopNames.get(segment.toStopId)}`;
 
@@ -399,6 +404,7 @@ export default function TripDetailPage() {
 				emptyDescription="오른쪽에서 방문지를 추가해보세요"
 				side={
 					<aside className={styles.side}>
+						<TripMap points={mapPoints} />
 						<div className={styles.addButtons}>
 							{addButton("stop", "+ 방문지")}
 							{addButton("segment", "+ 이동 구간")}
