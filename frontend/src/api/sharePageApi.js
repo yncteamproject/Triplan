@@ -9,6 +9,14 @@ export const getSharePages = (page, size) =>
 export const getSharePage = (id) =>
 	apiClient.get(`/api/share-pages/${id}`).then((res) => res.data);
 
+// 글쓰기. request: { title, description, tripId, allowCopy } (내 여행만 공유할 수 있다)
+export const createSharePage = (request) =>
+	apiClient.post("/api/share-pages", request).then((res) => res.data);
+
+// 수정. request: { title, description, allowCopy } (공유한 여행은 바꿀 수 없다)
+export const updateSharePage = (id, request) =>
+	apiClient.put(`/api/share-pages/${id}`, request).then((res) => res.data);
+
 // 게시글에 달린 댓글도 함께 지워진다
 export const deleteSharePage = (id) => apiClient.delete(`/api/share-pages/${id}`);
 

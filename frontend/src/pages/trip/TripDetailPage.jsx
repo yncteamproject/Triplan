@@ -380,6 +380,8 @@ export default function TripDetailPage() {
 					</p>
 				</div>
 				<div className={styles.headActions}>
+					{/* 이 여행이 미리 선택된 글쓰기 화면으로 간다 */}
+					<Button to={`/share-pages/new?tripId=${trip.id}`}>게시판에 공유</Button>
 					<Button variant="secondary" onClick={() => setEditing(true)}>
 						여행 정보 수정
 					</Button>

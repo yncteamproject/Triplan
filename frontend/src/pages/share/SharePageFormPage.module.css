@@ -1,0 +1,103 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-height: 560px;
+	padding: 40px var(--space-section) 64px;
+	background: var(--color-surface);
+}
+
+.loading {
+	padding: 96px 0;
+	color: var(--color-text-secondary);
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 680px;
+	max-width: 100%;
+	padding: 32px;
+	border: 1px solid var(--color-border);
+	border-radius: 16px;
+	background: var(--color-bg);
+}
+
+.title {
+	font: 700 24px/1.2 var(--font-sans);
+}
+
+/* 수정 화면: 바꿀 수 없는 "공유한 여행" 표시 */
+.fixedTrip {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 14px 16px;
+	border-radius: var(--radius-form);
+	background: var(--color-surface);
+}
+
+.fixedTripLabel {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.fixedTripName {
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.fixedTripPeriod {
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+/* 복사 허용 체크 */
+.check {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	cursor: pointer;
+}
+
+.check input {
+	width: 18px;
+	height: 18px;
+	margin: 2px 0 0;
+	accent-color: var(--color-primary);
+	cursor: pointer;
+}
+
+.checkTitle {
+	display: block;
+	font-weight: 600;
+	font-size: 15px;
+}
+
+.checkHelp {
+	display: block;
+	margin-top: 2px;
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.notice {
+	padding: 12px 14px;
+	border-radius: var(--radius-form);
+	background: var(--color-primary-tint);
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+}
+
+.error {
+	font: var(--font-caption);
+	color: var(--color-error);
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 4px;
+}
