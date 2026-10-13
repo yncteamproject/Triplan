@@ -4,18 +4,23 @@ import { createStop, updateStop } from "../../api/tripApi";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Textarea from "../../components/common/Textarea";
+import PlaceSearch from "../../components/trip/PlaceSearch";
 import { formatPeriod, formatTime } from "../../utils/date";
 import styles from "./TripForms.module.css";
 
 // 방문지 추가 · 수정 폼. stop이 있으면 수정, 없으면 추가
 // defaults: 새 방문지에 미리 채워둘 값 { date, stopOrder, name?, time? } (name · time은 숙소를 방문지로 추가할 때만)
-// 위치(위도 · 경도)는 FE-7에서 장소 검색으로 넣는다. 여기서는 주소만 글자로 받는다
+// 위치(위도 · 경도)는 장소 검색으로 고른 곳에서만 들어온다. 직접 입력하면 주소만 저장된다
 export default function StopForm({ trip, stop, defaults, onCancel, onSaved }) {
 	const [name, setName] = useState(stop?.name ?? defaults.name ?? "");
 	const [date, setDate] = useState(stop?.date ?? defaults.date);
 	const [time, setTime] = useState(stop?.time ? formatTime(stop.time) : (defaults.time ?? ""));
 	const [stopOrder, setStopOrder] = useState(String(stop ? (stop.stopOrder ?? "") : defaults.stopOrder));
 	const [address, setAddress] = useState(stop?.address ?? "");
+	// 지도에 찍을 위치 { latitude, longitude }. 없으면 null
+	const [location, setLocation] = useState(
+		stop?.latitude != null && stop?.longitude != null ? { latitude: stop.latitude, longitude: stop.longitude } : null,
+	);
 	const [memo, setMemo] = useState(stop?.memo ?? "");
 	const [error, setError] = useState("");
 	const [submitting, setSubmitting] = useState(false);
@@ -38,7 +43,7 @@ export default function StopForm({ trip, stop, defaults, onCancel, onSaved }) {
 		}
 		setError("");
 		setSubmitting(true);
-		// 수정(PUT)은 보낸 값으로 전부 바뀐다. 폼에 없는 값(사진 주소 · 위도 · 경도)은 기존 값을 그대로 보낸다
+		// 수정(PUT)은 보낸 값으로 전부 바뀐다. 폼에 없는 값(사진 주소)은 기존 값을 그대로 보낸다
 		const request = {
 			name: name.trim(),
 			date,
@@ -46,8 +51,9 @@ export default function StopForm({ trip, stop, defaults, onCancel, onSaved }) {
 			memo: memo.trim() || null,
 			imageUrl: stop?.imageUrl ?? null,
 			stopOrder: stopOrder === "" ? null : Number(stopOrder),
-			latitude: stop?.latitude ?? null,
-			longitude: stop?.longitude ?? null,
+			// 위도와 경도는 함께 보내야 한다 (서버 검증)
+			latitude: location?.latitude ?? null,
+			longitude: location?.longitude ?? null,
 			address: address.trim() || null,
 		};
 		try {
@@ -60,9 +66,18 @@ export default function StopForm({ trip, stop, defaults, onCancel, onSaved }) {
 
 	const clearError = () => setError("");
 
+	// 검색 결과에서 고른 장소로 이름 · 주소 · 위치를 채운다
+	const applyPlace = (place) => {
+		setName(place.name);
+		setAddress(place.address ?? "");
+		setLocation({ latitude: place.latitude, longitude: place.longitude });
+		clearError();
+	};
+
 	return (
 		<form className={styles.form} onSubmit={handleSubmit} noValidate>
 			<h3 className={styles.title}>{stop ? "방문지 수정" : "방문지 추가"}</h3>
+			<PlaceSearch onSelect={applyPlace} />
 			<Input
 				variant="box"
 				label="이름"
@@ -118,6 +133,16 @@ export default function StopForm({ trip, stop, defaults, onCancel, onSaved }) {
 				value={address}
 				onChange={(event) => setAddress(event.target.value)}
 			/>
+			{location ? (
+				<p className={styles.located}>
+					<span>지도에 표시되는 위치가 있어요</span>
+					<button type="button" className={styles.locatedClear} onClick={() => setLocation(null)}>
+						위치 지우기
+					</button>
+				</p>
+			) : (
+				<p className={styles.hint}>위치가 없으면 지도에는 나오지 않아요. 장소 검색으로 고르면 위치가 들어가요.</p>
+			)}
 			<Textarea label="메모 (선택)" value={memo} onChange={(event) => setMemo(event.target.value)} />
 			{error && <p className={styles.error}>{error}</p>}
 			<div className={styles.actions}>

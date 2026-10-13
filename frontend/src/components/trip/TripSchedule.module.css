@@ -146,6 +146,20 @@
 	overflow-wrap: anywhere;
 }
 
+.stopNumber {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	margin-right: 8px;
+	border-radius: 50%;
+	background: var(--color-primary);
+	font: 700 11px/1 var(--font-sans);
+	color: #ffffff;
+	vertical-align: 2px;
+}
+
 .stopAddress {
 	font: var(--font-caption);
 	color: var(--color-text-secondary);

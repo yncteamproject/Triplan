@@ -15,6 +15,7 @@ import {
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import Modal from "../../components/common/Modal";
+import TripMap from "../../components/trip/TripMap";
 import TripSchedule from "../../components/trip/TripSchedule";
 import { useToast } from "../../context/ToastContext";
 import { addDays, dateOf, formatNights, formatPeriod, formatTime, timeOf } from "../../utils/date";
@@ -23,6 +24,7 @@ import LodgingForm from "./LodgingForm";
 import SegmentForm from "./SegmentForm";
 import StopForm from "./StopForm";
 import styles from "./TripDetailPage.module.css";
+import TransitRoutesModal from "./TransitRoutesModal";
 import TripEditModal from "./TripEditModal";
 
 const NOT_FOUND_STATUSES = [403, 404]; // 남의 여행 · 없는 여행
@@ -69,6 +71,7 @@ export default function TripDetailPage() {
 	const [editing, setEditing] = useState(false);
 	const [panel, setPanel] = useState(null); // 오른쪽에 열린 폼 { type: stop | segment | lodging, item: 수정할 대상(추가면 없음) }
 	const [confirm, setConfirm] = useState(null); // 삭제 확인 창 { kind, item }
+	const [transit, setTransit] = useState(null); // 대중교통 경로 창에 보여줄 이동 구간 (닫혀 있으면 null)
 	const [deleting, setDeleting] = useState(false);
 	const [deleteError, setDeleteError] = useState("");
 
@@ -155,6 +158,10 @@ export default function TripDetailPage() {
 	const { trip, segments, lodgings, estimate } = result;
 	const schedule = buildSchedule({ trip, stops: result.stops, lodgings, selectedDay });
 	const { stops, activeDay, dayStops, dayOf, lodgingDay } = schedule;
+	// 지도에 찍을 곳: 보고 있는 날의 방문지 중 위치가 있는 것. 번호는 그날의 방문 순서(일정에 보이는 번호와 같다)
+	const mapPoints = dayStops
+		.map((stop, index) => ({ label: String(index + 1), name: stop.name, latitude: stop.latitude, longitude: stop.longitude }))
+		.filter((point) => point.latitude != null && point.longitude != null);
 	const stopNames = new Map(stops.map((stop) => [stop.id, stop.name]));
 	const segmentLabel = (segment) => `${stopNames.get(segment.fromStopId)} → ${stopNames.get(segment.toStopId)}`;
 
@@ -291,6 +298,17 @@ export default function TripDetailPage() {
 						방문지로 추가
 					</button>
 				)}
+				{/* 이동 구간: 누를 때만 대중교통 경로를 조회한다 */}
+				{kind === "segment" && (
+					<button
+						type="button"
+						className={`${styles.itemButton} ${styles.itemPrimary}`}
+						aria-label={`${label} 대중교통 경로 보기`}
+						onClick={() => setTransit(item)}
+					>
+						대중교통 경로
+					</button>
+				)}
 				<button type="button" className={styles.itemButton} aria-label={`${label} 수정`} onClick={() => openPanel(kind, item)}>
 					수정
 				</button>
@@ -401,6 +419,7 @@ export default function TripDetailPage() {
 				emptyDescription="오른쪽에서 방문지를 추가해보세요"
 				side={
 					<aside className={styles.side}>
+						<TripMap points={mapPoints} />
 						<div className={styles.addButtons}>
 							{addButton("stop", "+ 방문지")}
 							{addButton("segment", "+ 이동 구간")}
@@ -410,6 +429,15 @@ export default function TripDetailPage() {
 					</aside>
 				}
 			/>
+
+			{transit && (
+				<TransitRoutesModal
+					tripId={trip.id}
+					from={stops.find((stop) => stop.id === transit.fromStopId)}
+					to={stops.find((stop) => stop.id === transit.toStopId)}
+					onClose={() => setTransit(null)}
+				/>
+			)}
 
 			{editing && <TripEditModal trip={trip} onClose={() => setEditing(false)} onSaved={handleSaved} />}
 

@@ -1,0 +1,55 @@
+.wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.map {
+	width: 100%;
+	height: 240px;
+	overflow: hidden;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-form);
+	background: var(--color-surface);
+}
+
+/* 위치가 있는 방문지가 없을 때 */
+.placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 16px;
+	border-style: dashed;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+	text-align: center;
+}
+
+.placeholderHelp {
+	font: var(--font-caption);
+	font-weight: 400;
+	color: var(--color-text-muted);
+}
+
+/* 번호 마커 (카카오맵 위에 올리는 동그라미) */
+.marker {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: 2px solid #ffffff;
+	border-radius: 50%;
+	background: var(--color-primary);
+	box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+	font: 700 13px/1 var(--font-sans);
+	color: #ffffff;
+}
+
+.error {
+	font: var(--font-caption);
+	color: var(--color-error);
+}
