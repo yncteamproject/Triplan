@@ -51,7 +51,11 @@ export default function TripSchedule({
 									{stop.time ? formatTime(stop.time) : "시간 미정"}
 								</span>
 								<div className={styles.stopBody}>
-									<p className={styles.stopName}>{stop.name}</p>
+									<p className={styles.stopName}>
+										{/* 그날의 방문 순서. 지도 마커의 번호와 같다 */}
+										<span className={styles.stopNumber}>{index + 1}</span>
+										{stop.name}
+									</p>
 									{stop.address && <p className={styles.stopAddress}>{stop.address}</p>}
 									{stop.memo && <p className={styles.stopMemo}>{stop.memo}</p>}
 								</div>

@@ -30,6 +30,11 @@ export const getLodgings = (tripId) =>
 export const getEstimate = (tripId) =>
 	apiClient.get(`/api/trips/${tripId}/estimate`).then((res) => res.data);
 
+// 두 방문지 사이의 대중교통 경로 (T7). 응답: { routes: [{ totalTime, payment, transferCount, walkDistance, steps }] }
+// 서버가 오디세이를 부르는데 무료 호출이 하루 30건이라, 사용자가 버튼을 눌렀을 때만 부른다
+export const getTransitRoutes = (tripId, fromStopId, toStopId) =>
+	apiClient.get(`/api/trips/${tripId}/transit-routes`, { params: { fromStopId, toStopId } }).then((res) => res.data);
+
 // 방문지 · 이동 구간 · 숙소의 추가 · 수정 · 삭제
 // 수정(PUT)은 보낸 값으로 전부 바뀐다. 비워 보낸 칸은 지워지니 기존 값을 모두 채워서 보낸다
 export const createStop = (tripId, request) =>

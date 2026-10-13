@@ -1,0 +1,54 @@
+/* 기간 썸네일(PeriodCover의 lg)과 같은 높이 */
+.cover {
+	width: 100%;
+	height: 150px;
+	background: var(--tone-tint);
+}
+
+.svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* 색 (PeriodCover와 같은 이름 · 같은 색) */
+.blue {
+	--tone: var(--color-primary);
+	--tone-tint: var(--color-primary-tint);
+}
+
+.purple {
+	--tone: var(--color-purple);
+	--tone-tint: var(--color-purple-tint);
+}
+
+.orange {
+	--tone: var(--color-orange);
+	--tone-tint: var(--color-orange-tint);
+}
+
+.roads path {
+	fill: none;
+	stroke: var(--color-bg);
+	stroke-width: 9;
+	stroke-linecap: round;
+}
+
+.line {
+	fill: none;
+	stroke: var(--tone);
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.dot {
+	fill: var(--tone);
+	stroke: var(--color-bg);
+	stroke-width: 2;
+}
+
+.number {
+	fill: #ffffff;
+	font: 700 11px/1 var(--font-sans);
+}

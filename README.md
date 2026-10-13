@@ -162,7 +162,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | T3 | 구간별 이동 수단 · 시간 · 예약 정보 | ✅ 완료 |
 | T4 | 숙소 (체크인 · 체크아웃 · 숙박비) | ✅ 완료 |
 | T5 | 자동 견적 합산 (교통비 + 숙박비) | ✅ 완료 |
-| T6 | 지도 시각화 (마커 + 경로, 카카오맵) | ⏳ 예정 (API 키 필요) |
+| T6 | 지도 시각화 (마커 + 경로, 카카오맵) · 장소 검색 | ✅ 완료 (화면에서 카카오맵을 직접 사용) |
 | T7 | 대중교통 경로 · 소요시간 (오디세이, 결과 캐시) | ✅ 완료 |
 | T8 | 환율 표시 (한국수출입은행) | ⏳ 예정 (API 키 필요) |
 
@@ -201,7 +201,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `/travel-test/result` | 성향 테스트 결과 | 🔒 | `traveltest/TravelTestResultPage` |
 | `/trips` | 내 여행 목록 (없으면 빈 화면) | 🔒 | `trip/TripListPage` |
 | `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
-| `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제) | 🔒 | `trip/TripDetailPage` |
+| `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약 · 지도, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제, 장소 검색, 대중교통 경로) | 🔒 | `trip/TripDetailPage` |
 | `/share-pages` | 게시판 목록 (카드 9개씩, `?page=2`로 페이지 넘김) | | `share/SharePageListPage` |
 | `/share-pages/:id` | 게시글 상세 (공유된 여행 보기 · 여행 복사 · 댓글) | | `share/SharePageDetailPage` |
 | `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 (공유할 여행 선택 · 제목 · 설명 · 복사 허용). `?tripId=`를 붙이면 그 여행이 미리 선택됨 | 🔒 | `share/SharePageFormPage` |

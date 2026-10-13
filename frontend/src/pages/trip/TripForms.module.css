@@ -29,6 +29,30 @@
 	color: var(--color-text-muted);
 }
 
+/* 방문지 폼: 지도 위치가 있다는 표시 */
+.located {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-top: -6px;
+	padding: 8px 12px;
+	border-radius: var(--radius-form);
+	background: var(--color-primary-tint);
+	font: var(--font-caption);
+	color: var(--color-primary);
+}
+
+.locatedClear {
+	padding: 0;
+	border: none;
+	background: transparent;
+	font: var(--font-caption);
+	color: var(--color-text-secondary);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 .error {
 	font: var(--font-caption);
 	color: var(--color-error);
