@@ -54,3 +54,11 @@ export function buildSchedule({ trip, stops, lodgings, selectedDay }) {
 		),
 	};
 }
+
+// 지도에 찍을 곳: 그날의 방문지 중 위치가 있는 것
+// 번호(label)는 그날의 방문 순서라서 일정에 보이는 번호와 같다. 위치가 없는 방문지는 빠지고 번호는 건너뛴다
+export function toMapPoints(dayStops) {
+	return dayStops
+		.map((stop, index) => ({ label: String(index + 1), name: stop.name, latitude: stop.latitude, longitude: stop.longitude }))
+		.filter((point) => point.latitude != null && point.longitude != null);
+}

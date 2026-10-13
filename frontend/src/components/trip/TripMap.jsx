@@ -5,7 +5,12 @@ import styles from "./TripMap.module.css";
 // 방문지를 번호 마커와 선으로 보여주는 지도 (카카오맵, T6)
 // points: 지도에 찍을 곳을 방문 순서대로 [{ label, name, latitude, longitude }]. label은 마커에 적을 번호
 // 찍을 곳이 없으면 지도 대신 안내 문구를 보여준다
-export default function TripMap({ points }) {
+// emptyTitle · emptyHelp: 그 안내 문구. 보는 사람에 따라 바꿀 수 있다 (기본은 여행을 고치는 사람에게 하는 말)
+export default function TripMap({
+	points,
+	emptyTitle = "방문지 위치를 넣으면 지도에 표시돼요",
+	emptyHelp = '방문지를 추가하거나 수정할 때 "장소 검색"으로 고르면 위치가 들어가요',
+}) {
 	const containerRef = useRef(null);
 	const mapRef = useRef(null); // 만들어 둔 지도 (탭을 바꿔도 다시 만들지 않는다)
 	const drawnRef = useRef([]); // 지도에 올려 둔 마커 · 선 (다시 그릴 때 지운다)
@@ -84,8 +89,8 @@ export default function TripMap({ points }) {
 	if (points.length === 0) {
 		return (
 			<div className={`${styles.map} ${styles.placeholder}`}>
-				<p>방문지 위치를 넣으면 지도에 표시돼요</p>
-				<p className={styles.placeholderHelp}>방문지를 추가하거나 수정할 때 "장소 검색"으로 고르면 위치가 들어가요</p>
+				<p>{emptyTitle}</p>
+				{emptyHelp && <p className={styles.placeholderHelp}>{emptyHelp}</p>}
 			</div>
 		);
 	}
