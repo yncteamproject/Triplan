@@ -203,7 +203,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 | `/trips/new` | 여행 만들기 (이름 → 기간) | 🔒 | `trip/TripCreatePage` |
 | `/trips/:tripId` | 여행 상세 (날짜별 일정 · 요약 · 지도, 여행 수정 · 삭제, 방문지 · 이동 구간 · 숙소 추가 · 수정 · 삭제, 장소 검색, 대중교통 경로) | 🔒 | `trip/TripDetailPage` |
 | `/share-pages` | 게시판 목록 (카드 9개씩, `?page=2`로 페이지 넘김) | | `share/SharePageListPage` |
-| `/share-pages/:id` | 게시글 상세 (공유된 여행 보기 · 여행 복사 · 댓글) | | `share/SharePageDetailPage` |
+| `/share-pages/:id` | 게시글 상세 (공유된 여행 보기 · 지도 · 여행 복사 · 댓글) | | `share/SharePageDetailPage` |
 | `/share-pages/new`, `/share-pages/:id/edit` | 글쓰기 · 수정 (공유할 여행 선택 · 제목 · 설명 · 복사 허용). `?tripId=`를 붙이면 그 여행이 미리 선택됨 | 🔒 | `share/SharePageFormPage` |
 
 🔒 화면에 로그인 없이 들어가면 로그인 화면으로 이동하고, 로그인하면 원래 가려던 화면으로 돌아옵니다.

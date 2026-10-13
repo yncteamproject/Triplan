@@ -15,11 +15,12 @@ import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Modal from "../../components/common/Modal";
 import Textarea from "../../components/common/Textarea";
+import TripMap from "../../components/trip/TripMap";
 import TripSchedule from "../../components/trip/TripSchedule";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { formatDateTime, formatNights, formatPeriod } from "../../utils/date";
-import { buildSchedule } from "../../utils/schedule";
+import { buildSchedule, toMapPoints } from "../../utils/schedule";
 import styles from "./SharePageDetailPage.module.css";
 
 const COMMENT_MAX_LENGTH = 500; // 서버 검증과 같은 길이
@@ -121,6 +122,7 @@ export default function SharePageDetailPage() {
 	// 복사를 막아 둔 글은 작성자 본인만 복사할 수 있다 (B11)
 	const canCopy = post.allowCopy || isMine(post.writerId);
 	const schedule = buildSchedule({ trip, stops: trip.stops, lodgings: trip.lodgings, selectedDay });
+	const mapPoints = toMapPoints(schedule.dayStops); // 지도에는 보고 있는 날의 방문지만 찍는다
 
 	// 로그인 화면으로 보낸다. 로그인하면 이 글로 돌아온다
 	const goToLogin = () => navigate("/login", { state: { from: location } });
@@ -291,6 +293,18 @@ export default function SharePageDetailPage() {
 				costs={trip}
 				onSelectDay={setSelectedDay}
 				emptyDescription="아직 방문지를 넣지 않은 여행이에요"
+				side={
+					// 보기 전용 지도. 대중교통 경로는 여기서 보여주지 않는다 (내 여행으로 복사하면 조회할 수 있다)
+					<aside className={styles.side}>
+						<h4 className={styles.sideTitle}>이날의 동선</h4>
+						<TripMap
+							points={mapPoints}
+							emptyTitle="지도에 표시할 위치가 없어요"
+							emptyHelp="이날은 위치가 들어 있는 방문지가 없어요"
+						/>
+						{mapPoints.length > 0 && <p className={styles.sideHint}>번호는 왼쪽 일정의 방문 순서예요</p>}
+					</aside>
+				}
 			/>
 
 			<section className={styles.comments}>
