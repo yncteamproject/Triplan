@@ -3,6 +3,8 @@
 여행 일정(방문지 · 이동 수단 · 숙소)을 짜면 경비가 자동으로 합산되고, 완성한 여행 계획을 공유 게시판에 올려 다른 사람과 나눌 수 있는 웹 서비스입니다.
 2026년 영남이공대학교 3학년 일취반 팀 프로젝트로 제작하고 있습니다.
 
+**배포 주소**: https://triplan-livid-delta.vercel.app (API: `https://triplan-ync.duckdns.org`)
+
 ## 📌 필독 — 설계 문서
 
 > [!IMPORTANT]
@@ -30,9 +32,10 @@
 | DB | PostgreSQL (Neon) |
 | 인증 | Spring Security + JWT (jjwt 0.12.6, 토큰 유효기간 24시간, BCrypt) |
 | 프론트엔드 | React 19, Vite 8, React Router 7, axios |
-| 테스트 | JUnit 5, MockMvc, spring-security-test (실제 DB + `@Transactional` 롤백) |
+| 테스트 | JUnit 5, MockMvc, spring-security-test, H2 (테스트 전용 임시 DB + `@Transactional` 롤백) |
 | 빌드 | Gradle (백엔드), npm (프론트엔드) |
-| 외부 API (예정) | 카카오맵 JS SDK, 오디세이(ODsay), 한국수출입은행 환율 |
+| 외부 API | 카카오맵 JS SDK, 오디세이(ODsay) |
+| 배포 | Vercel(화면), AWS EC2 + Caddy(백엔드, https), DuckDNS(도메인) — [배포 가이드](docs/deploy.md) |
 
 ## 실행 방법
 
@@ -332,6 +335,22 @@ git push -u origin fix/7-delete-cascade
 ## 배포
 
 화면은 Vercel, 백엔드는 AWS EC2, 도메인은 DuckDNS를 씁니다. 설정 방법과 다시 올리는 방법은 [배포 가이드](docs/deploy.md)에 있습니다.
+
+| | 주소 | 다시 올리기 |
+|---|---|---|
+| 화면 | https://triplan-livid-delta.vercel.app | `main`에 merge되면 Vercel이 자동으로 |
+| API | https://triplan-ync.duckdns.org | merge 후 `scripts/deploy-backend.ps1` 실행 |
+
+```powershell
+git switch main
+git pull origin main
+powershell -ExecutionPolicy Bypass -File scripts\deploy-backend.ps1
+```
+
+스크립트는 최신 `main`인지 확인하고, 서버의 지금 버전을 백업한 뒤 새 버전을 올립니다. 새 버전이 2분 안에 켜지지 않으면 자동으로 되돌립니다. 서버 접속 설정(`~/.ssh/config`)은 [배포 가이드](docs/deploy.md#2-서버에-접속하기)를 참고하세요.
+
+- 배포 서버도 각자 `bootRun`과 **같은 Neon DB**를 씁니다. 개발하면서 만든 데이터가 배포된 사이트에 그대로 보이고, 테이블을 바꾸는 코드는 `bootRun`하는 순간 배포 DB에도 반영됩니다.
+- 서버 설정 파일(`deploy/`)은 예시이고, 실제 값은 서버에만 있습니다.
 
 - 배포 서버의 비밀 값은 서버의 `application-secret.yaml`에만 둡니다. `jwt.secret_key`는 개발용과 다른 값으로 새로 만듭니다.
 - CORS 허용 주소는 서버의 `application-secret.yaml`에서 Vercel 주소로 넣습니다 (`app.cors.allowed-origins`). 코드는 고치지 않습니다.
