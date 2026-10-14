@@ -41,3 +41,8 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// 배포용 jar에는 비밀 값 파일을 넣지 않는다. 서버에서는 jar 옆에 따로 둔 파일을 읽는다 (application.yaml의 config.import)
+tasks.named('bootJar') {
+	exclude 'application-secret.yaml'
+}

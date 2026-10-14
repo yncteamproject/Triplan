@@ -1,0 +1,20 @@
+# 배포 서버(EC2)에서 백엔드를 서비스로 띄우는 설정. /etc/systemd/system/triplan.service에 복사해서 쓴다 (docs/deploy.md)
+# 서버가 재부팅되거나 백엔드가 죽어도 자동으로 다시 켜진다
+[Unit]
+Description=Triplan backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+# 이 폴더에 triplan.jar와 application-secret.yaml을 둔다
+WorkingDirectory=/opt/triplan
+# 메모리가 작은 서버(1~2GB)에 맞춰 최대 사용량을 정해 둔다
+ExecStart=/usr/bin/java -Xms128m -Xmx512m -jar /opt/triplan/triplan.jar --spring.profiles.active=prod
+Restart=on-failure
+RestartSec=5
+# 종료 신호를 받은 Spring은 143으로 끝난다. 실패로 보지 않는다
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
