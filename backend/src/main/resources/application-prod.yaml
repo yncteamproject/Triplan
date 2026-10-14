@@ -1,0 +1,16 @@
+# 배포 서버 전용 설정. 서버에서 --spring.profiles.active=prod로 실행할 때만 적용된다 (docs/deploy.md)
+# application.yaml을 지우지 않고, 겹치는 값만 덮어쓴다. 비밀 값은 여기에 두지 않는다
+spring:
+  jpa:
+    show-sql: false # 서버 로그가 SQL로 뒤덮이지 않게
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: false # 배포 서버에서는 H2 콘솔을 열지 않는다
+
+server:
+  # 앞단의 Caddy만 이 서버를 부른다. 바깥에서 8080으로 직접 들어오지 못하게 서버 안에서만 연다
+  address: 127.0.0.1
+  port: 8080

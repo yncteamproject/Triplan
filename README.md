@@ -13,6 +13,7 @@
 | [요구사항 명세](docs/requirements.md) | 기능별 입력 · 처리 · 인수 기준, 비즈니스 규칙, 결정 사항, 알려진 문제 |
 | [API 명세](docs/api.md) | 엔드포인트, 로그인 필요 여부, 요청 · 응답 형식, 에러 응답 |
 | [ERD](docs/erd.md) | 테이블 8개, 관계, 제약 조건, 규칙과 데이터의 연결 |
+| [배포 가이드](docs/deploy.md) | 서버(EC2) · 화면(Vercel) · 도메인(DuckDNS) 설정, 다시 올리는 방법, 로그 보기 |
 
 코드와 함께 바뀌는 내용(API, DB, 실행 방법, 규칙)은 이 저장소에, 일정 · 회의록 · 할 일은 노션에서 관리합니다.
 
@@ -78,7 +79,7 @@ npm install
 cp .env.example .env
 npm run dev
 ```
-http://localhost:5173 에서 열립니다. 백엔드 주소는 `.env`의 `VITE_API_BASE_URL`로 바꿀 수 있고, 백엔드는 이 주소(5173)의 요청만 CORS로 허용합니다.
+http://localhost:5173 에서 열립니다. 백엔드 주소는 `.env`의 `VITE_API_BASE_URL`로 바꿀 수 있고, 백엔드는 기본으로 이 주소(5173)의 요청만 CORS로 허용합니다 (`application.yaml`의 `app.cors.allowed-origins`).
 
 `.env`의 `VITE_KAKAO_MAP_KEY`는 지도(T6)에 쓸 카카오 **JavaScript 키**입니다. Kakao Developers에서 앱을 만들고 Web 플랫폼에 `http://localhost:5173`을 등록해야 동작합니다. `.env`는 git에 올라가지 않습니다.
 
@@ -328,7 +329,9 @@ git push -u origin fix/7-delete-cascade
 - `./gradlew test`가 모두 통과해야 PR을 올립니다.
 - 테스트는 임시 DB(H2)에서 돌기 때문에 DB가 비어 있는 상태에서 시작합니다. 테스트에 필요한 데이터는 테스트 안에서 직접 만듭니다.
 
-## 배포 전 확인할 것
+## 배포
 
-- `application-secret.yaml`의 `jwt.secret_key`는 개발용입니다. 배포 서버에는 키를 새로 만들어 넣어야 합니다.
-- CORS 허용 주소(`WebConfig`)를 실제 프론트엔드 주소로 바꿔야 합니다.
+화면은 Vercel, 백엔드는 AWS EC2, 도메인은 DuckDNS를 씁니다. 설정 방법과 다시 올리는 방법은 [배포 가이드](docs/deploy.md)에 있습니다.
+
+- 배포 서버의 비밀 값은 서버의 `application-secret.yaml`에만 둡니다. `jwt.secret_key`는 개발용과 다른 값으로 새로 만듭니다.
+- CORS 허용 주소는 서버의 `application-secret.yaml`에서 Vercel 주소로 넣습니다 (`app.cors.allowed-origins`). 코드는 고치지 않습니다.

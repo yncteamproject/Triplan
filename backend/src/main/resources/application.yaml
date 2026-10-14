@@ -2,7 +2,12 @@ spring:
   application:
     name: triplan
   config:
-    import: optional:classpath:application-secret.yaml
+    # 비밀 값(DB 접속 정보 · JWT 키 · 오디세이 키)은 git에 올리지 않는 application-secret.yaml에 둔다
+    # - 각자 컴퓨터: src/main/resources/application-secret.yaml
+    # - 배포 서버: 실행 폴더(jar 옆)의 application-secret.yaml (jar 안에는 넣지 않는다. build.gradle의 bootJar 참고)
+    import:
+      - optional:classpath:application-secret.yaml
+      - optional:file:./application-secret.yaml
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,3 +19,8 @@ spring:
 jwt:
   issuer: triplan
   access_expiration_minutes: 1440 # 24시간
+
+app:
+  cors:
+    # API를 부를 수 있는 화면 주소. 배포 서버에서는 application-secret.yaml에서 Vercel 주소로 덮어쓴다
+    allowed-origins: http://localhost:5173
