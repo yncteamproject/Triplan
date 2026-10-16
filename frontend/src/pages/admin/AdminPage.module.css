@@ -1,0 +1,143 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	min-height: 560px;
+	padding: 40px var(--space-section) 64px;
+	background: var(--color-surface);
+}
+
+.title {
+	font: 700 28px/1.2 var(--font-sans);
+}
+
+.stats {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.statCard {
+	padding: 20px 24px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-card);
+	background: var(--color-content-bg);
+}
+
+.statLabel {
+	font-size: 14px;
+	color: var(--color-text-secondary);
+}
+
+.statValue {
+	margin-top: 6px;
+	font: 700 28px/1.2 var(--font-sans);
+}
+
+.tabs {
+	display: flex;
+	gap: 4px;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+	padding: 10px 18px;
+	border: none;
+	border-bottom: 2px solid transparent;
+	background: none;
+	font-size: 15px;
+	color: var(--color-text-secondary);
+	cursor: pointer;
+}
+
+.activeTab {
+	border-bottom-color: var(--color-primary);
+	font-weight: 700;
+	color: var(--color-primary);
+}
+
+.status {
+	padding: 64px 0;
+	text-align: center;
+	color: var(--color-text-secondary);
+}
+
+.tableWrap {
+	overflow-x: auto;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-card);
+	background: var(--color-content-bg);
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.table th,
+.table td {
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--color-border);
+	text-align: left;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.table th {
+	font-weight: 600;
+	color: var(--color-text-secondary);
+	background: var(--color-bg);
+}
+
+.table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.link {
+	color: var(--color-text);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.sub {
+	display: block;
+	font-size: 12px;
+	color: var(--color-text-muted);
+}
+
+.content {
+	max-width: 320px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.role {
+	padding: 2px 10px;
+	border-radius: var(--radius-pill);
+	background: var(--color-bg);
+	font-size: 12px;
+}
+
+.admin {
+	background: var(--color-primary-tint);
+	color: var(--color-primary);
+	font-weight: 600;
+}
+
+.dialogTarget {
+	margin-bottom: 8px;
+	font-weight: 600;
+}
+
+.error {
+	margin-top: 8px;
+	font-size: 13px;
+	color: var(--color-error);
+}
+
+@media (max-width: 720px) {
+	.stats {
+		grid-template-columns: 1fr;
+	}
+}
