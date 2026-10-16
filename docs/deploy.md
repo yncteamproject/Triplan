@@ -5,6 +5,9 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
 > [!WARNING]
 > 이 저장소는 **공개**입니다. 서버 IP, 접속 키(`.pem`), 비밀번호, API 키를 이 문서나 이슈 · PR · 커밋에 적지 않습니다. 아래의 `{중괄호}`는 각자 실제 값으로 바꿔서 쓰고, 바꾼 값은 저장소에 올리지 않습니다.
 
+> [!TIP]
+> `{IP}`, `{이름}`, `{프로젝트}`는 **중괄호까지 지우고** 실제 값을 넣는 자리입니다. 예: `ubuntu@{IP}` → `ubuntu@13.125.10.20`(예시 숫자). PowerShell에서 중괄호를 남긴 채 실행하면 `inputFormat 매개 변수에 대해 잘못된 값` 같은 엉뚱한 오류가 납니다. (Caddy 설정 파일 안의 `{ }`는 문법이라 그대로 둡니다.)
+
 ## 구성
 
 ```
@@ -50,8 +53,9 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
 2. EC2 → 인스턴스 시작
    - 이름: `triplan`
    - OS: **Ubuntu Server 24.04 LTS**
-   - 인스턴스 유형: "프리 티어 사용 가능" 표시가 있는 것. 메모리 2GB짜리(예: `t3.small`)가 있으면 그것, 없으면 1GB(`t3.micro`)를 고르고 아래 3번의 스왑을 꼭 만듭니다
-   - 키 페어: 새로 만들기 → `.pem` 파일을 받아서 **저장소 폴더 밖**(예: `C:\Users\{나}\.ssh\triplan.pem`)에 둡니다. 다시 받을 수 없습니다
+   - 아키텍처: 64비트(x86)
+   - 인스턴스 유형: **`t3.micro`**(메모리 1GB). 아래 3번의 스왑을 꼭 만듭니다. 느리면 나중에 `t3.small`로 바꿀 수 있습니다 (아래 "비용과 정리")
+   - 키 페어: 새로 만들기 → 이름 `triplan`, RSA, `.pem` → 받은 파일을 **저장소 폴더 밖**(`C:\Users\{나}\.ssh\triplan.pem`)에 둡니다. 다시 받을 수 없으니 따로 백업해 둡니다
    - 네트워크 설정(보안 그룹):
 
      | 종류 | 포트 | 허용할 곳 | 이유 |
@@ -61,8 +65,8 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
      | HTTPS | 443 | 모든 곳 | API |
 
      8080은 열지 않습니다. 백엔드는 Caddy를 통해서만 들어옵니다.
-   - 저장소: 기본값(8GB 이상)
-3. EC2 → 탄력적 IP → 탄력적 IP 주소 할당 → 만든 IP를 선택하고 **연결** → 인스턴스 `triplan` 선택
+   - 스토리지: **12GiB, gp3**. Ubuntu · 스왑 · 로그에 여유를 둡니다. "파일 시스템"(EFS · FSx)과 "볼륨 추가"는 서버가 한 대라 쓰지 않습니다
+3. EC2 → 탄력적 IP → 탄력적 IP 주소 할당 → 만든 IP를 선택하고 작업 → **탄력적 IP 주소 연결** → 인스턴스 `triplan` 선택 ("재연결 허용"은 체크하지 않음)
 
 이제 서버 IP가 바뀌지 않습니다. 이 IP를 아래에서 `{IP}`라고 씁니다.
 
@@ -71,17 +75,105 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
 
 ### 2. 서버에 접속하기
 
-Git Bash에서:
-
-```bash
-ssh -i ~/.ssh/triplan.pem ubuntu@{IP}
-```
-
-`UNPROTECTED PRIVATE KEY FILE` 오류가 나면 PowerShell에서 키 파일을 나만 읽을 수 있게 바꿉니다:
+Windows에 기본으로 있는 PowerShell의 `ssh`를 씁니다. 키 파일을 `.ssh` 폴더로 옮기고, 나만 읽을 수 있게 바꿉니다 (안 하면 `UNPROTECTED PRIVATE KEY FILE` 오류):
 
 ```powershell
+New-Item -ItemType Directory -Force $env:USERPROFILE\.ssh
+Move-Item $env:USERPROFILE\Downloads\triplan.pem $env:USERPROFILE\.ssh\
 icacls $env:USERPROFILE\.ssh\triplan.pem /inheritance:r /grant:r "$($env:USERNAME):R"
 ```
+
+매번 키 경로와 IP를 치지 않게 `notepad $env:USERPROFILE\.ssh\config`로 설정 파일을 만들고 아래 4줄을 넣습니다. `{IP}`는 중괄호 없이 숫자로 바꾸고, `config.txt`가 아니라 확장자 없는 `config`로 저장합니다. 이 파일은 내 컴퓨터에만 있습니다.
+
+```
+Host triplan
+    HostName {IP}
+    User ubuntu
+    IdentityFile ~/.ssh/triplan.pem
+```
+
+이제 아래 한 줄로 접속합니다. 처음 한 번은 `yes`를 입력합니다. 프롬프트가 `ubuntu@ip-…:~# 배포 가이드
+
+Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 한 번 하는 설정과, 코드를 고친 뒤 다시 올리는 방법을 순서대로 적었습니다.
+
+> [!WARNING]
+> 이 저장소는 **공개**입니다. 서버 IP, 접속 키(`.pem`), 비밀번호, API 키를 이 문서나 이슈 · PR · 커밋에 적지 않습니다. 아래의 `{중괄호}`는 각자 실제 값으로 바꿔서 쓰고, 바꾼 값은 저장소에 올리지 않습니다.
+
+> [!TIP]
+> `{IP}`, `{이름}`, `{프로젝트}`는 **중괄호까지 지우고** 실제 값을 넣는 자리입니다. 예: `ubuntu@{IP}` → `ubuntu@13.125.10.20`(예시 숫자). PowerShell에서 중괄호를 남긴 채 실행하면 `inputFormat 매개 변수에 대해 잘못된 값` 같은 엉뚱한 오류가 납니다. (Caddy 설정 파일 안의 `{ }`는 문법이라 그대로 둡니다.)
+
+## 구성
+
+```
+브라우저
+ ├─ 화면   https://{프로젝트}.vercel.app        → Vercel (frontend 폴더를 빌드해서 제공)
+ └─ API    https://{이름}.duckdns.org/api/...   → AWS EC2
+                                                    ├─ Caddy: https 인증서, 요청을 백엔드로 전달
+                                                    └─ 백엔드(jar): 127.0.0.1:8080, 서버 밖에서는 직접 못 들어옴
+                                                         └─ DB: Neon (PostgreSQL)
+```
+
+| 부분 | 사용 | 고른 이유 |
+|------|------|-----------|
+| 화면 | Vercel | GitHub에 연결해 두면 `main`에 merge될 때마다 자동으로 다시 배포 |
+| 백엔드 | AWS EC2 + 고정 IP(Elastic IP) | 오디세이는 **등록한 IP에서만** 동작해서 IP가 바뀌지 않는 서버가 필요 |
+| 도메인 | DuckDNS (무료) | https 인증서는 IP가 아니라 도메인에 발급된다 |
+| https | Caddy | 도메인만 적으면 인증서를 자동으로 받고 갱신 |
+| DB | Neon | 지금 쓰는 것 그대로 |
+
+화면(https)에서 API를 부르려면 API도 https여야 합니다. 브라우저가 https 화면에서 http 주소를 부르는 것을 막기 때문입니다. 그래서 백엔드에 도메인과 Caddy를 붙입니다.
+
+## 코드에서 준비해 둔 것
+
+| 파일 | 하는 일 |
+|------|---------|
+| `backend/src/main/resources/application-prod.yaml` | 서버 전용 설정. SQL 로그 끄기, H2 콘솔 끄기, 서버 안(127.0.0.1)에서만 8080 열기 |
+| `backend/src/main/resources/application.yaml` | 실행 폴더(jar 옆)의 `application-secret.yaml`도 읽음. CORS 허용 주소를 설정값(`app.cors.allowed-origins`)으로 받음 |
+| `backend/build.gradle` | 배포용 jar에 `application-secret.yaml`을 넣지 않음 |
+| `frontend/vercel.json` | `/trips/3` 같은 주소에서 새로고침해도 404가 나지 않게 모든 주소를 `index.html`로 보냄 |
+| `deploy/Caddyfile` | Caddy 설정 예시 |
+| `deploy/triplan.service` | 백엔드를 서비스로 띄우는 설정 (재부팅 · 오류 때 자동 재시작) |
+| `deploy/application-secret.example.yaml` | 서버에 둘 비밀 값 파일의 모양 |
+
+각자 컴퓨터에서 실행하는 방법(`./gradlew bootRun`, `npm run dev`)은 바뀌지 않습니다.
+
+---
+
+## 처음 한 번: 서버 만들기
+
+### 1. EC2 만들기 (AWS 콘솔)
+
+1. 오른쪽 위 지역을 **서울(ap-northeast-2)**로 바꿉니다.
+2. EC2 → 인스턴스 시작
+   - 이름: `triplan`
+   - OS: **Ubuntu Server 24.04 LTS**
+   - 아키텍처: 64비트(x86)
+   - 인스턴스 유형: **`t3.micro`**(메모리 1GB). 아래 3번의 스왑을 꼭 만듭니다. 느리면 나중에 `t3.small`로 바꿀 수 있습니다 (아래 "비용과 정리")
+   - 키 페어: 새로 만들기 → 이름 `triplan`, RSA, `.pem` → 받은 파일을 **저장소 폴더 밖**(`C:\Users\{나}\.ssh\triplan.pem`)에 둡니다. 다시 받을 수 없으니 따로 백업해 둡니다
+   - 네트워크 설정(보안 그룹):
+
+     | 종류 | 포트 | 허용할 곳 | 이유 |
+     |------|------|-----------|------|
+     | SSH | 22 | **내 IP** | 서버 접속. 모두에게 열지 않는다 |
+     | HTTP | 80 | 모든 곳 | 인증서 발급, https로 넘기기 |
+     | HTTPS | 443 | 모든 곳 | API |
+
+     8080은 열지 않습니다. 백엔드는 Caddy를 통해서만 들어옵니다.
+   - 스토리지: **12GiB, gp3**. Ubuntu · 스왑 · 로그에 여유를 둡니다. "파일 시스템"(EFS · FSx)과 "볼륨 추가"는 서버가 한 대라 쓰지 않습니다
+3. EC2 → 탄력적 IP → 탄력적 IP 주소 할당 → 만든 IP를 선택하고 작업 → **탄력적 IP 주소 연결** → 인스턴스 `triplan` 선택 ("재연결 허용"은 체크하지 않음)
+
+이제 서버 IP가 바뀌지 않습니다. 이 IP를 아래에서 `{IP}`라고 씁니다.
+
+> [!NOTE]
+> 집 · 학교처럼 접속하는 곳이 바뀌면 "내 IP"도 바뀌어서 SSH가 안 될 수 있습니다. 그때는 보안 그룹의 22번 규칙을 지금 IP로 고칩니다.
+
+로 바뀌면 서버 안이고, `exit`로 나옵니다.
+
+```powershell
+ssh triplan
+```
+
+아래 명령들과 다시 올리기 스크립트(`scripts/deploy-backend.ps1`)는 이 `triplan` 이름을 씁니다. 설정 파일 없이 하려면 `triplan` 자리에 `-i $env:USERPROFILE\.ssh\triplan.pem ubuntu@{IP}`를 씁니다.
 
 ### 3. 서버 준비 (서버 안에서)
 
@@ -123,15 +215,18 @@ nslookup {이름}.duckdns.org
 
 ### 5. 백엔드 올리기
 
-**내 컴퓨터**(저장소 폴더)에서 jar를 만들고 서버로 보냅니다:
+최신 `main`을 받은 **내 컴퓨터**(저장소 맨 위 폴더, PowerShell)에서 jar를 만들고 서버로 보냅니다:
 
-```bash
+```powershell
 cd backend
-./gradlew bootJar
-scp -i ~/.ssh/triplan.pem build/libs/triplan-0.0.1-SNAPSHOT.jar ubuntu@{IP}:/opt/triplan/triplan.jar
-scp -i ~/.ssh/triplan.pem ../deploy/application-secret.example.yaml ubuntu@{IP}:/opt/triplan/application-secret.yaml
-scp -i ~/.ssh/triplan.pem ../deploy/triplan.service ubuntu@{IP}:/tmp/triplan.service
+.\gradlew.bat bootJar
+cd ..
+scp backend/build/libs/triplan-0.0.1-SNAPSHOT.jar triplan:/opt/triplan/triplan.jar
+scp deploy/application-secret.example.yaml triplan:/opt/triplan/application-secret.yaml
+scp deploy/triplan.service triplan:/tmp/triplan.service
 ```
+
+`application-secret.example.yaml`은 빈칸만 있는 양식입니다. 각자 컴퓨터의 비밀 값 파일은 git에도 jar에도 들어가지 않아서 서버로 저절로 가지 않으므로, 서버에 따로 두고 채웁니다.
 
 **서버 안**에서 비밀 값을 채웁니다:
 
@@ -141,6 +236,8 @@ chmod 600 /opt/triplan/application-secret.yaml
 ```
 
 - DB · 오디세이 키: 각자 컴퓨터의 `application-secret.yaml`과 같은 값 (DB는 아래 "DB" 참고)
+  - DB는 각자 파일의 `url` · `username` · `password` 세 줄을 그대로 옮깁니다. Neon 콘솔의 접속 주소(`postgresql://계정:비밀번호@…`)는 Spring(JDBC) 형식(`jdbc:postgresql://…`)과 달라서 그대로 붙이면 연결되지 않습니다
+  - 들여쓰기는 건드리지 말고 `:` 뒤의 값만 바꿉니다. 탭 문자는 쓰지 않습니다
 - JWT 키: 새로 만듭니다 → `openssl rand -base64 48`의 결과
 - `allowed-origins`: Vercel 주소를 아직 모르면 일단 두고, 7번이 끝난 뒤 고칩니다
 
@@ -210,18 +307,63 @@ sudo systemctl reload caddy
 
 ## 코드를 고친 뒤 다시 올리기
 
-**화면**: `main`에 merge되면 Vercel이 자동으로 다시 배포합니다. 따로 할 일이 없습니다.
+| 바뀐 것 | 할 일 |
+|---------|-------|
+| 화면(`frontend`) | 없음. `main`에 merge되면 Vercel이 자동으로 다시 배포 (팀원이 merge한 커밋이 자동 배포되지 않으면 Vercel 대시보드에서 Redeploy) |
+| 백엔드(`backend`) | merge 후 아래 스크립트 실행 |
+| 서버 설정값(`application-secret.yaml`)만 | 서버에서 파일을 고치고 `sudo systemctl restart triplan` |
+| Vercel 환경 변수(`VITE_…`)만 | Vercel에서 값을 고치고 Redeploy (빌드할 때 들어가는 값이라 다시 빌드해야 반영) |
 
-**백엔드**: 내 컴퓨터에서 jar를 만들어 보내고, 서버에서 다시 켭니다.
+### 백엔드: 스크립트로 올리기 (추천)
 
-```bash
-cd backend
-./gradlew bootJar
-scp -i ~/.ssh/triplan.pem build/libs/triplan-0.0.1-SNAPSHOT.jar ubuntu@{IP}:/opt/triplan/triplan.jar
-ssh -i ~/.ssh/triplan.pem ubuntu@{IP} "sudo systemctl restart triplan"
+최신 `main`을 받은 뒤, 저장소 맨 위 폴더의 PowerShell에서 실행합니다.
+
+```powershell
+git switch main
+git pull origin main
+powershell -ExecutionPolicy Bypass -File scripts\deploy-backend.ps1
 ```
 
-최신 `main`에서 jar를 만들어야 합니다. 다른 브랜치에서 만들면 merge 안 된 코드가 올라갑니다.
+`scripts/deploy-backend.ps1`이 하는 일:
+
+1. 서버(`ssh triplan`)에 접속되는지 확인
+2. `main` 브랜치이고, 최신이고, `backend`에 커밋 안 한 변경이 없는지 확인 (아니면 멈춤. 리뷰 안 된 코드가 올라가지 않게)
+3. jar 빌드
+4. 서버의 지금 jar를 `triplan.jar.bak`으로 백업
+5. 새 jar를 보내고 다시 켬
+6. 2분 동안 서버 안에서 API를 불러 200이 나오는지 확인
+7. 켜지지 않으면 로그를 보여주고 **백업한 jar로 자동으로 되돌림**
+
+다시 켜는 30초~1분 동안은 사이트가 502입니다. 발표 직전에는 올리지 않습니다.
+
+올린 뒤에 문제를 발견하면 바로 전 버전으로 되돌립니다:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\deploy-backend.ps1 -Rollback
+```
+
+> [!NOTE]
+> 테이블 · 컬럼을 바꾼 코드는 서버가 켜질 때 `ddl-auto: update`로 같은 DB에 바로 반영됩니다. 컬럼 추가는 자동이지만, 삭제 · 이름 변경은 자동으로 되지 않고 되돌리기(`-Rollback`)로도 DB는 원래대로 돌아가지 않습니다. 이런 변경은 PR에 적고 서로 알린 뒤 올립니다.
+
+### 백엔드: 직접 올리기
+
+스크립트가 하는 일을 손으로 하면 이렇습니다.
+
+```powershell
+cd backend
+.\gradlew.bat bootJar
+cd ..
+ssh triplan "cp /opt/triplan/triplan.jar /opt/triplan/triplan.jar.bak"
+scp backend/build/libs/triplan-0.0.1-SNAPSHOT.jar triplan:/opt/triplan/triplan.jar
+ssh triplan "sudo systemctl restart triplan"
+ssh triplan "sudo journalctl -u triplan -n 20 --no-pager"
+```
+
+`Started TriplanApplication`이 보이면 성공입니다. 안 켜지면 백업으로 되돌립니다:
+
+```powershell
+ssh triplan "cp /opt/triplan/triplan.jar.bak /opt/triplan/triplan.jar && sudo systemctl restart triplan"
+```
 
 ## 로그 보기 (서버 안에서)
 
@@ -244,6 +386,10 @@ sudo journalctl -u triplan -f
 | 새로고침하면 404 | `frontend/vercel.json`이 있는지, Root Directory가 `frontend`인지 |
 | 지도가 안 나옴 | 카카오 Web 플랫폼에 Vercel 주소, Vercel의 `VITE_KAKAO_MAP_KEY`, Redeploy 했는지 |
 | 화면은 되는데 데이터가 이상함 | Vercel의 `VITE_API_BASE_URL`이 서버 주소인지 (localhost면 안 됨) |
+| PowerShell에서 `inputFormat 매개 변수에 대해 잘못된 값` | 명령에 `{IP}`처럼 중괄호가 남아 있음. 중괄호까지 지우고 실제 값으로 |
+| `ssh`가 한참 멈췄다가 `Connection timed out` | 접속하는 곳(집 · 학교)이 바뀌어 내 IP가 바뀜. 보안 그룹 22번 규칙을 "내 IP"로 다시 고침 |
+| Vercel 가져오기 목록에 저장소가 없음 | GitHub에서 Vercel 앱이 `yncteamproject` 조직의 `Triplan`에 접근하도록 허용 (조직 소유자 승인 필요) |
+| 스크립트 실행이 막힘 (`이 시스템에서 스크립트를 실행할 수 없으므로`) | `powershell -ExecutionPolicy Bypass -File …`로 실행 |
 
 ## DB
 
