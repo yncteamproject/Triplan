@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/layout/Layout";
+import AdminPage from "./pages/admin/AdminPage";
 import MainPage from "./pages/MainPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -37,6 +38,7 @@ export default function App() {
 					<Route path="/travel-test" element={<TravelTestPage />} />
 					<Route path="/travel-test/result" element={<TravelTestResultPage />} />
 					<Route path="/mypage" element={<MyPage />} />
+					<Route path="/admin" element={<AdminPage />} />
 				</Route>
 
 				<Route path="*" element={<NotFoundPage />} />

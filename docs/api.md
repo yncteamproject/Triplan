@@ -25,7 +25,7 @@ Authorization: Bearer {accessToken}
 | 204 | 삭제 성공 (본문 없음) |
 | 400 | 입력값 검증 실패, 요청 본문 형식 오류, 주소 · 쿼리 값 형식 오류(예: id 자리에 글자), 필수 쿼리 값 누락 |
 | 401 | 로그인 필요, 로그인 실패 |
-| 403 | 본인 데이터가 아님 |
+| 403 | 본인 데이터가 아님, 관리자가 아님 |
 | 404 | 대상이 없음, 없는 주소 |
 | 405 | 지원하지 않는 요청 방식(메서드) |
 | 409 | 이미 가입된 이메일 |
@@ -96,8 +96,14 @@ Authorization: Bearer {accessToken}
 | S2 | DELETE | `/api/comments/{commentId}` | 🔒 작성자 | 204 |
 | P1 | POST | `/api/travel-test` | 🔒 | 200 |
 | P2 | GET | `/api/travel-test/me` | 🔒 | 200 |
+| A1 | GET | `/api/admin/stats` | 🔒 관리자 | 200 |
+| A2 | GET | `/api/admin/share-pages` | 🔒 관리자 | 200 |
+| A3 | DELETE | `/api/admin/share-pages/{id}` | 🔒 관리자 | 204 |
+| A4 | GET | `/api/admin/comments` | 🔒 관리자 | 200 |
+| A5 | DELETE | `/api/admin/comments/{id}` | 🔒 관리자 | 204 |
+| A6 | GET | `/api/admin/members` | 🔒 관리자 | 200 |
 
-🔓 로그인 없이 가능 · 🔒 로그인 필요 · 🔒 본인/작성자 = 로그인 + 본인 데이터만 (아니면 403)
+🔓 로그인 없이 가능 · 🔒 로그인 필요 · 🔒 본인/작성자 = 로그인 + 본인 데이터만 (아니면 403) · 🔒 관리자 = 로그인 + 관리자만 (아니면 403)
 
 ---
 
@@ -453,6 +459,62 @@ Authorization: Bearer {accessToken}
   "description": "현지 맛집과 시장 탐방을 즐기는 유형", "testedAt": "2026-09-30T14:00:00" }
 ```
 - 404: 아직 테스트한 적이 없음
+
+---
+
+## 관리자 (A)
+
+관리자(`role`이 `ADMIN`)만 부를 수 있습니다. 로그인하지 않으면 401, 일반 회원이면 403 "접근 권한이 없습니다."입니다.
+목록 3개는 `?page=0&size=10` 형식이고(최신순, `size` 최대 50), 응답 모양은 게시판 목록(S3)과 같습니다. `page`가 음수이거나 `size`가 1보다 작으면 400입니다.
+
+### A1 통계 — `GET /api/admin/stats` 🔒 관리자
+
+```json
+// 200
+{ "memberCount": 4, "sharePageCount": 4, "commentCount": 0 }
+```
+
+### A2 게시글 목록 — `GET /api/admin/share-pages` 🔒 관리자
+
+```json
+// 200
+{ "content": [
+    { "id": 1, "title": "제주도 2박 3일", "writerNickname": "김철수", "writerEmail": "user@test.com",
+      "writeDate": "2026-09-30T14:00:00", "viewCount": 12, "copyCount": 1 }
+  ],
+  "page": 0, "size": 10, "totalElements": 1, "totalPages": 1, "last": true }
+```
+
+### A3 게시글 삭제 — `DELETE /api/admin/share-pages/{id}` 🔒 관리자
+
+작성자가 아니어도 지울 수 있습니다. 게시글에 달린 댓글도 함께 지워집니다.
+- 204: 삭제 성공
+- 404: 없는 게시글
+
+### A4 댓글 목록 — `GET /api/admin/comments` 🔒 관리자
+
+어느 게시글의 댓글인지 같이 보여줍니다.
+
+```json
+// 200 (content 한 줄)
+{ "id": 3, "content": "좋은 정보 감사합니다", "writerNickname": "김철수",
+  "sharePageId": 1, "sharePageTitle": "제주도 2박 3일", "createdAt": "2026-09-30T14:10:00" }
+```
+
+### A5 댓글 삭제 — `DELETE /api/admin/comments/{id}` 🔒 관리자
+
+작성자가 아니어도 지울 수 있습니다. 게시글은 그대로 남습니다.
+- 204: 삭제 성공
+- 404: 없는 댓글
+
+### A6 회원 목록 — `GET /api/admin/members` 🔒 관리자
+
+비밀번호는 응답에 넣지 않습니다. 보기만 할 수 있습니다(역할 변경 · 탈퇴 처리 없음).
+
+```json
+// 200 (content 한 줄)
+{ "id": 2, "email": "user@test.com", "nickname": "김철수", "role": "USER", "createdAt": "2026-10-07T13:15:00" }
+```
 
 ---
 

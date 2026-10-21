@@ -68,6 +68,11 @@ export default function MyPage() {
 								<p className={styles.nickname}>{me.nickname}</p>
 								<p className={styles.email}>{me.email}</p>
 								<p className={styles.joined}>가입일 {formatDate(me.createdAt)}</p>
+								{me.role === "ADMIN" && (
+									<Button variant="secondary" to="/admin" className={styles.adminButton}>
+										관리자 페이지
+									</Button>
+								)}
 							</div>
 						</div>
 					) : (

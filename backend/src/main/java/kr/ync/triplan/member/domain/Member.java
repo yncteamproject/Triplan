@@ -53,4 +53,8 @@ public class Member {
 	public void changePassword(String password) {
 		this.password = password;
 	}
+
+	public void promoteToAdmin() {
+		this.role = Role.ADMIN;
+	}
 }
