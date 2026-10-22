@@ -9,8 +9,14 @@ spring:
   h2:
     console:
       enabled: false # 배포 서버에서는 H2 콘솔을 열지 않는다
+  lifecycle:
+    # 종료 신호를 받으면 처리 중인 요청을 최대 20초까지 마저 처리하고 끝낸다 (블루-그린에서 옛 버전을 끌 때)
+    timeout-per-shutdown-phase: 20s
 
 server:
-  # 앞단의 Caddy만 이 서버를 부른다. 바깥에서 8080으로 직접 들어오지 못하게 서버 안에서만 연다
+  # 앞단의 Nginx만 이 서버를 부른다. 바깥에서 직접 들어오지 못하게 서버 안에서만 연다
   address: 127.0.0.1
+  # 블루-그린으로 두 칸(8081 · 8082)을 번갈아 쓴다. 칸 번호는 실행할 때 --server.port로 넘긴다 (deploy/triplan@.service)
   port: 8080
+  # 종료 신호를 받으면 새 요청은 받지 않고, 처리 중인 요청을 마친 뒤 끝낸다
+  shutdown: graceful

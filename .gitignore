@@ -32,3 +32,6 @@ application-secret.yml
 application-secret.yaml
 application-local.yml
 application-local.yaml
+
+# 배포 끊김 측정 결과 (scripts/measure-downtime.mjs). 요약 수치는 문서에 옮겨 적는다
+measurements/

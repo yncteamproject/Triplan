@@ -329,7 +329,8 @@
 | 사진 업로드 | 이번 범위에서 제외 | 저장 위치(공용 DB · 클라우드) 결정과 작업량이 큼 |
 | 화면 스타일 | 폼(로그인 · 회원가입 · 마이페이지 · 글쓰기)은 로그인 페이지 스타일, 플래너 · 게시판은 디자인 가이드의 흰 카드 | 로그인 페이지를 기준 화면으로 정함 |
 | 한글 글꼴 | Pretendard | 피그마의 Inter에는 한글 글자가 없음 |
-| 배포 | 화면 Vercel, 백엔드 AWS EC2 + 고정 IP, 도메인 DuckDNS, https는 Caddy ([배포 가이드](deploy.md)) | 오디세이는 등록한 IP에서만 동작해서 IP가 고정된 서버가 필요. https 화면에서 API를 부르려면 API도 https여야 해서 도메인을 붙임 |
+| 배포 | 화면 Vercel, 백엔드 AWS EC2(시드니, t3.small) + 고정 IP, 도메인 DuckDNS, https · 전달은 Nginx + Certbot, 블루-그린 무중단 배포 ([배포 가이드](deploy.md)) | 오디세이는 등록한 IP에서만 동작해서 IP가 고정된 서버가 필요. https 화면에서 API를 부르려면 API도 https여야 해서 도메인을 붙임. 끄고 켜는 배포는 매번 24~32초 끊겨서 두 칸을 번갈아 쓰는 방식으로 바꿈 (#92) |
+| DB 위치 | 서버와 같은 지역(시드니)의 Neon | 지역이 다르면 쿼리마다 왕복 시간이 붙어 응답이 수십 배 느려짐 (K12) |
 
 ## 알려진 문제
 
@@ -346,3 +347,4 @@
 | K9 | 테스트가 공용 DB(Neon)에 연결돼서, DB에 있는 실제 데이터가 테스트에 섞임 | 게시판에 실제 글이 생기자 목록 테스트 10개가 실패. 동시에 돌리면 서로 기다리며 멈추기도 함 | 테스트할 때만 각자 컴퓨터의 임시 DB(H2)를 쓰도록 테스트 전용 설정 추가. 앱 실행은 그대로 Neon | ✅ [#66](https://github.com/yncteamproject/Triplan/issues/66) |
 | K10 | `CommonExceptionHandler`와 `GlobalExceptionHandler`가 같은 오류를 처리하는데 순서가 정해져 있지 않음 (K8 이후) | 순서가 바뀌면 회원 · 성향 테스트 API의 일부 오류가 400 대신 500으로 응답될 수 있음 | `CommonExceptionHandler`에 `@Order`를 붙여 항상 먼저 처리하게 함 | ✅ [#68](https://github.com/yncteamproject/Triplan/issues/68) |
 | K11 | 오디세이 호출이 실패해도 서버 로그에 이유가 남지 않음 | 502만 보여서 원인(IP 미등록 · 키 오류 · 시간 초과 등)을 찾으려면 직접 호출해 봐야 했음 | 실패한 자리마다 이유를 경고 로그로 남김 (오디세이가 준 코드 · 문구, 인증 실패면 IP 확인 안내). 로그에 API 키는 남기지 않고, 응답(502)은 그대로 | ✅ [#75](https://github.com/yncteamproject/Triplan/issues/75) |
+| K12 | 서버(시드니)와 DB(싱가포르) 지역이 달라 응답이 느림 | 게시판 목록이 2.4초(서버 안 1.6초), 1초 약 6건이 넘으면 시간 초과 | DB를 서버와 같은 시드니 Neon 프로젝트로 이전. 서버 → DB 왕복 0.18초 → 0.004초, 목록 1.6초 → 0.04초, 1초 10건에서 실패 0건 | ✅ [#94](https://github.com/yncteamproject/Triplan/issues/94) |

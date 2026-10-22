@@ -1,0 +1,4 @@
+# 서버(리눅스)에서 쓰는 파일은 Windows에서 받아도 줄 끝을 LF로 유지한다 (CRLF면 bash · systemd가 읽지 못함)
+*.sh text eol=lf
+deploy/** text eol=lf
+*.ps1 text eol=crlf
