@@ -2,14 +2,16 @@
 # /etc/systemd/system/triplan@.service에 복사해서 쓴다. @ 뒤의 값이 칸(포트) 번호다
 #   systemctl start triplan@8081   → /opt/triplan/slots/8081/triplan.jar를 8081 포트로 실행
 #   systemctl start triplan@8082   → /opt/triplan/slots/8082/triplan.jar를 8082 포트로 실행
-# 평소에는 한 칸만 켜 두고, 배포할 때 쉬는 칸에 새 버전을 띄운 뒤 Nginx를 넘긴다 (deploy/blue-green.sh)
+# 평소에는 한 칸만 켜 두고, 배포할 때 쉬는 칸에 새 버전을 띄워 확인한 뒤 옛 칸을 끈다 (deploy/blue-green.sh)
 [Unit]
 Description=Triplan backend (port %i)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=ubuntu
+# sudo 권한이 없는 전용 사용자로 실행한다. 배포 키가 새어 악성 jar가 올라오더라도 서버 관리 권한을 갖지 못하게 (#92)
+User=triplan
+Group=triplan
 # 비밀 값 파일(application-secret.yaml)은 두 칸이 같이 쓴다. 이 폴더 기준으로 읽는다
 WorkingDirectory=/opt/triplan
 # JVM 옵션을 서버에서 바꿀 수 있게 따로 둔다 (없으면 아래 기본값). 예: JAVA_OPTS=-Xms128m -Xmx384m

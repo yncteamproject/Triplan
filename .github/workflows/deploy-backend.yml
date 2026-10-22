@@ -1,0 +1,139 @@
+# main에 merge된 백엔드를 배포 서버에 무중단으로 올린다 (#92)
+#
+# - main에 backend가 바뀐 커밋이 들어오면 자동으로: 테스트 → jar 빌드 → 서버로 보내 블루-그린 전환
+# - Actions 화면에서 수동 실행: deploy(지금 main 다시 배포) · rollback(바로 전 버전) · status(상태만 보기)
+#
+# 권한은 최소로 둔다 (docs/deploy.md "자동 배포")
+# - AWS: 배포 전용 IAM 사용자의 액세스 키. 그 키로는 보안 그룹 하나에 SSH 규칙을 넣고 빼는 것만 할 수 있다
+#        (OIDC 임시 권한이 더 안전하지만, 무료 요금제 계정이라 OIDC 공급자를 등록할 수 없어서 액세스 키를 쓴다)
+# - 서버: 배포 전용 키는 서버에서 deploy · rollback · status 세 가지만 실행되도록 묶여 있다 (deploy/ci-deploy.sh)
+# - 값은 GitHub의 production 환경(Environment)에 있다. main 브랜치에서만 쓸 수 있게 막아 둔다
+name: 백엔드 배포
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 할 일
+        type: choice
+        options: [status, deploy, rollback]
+        default: status
+
+permissions:
+  contents: read
+
+# 배포는 한 번에 하나씩. 실행 중인 배포는 취소하지 않고 끝날 때까지 기다린다
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: 백엔드 ${{ github.event_name == 'workflow_dispatch' && inputs.action || 'deploy' }}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    env:
+      ACTION: ${{ github.event_name == 'workflow_dispatch' && inputs.action || 'deploy' }}
+      EC2_HOST: ${{ vars.EC2_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        if: env.ACTION == 'deploy'
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+        if: env.ACTION == 'deploy'
+
+      # 테스트가 실패하면 여기서 멈춘다. 서버는 건드리지 않는다
+      - name: 테스트 · jar 빌드
+        if: env.ACTION == 'deploy'
+        working-directory: backend
+        run: ./gradlew test bootJar
+
+      - name: AWS 로그인 (배포 전용 사용자)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 평소 SSH는 관리자 IP에서만 열려 있다. 이 실행의 IP만 잠깐 연다
+      - name: 이 실행의 IP에서만 SSH 허용
+        id: open
+        env:
+          SECURITY_GROUP_ID: ${{ secrets.EC2_SECURITY_GROUP_ID }}
+        run: |
+          ip=$(curl -s --max-time 10 https://checkip.amazonaws.com | tr -d '[:space:]')
+          echo "ip=$ip" >> "$GITHUB_OUTPUT"
+          aws ec2 authorize-security-group-ingress --group-id "$SECURITY_GROUP_ID" \
+            --ip-permissions "IpProtocol=tcp,FromPort=22,ToPort=22,IpRanges=[{CidrIp=${ip}/32,Description=github-actions-deploy}]" > /dev/null
+          # 규칙이 적용될 때까지 최대 30초 기다린다
+          for i in $(seq 1 15); do
+            if timeout 3 bash -c "</dev/tcp/${EC2_HOST}/22" 2> /dev/null; then
+              echo "SSH 열림 (${i}번째 확인)"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "SSH 포트가 열리지 않았습니다"
+          exit 1
+
+      - name: SSH 준비
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          KNOWN_HOSTS: ${{ vars.EC2_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # 서버 지문을 미리 넣어 둔다. 지문이 다르면(가짜 서버) 접속하지 않는다
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: 서버에서 ${{ env.ACTION }}
+        run: |
+          set -o pipefail
+          opts=(-i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15)
+          if [ "$ACTION" = "deploy" ]; then
+            jar=$(ls backend/build/libs/*.jar | grep -v -- '-plain.jar' | head -1)
+            echo "보낼 jar: $(basename "$jar") ($(du -h "$jar" | cut -f1)), 커밋 ${GITHUB_SHA::7}"
+            ssh "${opts[@]}" "ubuntu@${EC2_HOST}" deploy < "$jar" 2>&1 | tee server-output.txt
+          else
+            ssh "${opts[@]}" "ubuntu@${EC2_HOST}" "$ACTION" 2>&1 | tee server-output.txt
+          fi
+
+      # 성공하든 실패하든 반드시 닫는다
+      - name: SSH 허용 지우기
+        if: always() && steps.open.outputs.ip != ''
+        env:
+          SECURITY_GROUP_ID: ${{ secrets.EC2_SECURITY_GROUP_ID }}
+          IP: ${{ steps.open.outputs.ip }}
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id "$SECURITY_GROUP_ID" \
+            --ip-permissions "IpProtocol=tcp,FromPort=22,ToPort=22,IpRanges=[{CidrIp=${IP}/32}]" > /dev/null \
+            && echo "SSH 허용을 지웠습니다" \
+            || echo "::warning::SSH 허용을 지우지 못했습니다. AWS 콘솔의 보안 그룹에서 github-actions-deploy 규칙을 지워 주세요"
+
+      - name: 요약
+        if: always()
+        run: |
+          {
+            echo "### 백엔드 ${ACTION} ${{ job.status == 'success' && '✅' || '❌' }}"
+            echo "- 커밋: \`${GITHUB_SHA::7}\` (${{ github.event_name }})"
+            if [ -f server-output.txt ]; then
+              echo '```'
+              cat server-output.txt
+              echo '```'
+            fi
+            if [ "${{ job.status }}" != "success" ] && [ "$ACTION" = "deploy" ]; then
+              echo "배포가 실패해도 새 버전으로 바꾸지 않았다면 사이트는 옛 버전으로 계속 동작합니다. 위 기록에서 원인을 확인하세요."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
