@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "../../api/client";
-import { getMyTravelResult } from "../../api/travelTestApi";
+import { getMyTravelResult, type TravelResult } from "../../api/travelTestApi";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import EmptyState from "../../components/common/EmptyState";
@@ -9,7 +9,7 @@ import typeStyles from "./travelTypes.module.css";
 import styles from "./TravelTestResultPage.module.css";
 
 export default function TravelTestResultPage() {
-	const [result, setResult] = useState(undefined);
+	const [result, setResult] = useState<TravelResult | null>();
 	const [loadError, setLoadError] = useState("");
 
 	useEffect(() => {
