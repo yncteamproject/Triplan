@@ -1,5 +1,7 @@
 # Triplan — 여행 플래너 웹 서비스
 
+[![CI](https://github.com/yncteamproject/Triplan/actions/workflows/ci.yml/badge.svg)](https://github.com/yncteamproject/Triplan/actions/workflows/ci.yml)
+
 여행 일정(방문지 · 이동 수단 · 숙소)을 짜면 경비가 자동으로 합산되고, 완성한 여행 계획을 공유 게시판에 올려 다른 사람과 나눌 수 있는 웹 서비스입니다.
 2026년 영남이공대학교 3학년 일취반 팀 프로젝트로 제작하고 있습니다.
 
@@ -36,6 +38,7 @@
 | 빌드 | Gradle (백엔드), npm (프론트엔드) |
 | 외부 API | 카카오맵 JS SDK, 오디세이(ODsay) |
 | 배포 | Vercel(화면), AWS EC2 + Caddy(백엔드, https), DuckDNS(도메인) — [배포 가이드](docs/deploy.md) |
+| CI | GitHub Actions — PR마다 백엔드 테스트 · 프론트 lint · build 자동 검사 |
 
 ## 실행 방법
 
@@ -270,7 +273,7 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 ### 작업 흐름
 
 ```
-이슈 확인 → main 최신화 → 브랜치 생성 → 작업 + 테스트 + 문서 → PR (Closes #번호) → 리뷰 → merge → 브랜치 삭제 → 노션 상태 변경
+이슈 확인 → main 최신화 → 브랜치 생성 → 작업 + 테스트 + 문서 → PR (Closes #번호) → CI 통과 확인 → 리뷰 → merge → 브랜치 삭제 → 노션 상태 변경
 ```
 
 1. **할 일은 이슈로 시작합니다.** 새 작업이나 버그는 GitHub Issues에 먼저 올리고, 담당자와 라벨(종류 · 영역)을 붙입니다.
@@ -326,6 +329,10 @@ git push -u origin fix/7-delete-cascade
 ### PR
 - PR을 열면 템플릿(`.github/pull_request_template.md`)이 자동으로 채워집니다. 항목을 채우고 체크리스트를 확인합니다.
 - 관련 이슈는 `Closes #번호`로 적습니다. merge되면 이슈가 자동으로 닫힙니다.
+- PR을 올리면 **CI(GitHub Actions)**가 자동으로 검사합니다 (`.github/workflows/ci.yml`). PR 아래 검사 칸이 ✅가 되어야 merge합니다.
+  - 백엔드가 바뀌면 `./gradlew test`, 프론트가 바뀌면 `npm ci` → `npm run lint` → `npm run build`를 돌립니다. 문서만 바뀌면 건너뜁니다.
+  - ❌가 뜨면 검사 칸의 Details → Summary에서 실패한 테스트 이름을 볼 수 있고, 백엔드 테스트 보고서(HTML)는 Artifacts에서 내려받을 수 있습니다.
+  - 같은 PR에 다시 push하면 이전 검사는 멈추고 새로 검사합니다.
 - merge한 뒤에는 원격 브랜치를 삭제하고, 노션 기능 목록의 상태를 바꿉니다.
 
 ### 커밋 메시지
@@ -340,7 +347,7 @@ git push -u origin fix/7-delete-cascade
 - 생성 API는 4가지 입력을 검증합니다: 정상 데이터 / 필수 데이터 누락 / null 값 / 비정상 데이터.
 - 로그인이 필요한 API는 비로그인(401), 남의 데이터(403) 케이스를 같이 확인합니다.
 - 테스트 메서드 이름은 영어로 쓰고, 설명은 `@DisplayName`에 한글로 씁니다.
-- `./gradlew test`가 모두 통과해야 PR을 올립니다.
+- `./gradlew test`가 모두 통과해야 PR을 올립니다. PR을 올리면 CI가 같은 테스트를 한 번 더 돌립니다.
 - 테스트는 임시 DB(H2)에서 돌기 때문에 DB가 비어 있는 상태에서 시작합니다. 테스트에 필요한 데이터는 테스트 안에서 직접 만듭니다.
 
 ## 배포

@@ -84,7 +84,7 @@ Triplan은 이 과정을 한 화면으로 모으려고 만들었습니다. 날�
 | 인증 | Spring Security + JWT (24시간), BCrypt | React와 백엔드가 분리된 구조라 세션 없는 방식 선택 |
 | 프론트엔드 | React 19, Vite 8, axios | 컴포넌트 단위 화면 구성, `client.js`에서 토큰 자동 첨부 |
 | 테스트 | JUnit 5, MockMvc, spring-security-test, H2 | 테스트할 때만 각자 컴퓨터의 임시 DB(H2) + `@Transactional` 롤백 (6.7) |
-| 협업 | GitHub(Issues · PR · 템플릿), Notion, Figma | 코드와 함께 바뀌는 것은 저장소, 일정은 노션 |
+| 협업 | GitHub(Issues · PR · 템플릿 · Actions), Notion, Figma | 코드와 함께 바뀌는 것은 저장소, 일정은 노션. PR마다 CI로 자동 검사 |
 | 외부 API | 카카오맵, 오디세이(ODsay) | 지도 · 장소 검색 · 대중교통 경로 (환율은 범위 밖으로 미룸) |
 | 배포 | Vercel, AWS EC2(t3.micro, Ubuntu 24.04), DuckDNS, Caddy | 화면은 merge만 하면 자동 배포. 백엔드는 오디세이가 등록한 IP에서만 동작해서 고정 IP가 되는 EC2 (4.5) |
 
@@ -326,7 +326,8 @@ kr.ync.triplan
 - **계층별 테스트**: Controller · Service · Repository
 - **입력 검증 4종**: 정상 데이터 / 필수 데이터 누락 / null / 비정상 데이터
 - **권한 케이스**: 비로그인(401), 남의 데이터(403)를 함께 검증
-- **결과**: 백엔드 테스트 275개 통과 (2026-10-14 기준). 프론트는 PR마다 `npm run lint` · `npm run build`를 통과시키고, 화면은 직접 실행해서 확인합니다.
+- **결과**: 백엔드 테스트 291개 통과 (2026-10-22 기준). 프론트는 PR마다 `npm run lint` · `npm run build`를 통과시키고, 화면은 직접 실행해서 확인합니다.
+- **CI (GitHub Actions)**: PR을 올리면 바뀐 쪽만 골라 백엔드 테스트, 프론트 lint · build를 자동으로 돌립니다. 결과는 PR에 표시되고, 실패한 테스트 이름은 요약 화면에 바로 나옵니다. 그 전에는 체크리스트에 각자 체크하는 방식이라 확인을 빠뜨려도 알 수 없었습니다 ([#91](https://github.com/yncteamproject/Triplan/issues/91)).
 - **외부 API 테스트**: 오디세이는 가짜 응답으로 바꿔서 테스트합니다 (무료 호출 수를 쓰지 않음). 실제 응답은 연동할 때 직접 호출해서 확인했습니다.
 - **쿼리 수 확인**: 목록 조회는 글이 늘어도 쿼리 수가 늘지 않는지 테스트로 확인합니다.
 - **에러 응답 통일**: `GlobalExceptionHandler`와 `CustomException`으로 일관된 에러 형식 (`timestamp` · `status` · `message` 형태, [API 명세](api.md#에러-응답-형식))
@@ -385,6 +386,8 @@ kr.ync.triplan
 | S7 카드 경로 그림 | 목록 응답의 좌표로 그리는 썸네일 | ✅ 완료 |
 | 좁은 화면 대응 | 지금은 최소 너비 1024px (좁히면 가로 스크롤) | ⏳ 예정 |
 | 배포 | Vercel(화면) · EC2(백엔드) · DuckDNS(도메인) + Caddy(https), 백엔드 다시 올리기 스크립트 (https://triplan-livid-delta.vercel.app) | ✅ 완료 |
+| CI | GitHub Actions로 PR 자동 검사 (백엔드 테스트 · 프론트 lint · build) | ✅ 완료 |
+| CD | main merge 시 백엔드 자동 배포 + 무중단 배포 ([#92](https://github.com/yncteamproject/Triplan/issues/92)) | ⏳ 예정 |
 | T8 환율 | 한국수출입은행 API. 국내 여행 범위라 우선순위 낮음 | ⏳ 미정 |
 
 ### 해결할 알려진 문제
@@ -432,7 +435,6 @@ K1~K11 모두 해결. 새로 발견되면 K12부터 번호를 붙여 관리
 
 ### 다음에 해볼 것
 - 테스트용 DB를 프로젝트 시작할 때부터 분리하기
-- PR을 올리면 테스트 · 빌드가 자동으로 도는 설정(CI) 넣기
 - 화면 테스트 작성하기 (공통 부품부터)
 - 좁은 화면 기준을 먼저 정하고 화면 만들기
 - 배포한 사이트를 다른 사람이 써 보게 하고 의견 받기
