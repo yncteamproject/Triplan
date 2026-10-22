@@ -1,8 +1,0 @@
-# 배포 서버(EC2)의 Caddy 설정. 서버의 /etc/caddy/Caddyfile에 복사해서 쓴다 (docs/deploy.md)
-# {이름}을 DuckDNS에서 만든 이름으로 바꾼다. 예: triplan.duckdns.org
-#
-# - 도메인을 적어 두면 Caddy가 https 인증서를 자동으로 받고 갱신한다 (80 · 443 포트가 열려 있어야 한다)
-# - 바깥에서 들어온 요청을 서버 안의 백엔드(127.0.0.1:8080)로 넘긴다
-{이름}.duckdns.org {
-	reverse_proxy 127.0.0.1:8080
-}

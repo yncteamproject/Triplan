@@ -37,7 +37,7 @@
 | 테스트 | JUnit 5, MockMvc, spring-security-test, H2 (테스트 전용 임시 DB + `@Transactional` 롤백) |
 | 빌드 | Gradle (백엔드), npm (프론트엔드) |
 | 외부 API | 카카오맵 JS SDK, 오디세이(ODsay) |
-| 배포 | Vercel(화면), AWS EC2 + Caddy(백엔드, https), DuckDNS(도메인) — [배포 가이드](docs/deploy.md) |
+| 배포 | Vercel(화면), AWS EC2 + Nginx(백엔드, https, 블루-그린 무중단 배포), DuckDNS(도메인) — [배포 가이드](docs/deploy.md) |
 | CI | GitHub Actions — PR마다 백엔드 테스트 · 프론트 lint · build 자동 검사 |
 
 ## 실행 방법
@@ -352,7 +352,7 @@ git push -u origin fix/7-delete-cascade
 
 ## 배포
 
-화면은 Vercel, 백엔드는 AWS EC2, 도메인은 DuckDNS를 씁니다. 설정 방법과 다시 올리는 방법은 [배포 가이드](docs/deploy.md)에 있습니다.
+화면은 Vercel, 백엔드는 AWS EC2(시드니) + Nginx, 도메인은 DuckDNS, DB는 서버와 같은 지역의 Neon을 씁니다. 설정 방법과 다시 올리는 방법은 [배포 가이드](docs/deploy.md)에 있습니다.
 
 | | 주소 | 다시 올리기 |
 |---|---|---|
@@ -365,7 +365,7 @@ git pull origin main
 powershell -ExecutionPolicy Bypass -File scripts\deploy-backend.ps1
 ```
 
-스크립트는 최신 `main`인지 확인하고, 서버의 지금 버전을 백업한 뒤 새 버전을 올립니다. 새 버전이 2분 안에 켜지지 않으면 자동으로 되돌립니다. 서버 접속 설정(`~/.ssh/config`)은 [배포 가이드](docs/deploy.md#2-서버에-접속하기)를 참고하세요.
+스크립트는 최신 `main`인지 확인하고 jar를 만들어 서버로 보낸 뒤, **블루-그린 방식으로 끊김 없이** 바꿉니다. 쉬는 칸에 새 버전을 먼저 띄우고, 켜진 것을 확인한 뒤 옛 칸을 끕니다. 새 버전이 켜지지 않으면 바꾸지 않고 옛 버전이 계속 서비스합니다. `-Rollback`으로 바로 전 버전으로 되돌릴 수 있습니다. 서버 접속 설정(`~/.ssh/config`)은 [배포 가이드](docs/deploy.md#2-서버에-접속하기)를 참고하세요.
 
 - 배포 서버도 각자 `bootRun`과 **같은 Neon DB**를 씁니다. 개발하면서 만든 데이터가 배포된 사이트에 그대로 보이고, 테이블을 바꾸는 코드는 `bootRun`하는 순간 배포 DB에도 반영됩니다.
 - 서버 설정 파일(`deploy/`)은 예시이고, 실제 값은 서버에만 있습니다.
