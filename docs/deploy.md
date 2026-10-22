@@ -40,6 +40,7 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
 | 인스턴스 | `t3.small` (메모리 2GB, CPU 2개). 처음엔 `t3.micro`(1GB)였다 |
 | OS · 디스크 | Ubuntu 26.04, 디스크 약 8GB (파일 시스템 6.7GB), 스왑 2GB |
 | 프로그램 | Java 21, Nginx 1.28, Certbot 4.0 |
+| 시간대 | 운영체제는 UTC, **백엔드는 한국 시간** (`deploy/triplan@.service`의 `TZ=Asia/Seoul`, K13) |
 | DB | Neon, 시드니 `ap-southeast-2` |
 
 ### 저장소의 배포 관련 파일
@@ -454,6 +455,7 @@ sudo journalctl -u triplan@$(cat /opt/triplan/active-slot) -f
 | `https://{이름}.duckdns.org`가 안 열림 | 보안 그룹 80 · 443, DuckDNS의 IP, `systemctl status nginx` |
 | 사이트가 502 | 두 칸 모두 꺼짐 → `/opt/triplan/blue-green.sh status`, 서비스 중인 칸의 로그 |
 | 백엔드가 계속 재시작 (`activating`) | 로그의 첫 오류. 대부분 `application-secret.yaml` 값 오류 |
+| 배포 사이트에서 쓴 글 · 댓글 시각이 9시간 이르게 보임 | 서비스 설정에 `Environment="TZ=Asia/Seoul"`이 있는지 (`systemctl cat triplan@8081`), 넣은 뒤 같은 jar를 다시 배포했는지 (K13) |
 | 로그에 `claims to not accept jdbcUrl, postgresql://…` | DB `url` 앞에 `jdbc:`가 빠짐 |
 | 배포했는데 "켜지다가 종료됐습니다" | 출력된 원인 줄 확인. 사이트는 옛 버전으로 계속 동작 중 |
 | Nginx `error.log`에 `no live upstreams` | `nginx-triplan.conf`의 두 칸에 `max_fails=0`이 있는지 |
