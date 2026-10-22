@@ -33,7 +33,7 @@
 | 백엔드 | Spring Boot 4.0.7, Java 21, Spring Data JPA, Bean Validation, Lombok |
 | DB | PostgreSQL (Neon) |
 | 인증 | Spring Security + JWT (jjwt 0.12.6, 토큰 유효기간 24시간, BCrypt) |
-| 프론트엔드 | React 19, Vite 8, React Router 7, axios |
+| 프론트엔드 | React 19, Vite 8, React Router 7, axios, TypeScript (성향 테스트 화면만, 나머지는 JS) |
 | 테스트 | JUnit 5, MockMvc, spring-security-test, H2 (테스트 전용 임시 DB + `@Transactional` 롤백) |
 | 빌드 | Gradle (백엔드), npm (프론트엔드) |
 | 외부 API | 카카오맵 JS SDK, 오디세이(ODsay) |
@@ -89,7 +89,7 @@ http://localhost:5173 에서 열립니다. 백엔드 주소는 `.env`의 `VITE_A
 
 `.env`의 `VITE_KAKAO_MAP_KEY`는 지도(T6)에 쓸 카카오 **JavaScript 키**입니다. Kakao Developers에서 앱을 만들고 Web 플랫폼에 `http://localhost:5173`을 등록해야 동작합니다. `.env`는 git에 올라가지 않습니다.
 
-PR을 올리기 전에 `npm run lint`와 `npm run build`가 통과하는지 확인합니다.
+PR을 올리기 전에 `npm run lint`와 `npm run build`가 통과하는지 확인합니다. `build`는 타입 검사(`tsc`)를 먼저 하고, 타입 검사만 따로 하려면 `npm run typecheck`를 씁니다.
 
 ### 5. 테스트
 ```bash
@@ -233,7 +233,8 @@ ID와 인수 기준은 [요구사항 명세](docs/requirements.md)를 참고하�
 - **API 호출은 `api/` 폴더의 함수로만** 합니다. 화면에서 `axios`를 직접 부르지 않습니다. 오류 문구는 `getErrorMessage(error)`로 꺼냅니다.
 - **로그인 상태는 `useAuth()`** (`user`, `isLoggedIn`, `login`, `logout`), **알림은 `useToast().showToast("문구")`**.
 - 토큰이 붙은 요청이 401을 받으면 자동으로 로그아웃되고 로그인 화면으로 이동합니다. 화면마다 따로 처리하지 않습니다.
-- 글꼴은 Pretendard입니다 (피그마의 Inter에는 한글이 없음).
+- 글꼴은 Pretendard입니다 (피그마의 Inter에는 한글이 없음). 
+- **타입스크립트는 성향 테스트 화면만** 씁니다 (`pages/traveltest`, `api/travelTestApi.ts`). 나머지는 JS 그대로이고 같이 동작합니다(`tsconfig.json`의 `allowJs`). TS 파일에서 쓰는 JS 공통 부품은 옆에 타입 설명 파일(`Button.d.ts`, `EmptyState.d.ts`)을 둡니다.
 
 ### 공통 부품 (`components/common`)
 | 부품 | 쓰는 법 |

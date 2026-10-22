@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../api/client";
-import { submitTravelTest } from "../../api/travelTestApi";
+import { submitTravelTest, type TravelType } from "../../api/travelTestApi";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import questions from "./questions";
@@ -10,7 +10,7 @@ import styles from "./TravelTestPage.module.css";
 export default function TravelTestPage() {
 	const navigate = useNavigate();
 	const [step, setStep] = useState(0);
-	const [answers, setAnswers] = useState([]);
+	const [answers, setAnswers] = useState<TravelType[]>([]);
 	const [error, setError] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 
@@ -18,7 +18,7 @@ export default function TravelTestPage() {
 	const selected = answers[step];
 	const isLast = step === questions.length - 1;
 
-	const choose = (type) => {
+	const choose = (type: TravelType) => {
 		const next = [...answers];
 		next[step] = type;
 		setAnswers(next);

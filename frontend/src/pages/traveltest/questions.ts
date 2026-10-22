@@ -1,5 +1,12 @@
+import type { TravelType } from "../../api/travelTestApi";
+
+interface Question {
+	title: string;
+	options: { label: string; type: TravelType }[];
+}
+
 // 질문 10개. 선택지마다 성향 하나 (성향마다 5번씩 나옴)
-const questions = [
+const questions: Question[] = [
 	{
 		title: "여행 계획은 어떻게 세우나요?",
 		options: [
