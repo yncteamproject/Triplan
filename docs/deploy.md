@@ -27,6 +27,7 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
 | 도메인 | DuckDNS (무료) | https 인증서는 IP가 아니라 도메인에 발급된다 |
 | https · 전달 | Nginx + Certbot | 무중단 배포(두 칸 전환)를 설정 한 곳에서 다루고, 실무에서 가장 많이 쓰는 웹 서버. 처음에는 Caddy를 썼다 (아래 "기록") |
 | 무중단 배포 | 블루-그린 (`deploy/blue-green.sh`) | 끄고 켜는 방식은 배포마다 24~32초 동안 사이트가 꺼졌다 |
+| 자동 배포 | GitHub Actions + 최소 권한 AWS 키 + 배포 전용 SSH 키 | merge만 하면 백엔드도 배포. AWS 키는 SSH 규칙 넣고 빼기만, 서버 열쇠는 배포 명령만 가능 (아래 "자동 배포") |
 | DB | Neon (시드니) | 서버와 같은 지역이어야 쿼리마다 왕복 시간이 붙지 않는다 (K12) |
 
 화면(https)에서 API를 부르려면 API도 https여야 합니다. 브라우저가 https 화면에서 http 주소를 부르는 것을 막기 때문입니다. 그래서 백엔드에 도메인과 인증서를 붙입니다.
@@ -51,8 +52,10 @@ Triplan을 인터넷 주소로 열 수 있게 올리는 방법입니다. 처음 
 | `frontend/vercel.json` | `/trips/3` 같은 주소에서 새로고침해도 404가 나지 않게 모든 주소를 `index.html`로 보냄 |
 | `deploy/nginx-triplan.conf` | Nginx 설정: https, http → https, 백엔드 두 칸 등록 |
 | `deploy/nginx-acme-only.conf` | 인증서를 처음 받을 때만 잠깐 쓰는 http 전용 설정 |
-| `deploy/triplan@.service` | 백엔드 칸(8081 · 8082)을 서비스로 띄우는 설정 |
+| `deploy/triplan@.service` | 백엔드 칸(8081 · 8082)을 서비스로 띄우는 설정. sudo 권한 없는 `triplan` 사용자로 실행 |
 | `deploy/blue-green.sh` | 서버에서 무중단 전환을 하는 스크립트 (`status` · `deploy` · `rollback` · `init`) |
+| `deploy/ci-deploy.sh` | 배포 전용 키로 접속했을 때 실행되는 유일한 명령. `deploy` · `rollback` · `status`만 허용 |
+| `.github/workflows/deploy-backend.yml` | main에 merge되면 백엔드를 자동으로 무중단 배포 (GitHub Actions) |
 | `deploy/application-secret.example.yaml` | 서버에 둘 비밀 값 파일의 모양 |
 | `scripts/deploy-backend.ps1` | 내 컴퓨터에서 jar를 만들어 서버로 보내고 `blue-green.sh`로 전환 |
 | `scripts/measure-downtime.mjs` | 배포하는 동안 사이트가 끊기는지 재는 스크립트 |
@@ -132,11 +135,12 @@ sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapf
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-백엔드를 둘 폴더를 만듭니다:
+백엔드를 둘 폴더와, 백엔드를 실행할 **sudo 권한 없는 사용자** `triplan`을 만듭니다. `ubuntu`는 비밀번호 없이 sudo를 쓸 수 있어서, 백엔드를 `ubuntu`로 실행하면 jar 하나로 서버 전체를 가질 수 있기 때문입니다:
 
 ```bash
 sudo mkdir -p /opt/triplan/slots/8081 /opt/triplan/slots/8082
 sudo chown -R ubuntu:ubuntu /opt/triplan
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin triplan
 ```
 
 ### 4. 도메인 연결 (DuckDNS)
@@ -170,8 +174,11 @@ scp deploy/triplan@.service deploy/blue-green.sh triplan:/tmp/
 
 ```bash
 nano /opt/triplan/application-secret.yaml
-chmod 600 /opt/triplan/application-secret.yaml
+sudo chown ubuntu:triplan /opt/triplan/application-secret.yaml
+sudo chmod 640 /opt/triplan/application-secret.yaml
 ```
+
+`640`: 주인 `ubuntu`는 고칠 수 있고, 백엔드(`triplan`)는 읽기만, 다른 사용자는 못 읽습니다.
 
 - DB: 각자 컴퓨터의 `application-secret.yaml`과 같은 `url` · `username` · `password` (아래 "DB" 참고)
   - `url`은 반드시 **`jdbc:postgresql://`**로 시작합니다. Neon 콘솔의 주소(`postgresql://계정:비밀번호@…`)를 그대로 붙이면 백엔드가 켜지지 못하고 계속 재시작합니다 (로그: `claims to not accept jdbcUrl, postgresql://…`)
@@ -306,11 +313,68 @@ sudo certbot renew --dry-run
 | 바뀐 것 | 할 일 |
 |---------|-------|
 | 화면(`frontend`) | 없음. `main`에 merge되면 Vercel이 자동으로 다시 배포 (팀원이 merge한 커밋이 자동 배포되지 않으면 Vercel 대시보드에서 Redeploy) |
-| 백엔드(`backend`) | merge 후 아래 스크립트 실행 (무중단) |
+| 백엔드(`backend`) | 없음. `main`에 merge되면 GitHub Actions가 자동으로 무중단 배포 (아래 "자동 배포"). 급할 때는 아래 스크립트로 직접 |
+| 전환 스크립트(`deploy/blue-green.sh`) · 서버 설정 파일 | merge 후 사람이 직접 올림. 자동 배포 키로는 바꿀 수 없게 막아 두었음 (`deploy-backend.ps1`은 실행할 때 `blue-green.sh`도 같이 올림) |
 | 서버 설정값(`application-secret.yaml`)만 | 서버에서 파일을 고친 뒤, 서비스 중인 jar를 그대로 다시 배포 (무중단, 아래 명령) |
 | Vercel 환경 변수(`VITE_…`)만 | Vercel에서 값을 고치고 Redeploy (빌드할 때 들어가는 값이라 다시 빌드해야 반영) |
 
-### 백엔드: 스크립트로 올리기 (추천)
+### 자동 배포 (GitHub Actions)
+
+`.github/workflows/deploy-backend.yml`이 main에 `backend/`가 바뀐 커밋이 들어오면 자동으로 실행됩니다.
+
+```
+테스트 · jar 빌드 (실패하면 여기서 멈춤, 서버는 그대로)
+ → 배포 전용 AWS 사용자로 로그인 (권한은 SSH 규칙 넣고 빼기뿐)
+ → 보안 그룹에 "이 실행의 IP에서 SSH" 규칙 추가
+ → 배포 전용 키로 접속해 jar를 보냄 → 서버의 ci-deploy.sh → blue-green.sh deploy (무중단)
+ → 보안 그룹 규칙 삭제 (실패해도 반드시)
+```
+
+결과는 Actions 화면의 실행 기록 → Summary에 서버 출력과 함께 나옵니다. **Actions → 백엔드 배포 → Run workflow**에서 직접 실행할 수도 있습니다:
+
+| 고르는 값 | 하는 일 |
+|-----------|---------|
+| `status` | 어느 칸이 서비스 중인지만 봄 (서버는 그대로) |
+| `deploy` | 지금 main을 다시 배포 |
+| `rollback` | 바로 전 버전으로 무중단 되돌리기 |
+
+**권한을 이렇게 좁혀 두었습니다** (공개 저장소에서 서버를 자동으로 건드리므로)
+
+| 열쇠 | 할 수 있는 일 | 새어도 |
+|------|---------------|--------|
+| AWS 액세스 키 (IAM 사용자 `triplan-github-deploy`) | 보안 그룹 하나에 SSH 규칙 넣기 · 빼기만. GitHub `production` 환경(main 브랜치)에서만 꺼낼 수 있음 | 누군가 자기 IP로 SSH 포트를 열 수는 있지만, 서버에 들어갈 SSH 키가 없어서 들어오지 못함. IAM에서 키를 비활성화 · 교체 |
+| 배포 전용 SSH 키 | `deploy` · `rollback` · `status`만 (`restrict,command=` 로 묶음). 셸 · 임의 명령 · 파일 복사 · 포트 포워딩 불가 | jar를 배포할 수는 있지만, jar는 sudo 권한 없는 `triplan` 사용자로 실행됨. 전환 스크립트는 못 바꿈 |
+| 서버 지문 (`known_hosts`) | — | 지문이 다른 서버(가짜)에는 접속하지 않음 |
+
+열쇠를 이렇게 나눠 두어서 **하나만 새서는 서버에 아무것도 할 수 없습니다.** AWS 키와 배포 키가 함께 새야 jar를 배포할 수 있고, 그때도 jar는 sudo 없는 사용자로 실행됩니다.
+
+> [!NOTE]
+> 원래는 AWS 키를 저장하지 않는 **OIDC**(실행할 때마다 몇 분짜리 임시 권한)를 쓰려고 했습니다. 이 AWS 계정은 무료 요금제라 OIDC 공급자 등록이 막혀 있어서, 권한을 최소로 줄인 액세스 키로 바꿨습니다. 유료 요금제로 바꾸면 OIDC로 옮기는 것을 권합니다 (워크플로의 AWS 로그인 단계만 `role-to-assume`으로 바꾸면 됨).
+
+**GitHub에 넣어 둔 값** (저장소 Settings → Environments → `production`, main 브랜치에서만 사용 가능)
+
+| 이름 | 종류 | 내용 |
+|------|------|------|
+| `AWS_ACCESS_KEY_ID` | Secret | 배포 전용 IAM 사용자의 액세스 키 ID |
+| `AWS_SECRET_ACCESS_KEY` | Secret | 같은 키의 비밀 액세스 키 (만들 때 한 번만 보임) |
+| `EC2_SECURITY_GROUP_ID` | Secret | 서버의 보안 그룹 ID (`sg-…`) |
+| `EC2_SSH_KEY` | Secret | 배포 전용 개인 키 (`triplan-ci-deploy`) 전체 |
+| `AWS_REGION` | Variable | `ap-southeast-2` |
+| `EC2_HOST` | Variable | `{이름}.duckdns.org` |
+| `EC2_KNOWN_HOSTS` | Variable | `ssh-keyscan -t ed25519 {이름}.duckdns.org` 결과 한 줄 (지문을 기존 접속과 비교해 확인한 것) |
+
+**처음 설정하는 법**
+
+1. 배포 전용 키 만들기 (내 컴퓨터, 저장소 밖): `ssh-keygen -t ed25519 -N "" -C triplan-ci-deploy -f $env:USERPROFILE\.ssh\triplan-ci-deploy`
+2. 서버의 `~/.ssh/authorized_keys`에 한 줄 추가: `restrict,command="/opt/triplan/ci-deploy.sh" ` + 공개 키(`triplan-ci-deploy.pub` 내용). `ci-deploy.sh`는 root 소유 `755`로 설치 (`sudo install -o root -g root -m 755 …`)
+3. AWS IAM → 정책 → 정책 생성(JSON): `ec2:AuthorizeSecurityGroupIngress` · `ec2:RevokeSecurityGroupIngress`만, 리소스는 서버 보안 그룹 ARN 하나 (`arn:aws:ec2:ap-southeast-2:{계정ID}:security-group/{sg-…}`). 이름 `triplan-deploy-ssh-rule`
+4. AWS IAM → IAM 사용자 → 사용자 생성: 이름 `triplan-github-deploy`, 콘솔 접근 없음, 권한은 위 정책만 직접 연결
+5. 그 사용자 → 보안 자격 증명 → 액세스 키 만들기 (사용 사례: AWS 외부에서 실행되는 애플리케이션). 비밀 액세스 키는 이 화면에서만 보이므로 바로 GitHub Secrets에 넣고, 다른 곳에 저장하지 않음
+6. GitHub → Settings → Environments → `production` 만들기 → Deployment branches를 `main`만 → 위 표의 값 등록
+
+**AWS 키 교체** (사람이 바뀌었거나 새었다고 의심될 때, 또는 몇 달에 한 번): IAM 사용자 → 보안 자격 증명 → 새 액세스 키 만들기 → GitHub Secrets 두 값 교체 → Actions에서 `status`로 확인 → 옛 키 비활성화 → 삭제
+
+### 백엔드: 스크립트로 올리기 (직접, 급할 때)
 
 최신 `main`을 받은 뒤, 저장소 맨 위 폴더의 PowerShell에서 실행합니다.
 
@@ -396,6 +460,13 @@ sudo journalctl -u triplan@$(cat /opt/triplan/active-slot) -f
 | Nginx `error.log`에 `connect() failed (111)` | 정상 (꺼진 칸에 먼저 연결해 본 기록) |
 | 인증서가 만료됨 | `systemctl is-active certbot.timer`(active여야 함), `sudo certbot renew --dry-run` |
 | AWS 콘솔에 서버가 안 보임 | 오른쪽 위 지역이 **시드니**인지 |
+| 자동 배포가 `AWS 로그인`에서 실패 (`InvalidClientTokenId` · `SignatureDoesNotMatch`) | GitHub Secrets의 `AWS_ACCESS_KEY_ID` · `AWS_SECRET_ACCESS_KEY`가 맞는지, 키가 비활성화되지 않았는지. 값이 비어 있으면 `production` 환경의 Secrets인지 (저장소 Secrets가 아님) |
+| 자동 배포가 `SSH 허용`에서 실패 (`UnauthorizedOperation`) | 사용자에 연결한 정책의 보안 그룹 ARN · 계정 ID · 지역이 맞는지 |
+| 자동 배포가 `SSH 포트가 열리지 않았습니다` | `EC2_HOST` 값, 보안 그룹 ID가 서버에 연결된 그룹인지 |
+| 자동 배포가 `Host key verification failed` | 서버 지문이 바뀜(서버를 새로 만든 경우 등). `EC2_KNOWN_HOSTS`를 다시 받아 기존 접속 지문과 비교 후 교체 |
+| 자동 배포가 `허용되지 않은 요청입니다` | 정상적인 제한. 배포 키로는 `deploy` · `rollback` · `status`만 됨 |
+| 보안 그룹에 `github-actions-deploy` 규칙이 남아 있음 | 배포가 중간에 강제로 끊긴 경우. 콘솔에서 그 규칙을 지움 |
+| 백엔드가 `application-secret.yaml`을 못 읽음 (`Permission denied`) | 파일이 `ubuntu:triplan`, `640`인지 |
 | `ssh`가 한참 멈췄다가 `Connection timed out` | 내 IP가 바뀜. 인스턴스 보안 탭의 보안 그룹에서 SSH 소스를 "내 IP"로 다시 |
 | 새로고침하면 404 | `frontend/vercel.json`이 있는지, Root Directory가 `frontend`인지 |
 | 지도가 안 나옴 | 카카오 Web 플랫폼에 Vercel 주소, Vercel의 `VITE_KAKAO_MAP_KEY`, Redeploy 했는지 |
@@ -433,6 +504,7 @@ sudo journalctl -u triplan@$(cat /opt/triplan/active-slot) -f
 | 2026-10-22 | DB를 싱가포르 → 시드니 Neon 프로젝트로 이전 | 응답 2.4초, 1초 약 6건이 한계 (K12) |
 | 2026-10-22 | `t3.micro` → `t3.small` | 무중단 배포 때 백엔드 두 개(합계 약 1.1GB)가 1GB에 들어가지 않음 |
 | 2026-10-22 | Caddy → Nginx + Certbot, 백엔드를 두 칸으로 (블루-그린) | 배포마다 24~32초 끊김 → 0 (#92) |
+| 2026-10-22 | 백엔드 실행 사용자 `ubuntu` → `triplan`(sudo 없음), 배포 전용 키 · 최소 권한 AWS 키 · GitHub Actions 자동 배포 | 자동 배포를 넣으면서 열쇠가 새어도 피해를 좁히려고 (#92). 사용자 전환도 블루-그린으로 해서 실패 0건. OIDC는 무료 요금제라 등록 불가 |
 
 **배포 중 끊김 측정** (1초 10건, 같은 방식으로 3번씩)
 

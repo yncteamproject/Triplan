@@ -38,7 +38,7 @@
 | 빌드 | Gradle (백엔드), npm (프론트엔드) |
 | 외부 API | 카카오맵 JS SDK, 오디세이(ODsay) |
 | 배포 | Vercel(화면), AWS EC2 + Nginx(백엔드, https, 블루-그린 무중단 배포), DuckDNS(도메인) — [배포 가이드](docs/deploy.md) |
-| CI | GitHub Actions — PR마다 백엔드 테스트 · 프론트 lint · build 자동 검사 |
+| CI · CD | GitHub Actions — PR마다 백엔드 테스트 · 프론트 lint · build 자동 검사, main에 merge되면 백엔드 무중단 자동 배포 |
 
 ## 실행 방법
 
@@ -357,7 +357,9 @@ git push -u origin fix/7-delete-cascade
 | | 주소 | 다시 올리기 |
 |---|---|---|
 | 화면 | https://triplan-livid-delta.vercel.app | `main`에 merge되면 Vercel이 자동으로 |
-| API | https://triplan-ync.duckdns.org | merge 후 `scripts/deploy-backend.ps1` 실행 |
+| API | https://triplan-ync.duckdns.org | `main`에 merge되면 GitHub Actions가 자동으로 (무중단). 급할 때는 `scripts/deploy-backend.ps1` |
+
+백엔드 배포 결과는 GitHub의 Actions → **백엔드 배포**에서 볼 수 있고, 같은 곳의 Run workflow로 `status` · `deploy` · `rollback`을 직접 실행할 수 있습니다. 직접 올릴 때는 이렇게 합니다:
 
 ```powershell
 git switch main
