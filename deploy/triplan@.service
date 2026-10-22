@@ -15,6 +15,8 @@ WorkingDirectory=/opt/triplan
 # JVM 옵션을 서버에서 바꿀 수 있게 따로 둔다 (없으면 아래 기본값). 예: JAVA_OPTS=-Xms128m -Xmx384m
 Environment="JAVA_OPTS=-Xms128m -Xmx512m"
 EnvironmentFile=-/opt/triplan/jvm.env
+# 시각을 한국 시간으로 만든다 (K13). 서버 운영체제는 UTC라서, 없으면 글 · 댓글 시각(LocalDateTime.now())이 9시간 이르게 저장된다
+Environment="TZ=Asia/Seoul"
 ExecStart=/bin/sh -c 'exec /usr/bin/java $JAVA_OPTS -jar /opt/triplan/slots/%i/triplan.jar --spring.profiles.active=prod --server.port=%i'
 Restart=on-failure
 RestartSec=5
